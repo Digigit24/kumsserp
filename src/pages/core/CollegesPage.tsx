@@ -12,7 +12,7 @@ import { collegeApi } from '../../services/core.service';
 import type { CollegeListItem, CollegeFilters, College } from '../../types/core.types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const CollegesPage = () => {
+const CollegesPage = () => {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<CollegeFilters>({ page: 1, page_size: 20 });
   const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(null);
@@ -362,3 +362,5 @@ export const CollegesPage = () => {
     </div>
   );
 };
+
+export default CollegesPage;
