@@ -1,278 +1,364 @@
 /**
- * Colleges Management Page
- * Displays raw API response data for colleges
+ * Colleges Page
+ * Manage colleges/institutions in the system
  */
 
 import { useState } from 'react';
-import { useColleges, useCreateCollege, useUpdateCollege, useDeleteCollege } from '../../hooks/useCore';
-import type { CollegeFilters, CollegeCreateInput } from '../../types/core.types';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { CollegeForm } from './components/CollegeForm';
+import { collegeApi } from '../../services/core.service';
+import type { CollegeListItem, CollegeFilters, College } from '../../types/core.types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const CollegesPage = () => {
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<CollegeFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useColleges(filters);
-  const createCollege = useCreateCollege();
-  const updateCollege = useUpdateCollege();
-  const deleteCollege = useDeleteCollege();
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Debug: Check token
-  const token = localStorage.getItem('kumss_auth_token');
-  console.log('[CollegesPage] Current token:', token);
-  console.log('[CollegesPage] All localStorage keys:', Object.keys(localStorage));
-  console.log('[CollegesPage] localStorage kumss_auth_token:', localStorage.getItem('kumss_auth_token'));
+  // Fetch colleges list
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['colleges', filters],
+    queryFn: () => collegeApi.list(filters),
+  });
 
-  const handleCreate = async () => {
-    const newCollege: CollegeCreateInput = {
-      code: 'TEST001',
-      name: 'Test College',
-      short_name: 'TC',
-      email: 'test@college.edu',
-      phone: '+1234567890',
-      address_line1: '123 Test Street',
-      city: 'Test City',
-      state: 'Test State',
-      pincode: '12345',
-      country: 'Test Country',
-      primary_color: '#1976d2',
-      secondary_color: '#dc004e',
-    };
+  // Fetch selected college details
+  const { data: selectedCollege } = useQuery({
+    queryKey: ['college', selectedCollegeId],
+    queryFn: () => selectedCollegeId ? collegeApi.get(selectedCollegeId) : null,
+    enabled: !!selectedCollegeId,
+  });
 
-    try {
-      await createCollege.mutate(newCollege);
-      refetch();
-      alert('College created successfully!');
-    } catch (err) {
-      alert('Failed to create college');
-    }
+  // Define table columns
+  const columns: Column<CollegeListItem>[] = [
+    {
+      key: 'code',
+      label: 'Code',
+      sortable: true,
+      render: (college) => (
+        <code className="px-2 py-1 bg-muted rounded text-sm font-medium">
+          {college.code}
+        </code>
+      ),
+    },
+    {
+      key: 'name',
+      label: 'College Name',
+      sortable: true,
+      render: (college) => (
+        <div>
+          <p className="font-medium">{college.name}</p>
+          <p className="text-sm text-muted-foreground">{college.short_name}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'city',
+      label: 'Location',
+      render: (college) => (
+        <span className="text-sm">{college.city}, {college.state}</span>
+      ),
+    },
+    {
+      key: 'is_main',
+      label: 'Type',
+      render: (college) => (
+        college.is_main ? (
+          <Badge variant="default">Main University</Badge>
+        ) : (
+          <Badge variant="outline">College</Badge>
+        )
+      ),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (college) => (
+        <Badge variant={college.is_active ? 'success' : 'destructive'}>
+          {college.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'is_active',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+    {
+      name: 'is_main',
+      label: 'Type',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Main University' },
+        { value: 'false', label: 'College' },
+      ],
+    },
+  ];
+
+  const handleRowClick = (college: CollegeListItem) => {
+    setSelectedCollegeId(college.id);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
   };
 
-  const handleUpdate = async (id: number) => {
-    try {
-      await updateCollege.mutate({
-        id,
-        data: { email: `updated_${Date.now()}@college.edu` },
-      });
-      refetch();
-      alert('College updated successfully!');
-    } catch (err) {
-      alert('Failed to update college');
-    }
+  const handleAdd = () => {
+    setSelectedCollegeId(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this college?')) return;
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
 
-    try {
-      await deleteCollege.mutate(id);
-      refetch();
-      alert('College deleted successfully!');
-    } catch (err) {
-      alert('Failed to delete college');
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedCollegeId(null);
+  };
+
+  const handleFormSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['colleges'] });
+    if (selectedCollegeId) {
+      queryClient.invalidateQueries({ queryKey: ['college', selectedCollegeId] });
+    }
+    handleCloseSidebar();
+  };
+
+  const handleSubmit = async (formData: any) => {
+    if (sidebarMode === 'create') {
+      await collegeApi.create(formData);
+    } else if (selectedCollege) {
+      await collegeApi.update(selectedCollege.id, formData);
     }
   };
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Colleges Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Raw API Response Display - Core Module
-        </p>
-      </div>
+      <DataTable
+        title="Colleges"
+        description="Manage colleges and institutions in the system"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onAdd={handleAdd}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search by college name, code, or city..."
+        addButtonLabel="Add College"
+      />
 
-      {/* Debug: Auth Token Status */}
-      <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-400 dark:border-yellow-700 rounded">
-        <h3 className="font-semibold mb-2 text-yellow-800 dark:text-yellow-300">
-          Debug: Authentication Status
-        </h3>
-        <p className="text-sm">
-          <strong>Token Present:</strong> {token ? '✅ Yes' : '❌ No'}
-        </p>
-        {token && (
-          <p className="text-sm">
-            <strong>Token:</strong> {token.substring(0, 20)}...
-          </p>
+      {/* Detail/Create/Edit Sidebar */}
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={
+          sidebarMode === 'create'
+            ? 'Add New College'
+            : sidebarMode === 'edit'
+            ? 'Edit College'
+            : selectedCollege?.name || 'College Details'
+        }
+        mode={sidebarMode}
+        width="xl"
+      >
+        {sidebarMode === 'create' && (
+          <CollegeForm
+            mode="create"
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+            onSubmit={handleSubmit}
+          />
         )}
-        {!token && (
-          <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-            ⚠️ No token found! Please log out and log in again.
-          </p>
+
+        {sidebarMode === 'edit' && selectedCollege && (
+          <CollegeForm
+            mode="edit"
+            college={selectedCollege}
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+            onSubmit={handleSubmit}
+          />
         )}
-      </div>
 
-      {/* Actions */}
-      <div className="mb-6 flex gap-4">
-        <button
-          onClick={handleCreate}
-          disabled={createCollege.isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {createCollege.isLoading ? 'Creating...' : 'Create Test College'}
-        </button>
-        <button
-          onClick={() => refetch()}
-          disabled={isLoading}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
-        >
-          {isLoading ? 'Refreshing...' : 'Refresh'}
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-        <h3 className="font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Page Size</label>
-            <select
-              value={filters.page_size}
-              onChange={(e) => setFilters({ ...filters, page_size: Number(e.target.value), page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Active Only</label>
-            <select
-              value={filters.is_active?.toString() || ''}
-              onChange={(e) => setFilters({ ...filters, is_active: e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined, page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value="">All</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Search</label>
-            <input
-              type="text"
-              value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              placeholder="Search colleges..."
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Loading colleges...</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-6">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {/* Data Display */}
-      {data && (
-        <>
-          {/* Summary */}
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p className="text-sm">
-              <strong>Total Count:</strong> {data.count} |{' '}
-              <strong>Page:</strong> {filters.page} |{' '}
-              <strong>Results on this page:</strong> {data.results.length}
-            </p>
-          </div>
-
-          {/* Colleges List */}
-          <div className="space-y-4">
-            {data.results.map((college) => (
-              <div
-                key={college.id}
-                className="p-4 border rounded dark:border-gray-700 bg-white dark:bg-gray-800"
+        {sidebarMode === 'view' && selectedCollege && (
+          <div className="space-y-6">
+            {/* Header Actions */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleEdit}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
               >
-                <div className="flex justify-between items-start mb-2">
+                Edit College
+              </button>
+            </div>
+
+            {/* College Details */}
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold">
-                      {college.name} ({college.code})
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {college.city}, {college.state}, {college.country}
+                    <label className="text-sm text-muted-foreground">Code</label>
+                    <p className="font-medium">
+                      <code className="px-2 py-1 bg-background rounded text-sm">{selectedCollege.code}</code>
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleUpdate(college.id)}
-                      disabled={updateCollege.isLoading}
-                      className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
-                    >
-                      Update
-                    </button>
-                    <button
-                      onClick={() => handleDelete(college.id)}
-                      disabled={deleteCollege.isLoading}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Short Name</label>
+                    <p className="font-medium">{selectedCollege.short_name}</p>
                   </div>
-                </div>
-                <div className="mt-3">
-                  <p className="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1">
-                    Raw API Response:
-                  </p>
-                  <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded overflow-x-auto">
-                    {JSON.stringify(college, null, 2)}
-                  </pre>
+                  <div className="col-span-2">
+                    <label className="text-sm text-muted-foreground">Full Name</label>
+                    <p className="font-medium text-lg">{selectedCollege.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Email</label>
+                    <p className="font-medium">{selectedCollege.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Phone</label>
+                    <p className="font-medium">{selectedCollege.phone}</p>
+                  </div>
+                  {selectedCollege.website && (
+                    <div className="col-span-2">
+                      <label className="text-sm text-muted-foreground">Website</label>
+                      <p className="font-medium">
+                        <a href={selectedCollege.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          {selectedCollege.website}
+                        </a>
+                      </p>
+                    </div>
+                  )}
+                  {selectedCollege.established_date && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Established</label>
+                      <p className="font-medium">{new Date(selectedCollege.established_date).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedCollege.affiliation_number && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Affiliation Number</label>
+                      <p className="font-medium">{selectedCollege.affiliation_number}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+
+              {/* Address */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Address</h3>
+                <div className="space-y-2 text-sm">
+                  <p>{selectedCollege.address_line1}</p>
+                  {selectedCollege.address_line2 && <p>{selectedCollege.address_line2}</p>}
+                  <p>{selectedCollege.city}, {selectedCollege.state} - {selectedCollege.pincode}</p>
+                  <p>{selectedCollege.country}</p>
+                </div>
+              </div>
+
+              {/* Branding */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Branding</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Primary Color</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-8 h-8 rounded border" style={{ backgroundColor: selectedCollege.primary_color }}></div>
+                      <code className="text-sm">{selectedCollege.primary_color}</code>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Secondary Color</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-8 h-8 rounded border" style={{ backgroundColor: selectedCollege.secondary_color }}></div>
+                      <code className="text-sm">{selectedCollege.secondary_color}</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Status & Settings</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Type</span>
+                    {selectedCollege.is_main ? (
+                      <Badge variant="default">Main University</Badge>
+                    ) : (
+                      <Badge variant="outline">College</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge variant={selectedCollege.is_active ? 'success' : 'destructive'}>
+                      {selectedCollege.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Display Order</span>
+                    <span className="font-medium">{selectedCollege.display_order}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audit Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selectedCollege.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selectedCollege.updated_at).toLocaleString()}</p>
+                  </div>
+                  {selectedCollege.created_by && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Created By</label>
+                      <p>{selectedCollege.created_by.username}</p>
+                    </div>
+                  )}
+                  {selectedCollege.updated_by && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Updated By</label>
+                      <p>{selectedCollege.updated_by.username}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Raw Data */}
+              <details className="bg-muted/30 p-4 rounded-lg">
+                <summary className="cursor-pointer font-semibold mb-2 text-sm">
+                  Raw API Data
+                </summary>
+                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
+                  {JSON.stringify(selectedCollege, null, 2)}
+                </pre>
+              </details>
+            </div>
           </div>
-
-          {/* Pagination */}
-          <div className="mt-6 flex justify-between items-center">
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}
-              disabled={!data.previous}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="text-sm">
-              Page {filters.page || 1}
-            </span>
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}
-              disabled={!data.next}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* Mutation States */}
-      {createCollege.data && (
-        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded">
-          <p className="text-sm font-semibold mb-2">Last Created College:</p>
-          <pre className="text-xs bg-white dark:bg-gray-900 p-3 rounded overflow-x-auto">
-            {JSON.stringify(createCollege.data, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      {updateCollege.data && (
-        <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded">
-          <p className="text-sm font-semibold mb-2">Last Updated College:</p>
-          <pre className="text-xs bg-white dark:bg-gray-900 p-3 rounded overflow-x-auto">
-            {JSON.stringify(updateCollege.data, null, 2)}
-          </pre>
-        </div>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };
-
-export default CollegesPage;
