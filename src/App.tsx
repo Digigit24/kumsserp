@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import Settings from "./pages/Settings";
+import { DebugPage } from "./pages/debug/DebugPage";
 
 // Core Module Pages
 import CollegesPage from "./pages/core/CollegesPage";
@@ -53,6 +54,7 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="debug" element={<DebugPage />} />
 
               {/* Core Module Routes */}
               <Route path="core/colleges" element={<CollegesPage />} />

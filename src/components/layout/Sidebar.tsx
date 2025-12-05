@@ -27,7 +27,8 @@ import {
   BookOpen,
   TrendingUp,
   Award,
-  CreditCard
+  CreditCard,
+  Bug
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -94,19 +95,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       { name: 'Students', href: '/students/list', icon: School },
       { name: 'Categories', href: '/students/categories', icon: Grid },
       { name: 'Groups', href: '/students/groups', icon: Users },
-      { name: 'Guardians', href: '/students/guardians', icon: UserPlus },
-      { name: 'Addresses', href: '/students/addresses', icon: MapPin },
-      { name: 'Documents', href: '/students/documents', icon: FileText },
-      { name: 'Medical Records', href: '/students/medical-records', icon: Heart },
-      { name: 'Previous Records', href: '/students/previous-records', icon: BookOpen },
-      { name: 'Promotions', href: '/students/promotions', icon: TrendingUp },
-      { name: 'Certificates', href: '/students/certificates', icon: Award },
-      { name: 'ID Cards', href: '/students/id-cards', icon: CreditCard },
+     
     ]
   };
 
   const bottomNavigation = [
     { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Debug', href: '/debug', icon: Bug },
   ];
 
   return (

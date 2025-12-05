@@ -7,7 +7,7 @@
 export const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // Tenant ID - Required for all API requests
-export const TENANT_ID = 'tenant_001';
+export const TENANT_ID = 'all';
 
 /**
  * API Endpoints
@@ -23,7 +23,7 @@ export const API_ENDPOINTS = {
     user: '/api/v1/auth/user/',
   },
 
-  
+
 
   // Core Module - Colleges
   colleges: {
@@ -406,7 +406,7 @@ export const API_ENDPOINTS = {
 export const getDefaultHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Tenant-ID': TENANT_ID,
+    'X-College-ID': TENANT_ID,
   };
 
   // Add Authorization header if token exists
