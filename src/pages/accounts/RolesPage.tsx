@@ -1,134 +1,300 @@
 /**
  * Roles Management Page
- * Displays raw API response data for roles
+ * Complete CRUD interface for roles with permissions management
  */
 
 import { useState } from 'react';
-import { useRoles } from '../../hooks/useAccounts';
-import type { RoleFilters } from '../../types/accounts.types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { RoleForm } from './components/RoleForm';
+import { roleApi } from '../../services/accounts.service';
+import type { RoleListItem, RoleFilters, Role } from '../../types/accounts.types';
 
-export const RolesPage = () => {
+const RolesPage = () => {
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<RoleFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useRoles(filters);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Fetch roles list
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['roles', filters],
+    queryFn: () => roleApi.list(filters),
+  });
+
+  // Fetch selected role details
+  const { data: selectedRole } = useQuery({
+    queryKey: ['role', selectedRoleId],
+    queryFn: () => selectedRoleId ? roleApi.get(selectedRoleId) : null,
+    enabled: !!selectedRoleId,
+  });
+
+  // Define table columns
+  const columns: Column<RoleListItem>[] = [
+    {
+      key: 'code',
+      label: 'Code',
+      sortable: true,
+      render: (role) => (
+        <code className="px-2 py-1 bg-muted rounded text-sm font-medium">
+          {role.code}
+        </code>
+      ),
+    },
+    {
+      key: 'name',
+      label: 'Role Name',
+      sortable: true,
+      render: (role) => (
+        <p className="font-medium">{role.name}</p>
+      ),
+    },
+    {
+      key: 'college_name',
+      label: 'College',
+      render: (role) => (
+        <span className="text-sm">{role.college_name}</span>
+      ),
+    },
+    {
+      key: 'display_order',
+      label: 'Display Order',
+      render: (role) => (
+        <span className="text-sm">{role.display_order}</span>
+      ),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (role) => (
+        <Badge variant={role.is_active ? 'success' : 'destructive'}>
+          {role.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'is_active',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+  ];
+
+  const handleRowClick = (role: RoleListItem) => {
+    setSelectedRoleId(role.id);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedRoleId(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedRoleId(null);
+  };
+
+  const handleFormSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['roles'] });
+    if (selectedRoleId) {
+      queryClient.invalidateQueries({ queryKey: ['role', selectedRoleId] });
+    }
+    handleCloseSidebar();
+  };
+
+  const handleSubmit = async (formData: any) => {
+    if (sidebarMode === 'create') {
+      await roleApi.create(formData);
+    } else if (selectedRole) {
+      await roleApi.update(selectedRole.id, formData);
+    }
+  };
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Roles Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Raw API Response Display - Accounts Module
-        </p>
-      </div>
+      <DataTable
+        title="Roles & Permissions"
+        description="Manage roles and their permissions in the system"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onAdd={handleAdd}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search by role name or code..."
+        addButtonLabel="Add Role"
+      />
 
-      {/* Actions */}
-      <div className="mb-6 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          disabled={isLoading}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
-        >
-          {isLoading ? 'Refreshing...' : 'Refresh'}
-        </button>
-      </div>
+      {/* Detail/Create/Edit Sidebar */}
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={
+          sidebarMode === 'create'
+            ? 'Add New Role'
+            : sidebarMode === 'edit'
+            ? 'Edit Role'
+            : selectedRole?.name || 'Role Details'
+        }
+        mode={sidebarMode}
+        width="xl"
+      >
+        {sidebarMode === 'create' && (
+          <RoleForm
+            mode="create"
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {/* Filters */}
-      <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-        <h3 className="font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Page Size</label>
-            <select
-              value={filters.page_size}
-              onChange={(e) => setFilters({ ...filters, page_size: Number(e.target.value), page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
+        {sidebarMode === 'edit' && selectedRole && (
+          <RoleForm
+            mode="edit"
+            role={selectedRole}
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+            onSubmit={handleSubmit}
+          />
+        )}
+
+        {sidebarMode === 'view' && selectedRole && (
+          <div className="space-y-6">
+            {/* Header Actions */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleEdit}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Edit Role
+              </button>
+            </div>
+
+            {/* Role Details */}
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Code</label>
+                    <p className="font-medium">
+                      <code className="px-2 py-1 bg-background rounded text-sm">{selectedRole.code}</code>
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Display Order</label>
+                    <p className="font-medium">{selectedRole.display_order}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-sm text-muted-foreground">Role Name</label>
+                    <p className="font-medium text-lg">{selectedRole.name}</p>
+                  </div>
+                  {selectedRole.description && (
+                    <div className="col-span-2">
+                      <label className="text-sm text-muted-foreground">Description</label>
+                      <p className="font-medium">{selectedRole.description}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm text-muted-foreground">College</label>
+                    <p className="font-medium">{selectedRole.college_name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Status</label>
+                    <Badge variant={selectedRole.is_active ? 'success' : 'destructive'}>
+                      {selectedRole.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Permissions */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Permissions</h3>
+                {selectedRole.permissions && Object.keys(selectedRole.permissions).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(selectedRole.permissions).map(([module, perms]: [string, any]) => (
+                      <div key={module} className="bg-background p-3 rounded-md">
+                        <h4 className="font-medium capitalize mb-2">{module}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(perms).map(([action, enabled]: [string, any]) => (
+                            enabled && (
+                              <Badge key={action} variant="outline" className="text-xs">
+                                {action}
+                              </Badge>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No permissions assigned</p>
+                )}
+              </div>
+
+              {/* Audit Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selectedRole.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selectedRole.updated_at).toLocaleString()}</p>
+                  </div>
+                  {selectedRole.created_by_name && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Created By</label>
+                      <p>{selectedRole.created_by_name}</p>
+                    </div>
+                  )}
+                  {selectedRole.updated_by_name && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Updated By</label>
+                      <p>{selectedRole.updated_by_name}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Raw Data */}
+              <details className="bg-muted/30 p-4 rounded-lg">
+                <summary className="cursor-pointer font-semibold mb-2 text-sm">
+                  Raw API Data
+                </summary>
+                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
+                  {JSON.stringify(selectedRole, null, 2)}
+                </pre>
+              </details>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Active Only</label>
-            <select
-              value={filters.is_active?.toString() || ''}
-              onChange={(e) => setFilters({ ...filters, is_active: e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined, page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value="">All</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Search</label>
-            <input
-              type="text"
-              value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              placeholder="Search roles..."
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Loading roles...</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-6">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {/* Data Display */}
-      {data && (
-        <>
-          {/* Summary */}
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p className="text-sm">
-              <strong>Total Count:</strong> {data.count} |{' '}
-              <strong>Page:</strong> {filters.page} |{' '}
-              <strong>Results on this page:</strong> {data.results.length}
-            </p>
-          </div>
-
-          {/* Raw API Response */}
-          <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded p-4">
-            <h3 className="text-lg font-semibold mb-3">Raw API Response</h3>
-            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-4 rounded overflow-x-auto">
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-6 flex justify-between items-center">
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}
-              disabled={!data.previous}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="text-sm">
-              Page {filters.page || 1}
-            </span>
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}
-              disabled={!data.next}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };
