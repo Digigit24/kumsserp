@@ -1,118 +1,179 @@
 /**
  * Activity Logs Page (Read-Only)
+ * View system activity logs and audit trail
  */
 
 import { useState } from 'react';
-import { useActivityLogs } from '../../hooks/useCore';
-import type { ActivityLogFilters } from '../../types/core.types';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { activityLogApi } from '../../services/core.service';
+import { useQuery } from '@tanstack/react-query';
 
-export const ActivityLogsPage = () => {
-  const [filters, setFilters] = useState<ActivityLogFilters>({ page: 1, page_size: 20, ordering: '-timestamp' });
-  const { data, isLoading, error, refetch } = useActivityLogs(filters);
+const ActivityLogsPage = () => {
+  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20, ordering: '-timestamp' });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['activity-logs', filters],
+    queryFn: () => activityLogApi.list(filters),
+  });
+
+  const { data: selected } = useQuery({
+    queryKey: ['activity-log', selectedId],
+    queryFn: () => selectedId ? activityLogApi.get(selectedId) : null,
+    enabled: !!selectedId,
+  });
+
+  const columns: Column<any>[] = [
+    {
+      key: 'timestamp',
+      label: 'Timestamp',
+      sortable: true,
+      render: (item) => <span className="text-sm">{new Date(item.timestamp).toLocaleString()}</span>,
+    },
+    {
+      key: 'action',
+      label: 'Action',
+      render: (item) => {
+        const actionColors: Record<string, string> = {
+          create: 'success',
+          read: 'outline',
+          update: 'default',
+          delete: 'destructive',
+          login: 'default',
+          logout: 'outline',
+        };
+        return <Badge variant={actionColors[item.action] as any}>{item.action_display}</Badge>;
+      },
+    },
+    {
+      key: 'model_name',
+      label: 'Model',
+      render: (item) => <span className="font-medium">{item.model_name}</span>,
+    },
+    {
+      key: 'user_name',
+      label: 'User',
+      render: (item) => <span className="text-sm text-muted-foreground">{item.user_name || 'System'}</span>,
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      render: (item) => (
+        <span className="text-sm truncate max-w-xs block">{item.description}</span>
+      ),
+    },
+  ];
+
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'action',
+      label: 'Action',
+      type: 'select',
+      options: [
+        { value: '', label: 'All Actions' },
+        { value: 'create', label: 'Create' },
+        { value: 'read', label: 'Read' },
+        { value: 'update', label: 'Update' },
+        { value: 'delete', label: 'Delete' },
+        { value: 'login', label: 'Login' },
+        { value: 'logout', label: 'Logout' },
+      ],
+    },
+  ];
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Activity Logs (Read-Only)</h1>
+      <DataTable
+        title="Activity Logs"
+        description="View system activity logs and audit trail (read-only)"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search logs..."
+      />
 
-      <div className="mb-6 flex gap-4">
-        <button onClick={() => refetch()} className="px-4 py-2 bg-gray-600 text-white rounded">
-          Refresh
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-        <h3 className="font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Action</label>
-            <select
-              value={filters.action || ''}
-              onChange={(e) => setFilters({ ...filters, action: e.target.value as any || undefined, page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value="">All Actions</option>
-              <option value="create">Create</option>
-              <option value="read">Read</option>
-              <option value="update">Update</option>
-              <option value="delete">Delete</option>
-              <option value="login">Login</option>
-              <option value="logout">Logout</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Model</label>
-            <input
-              type="text"
-              value={filters.model_name || ''}
-              onChange={(e) => setFilters({ ...filters, model_name: e.target.value || undefined, page: 1 })}
-              placeholder="e.g., College"
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Search</label>
-            <input
-              type="text"
-              value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              placeholder="Search..."
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-        </div>
-      </div>
-
-      {isLoading && <div>Loading...</div>}
-      {error && <div className="bg-red-100 p-4 rounded">{error}</div>}
-
-      {data && (
-        <>
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p><strong>Total:</strong> {data.count} activity logs</p>
-          </div>
-
-          <div className="space-y-4">
-            {data.results.map((log) => (
-              <div key={log.id} className="p-4 border rounded bg-white dark:bg-gray-800">
-                <div className="flex justify-between items-start mb-2">
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        title="Activity Log Details"
+        mode="view"
+        width="xl"
+      >
+        {selected && (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Log Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-muted-foreground">Action</label>
+                    <Badge>{selected.action_display}</Badge>
+                  </div>
                   <div>
-                    <h3 className="font-semibold">
-                      {log.action_display} - {log.model_name}
-                      {log.object_id && ` #${log.object_id}`}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {log.user_name || 'System'} | {new Date(log.timestamp).toLocaleString()}
-                    </p>
-                    <p className="text-sm">{log.description}</p>
+                    <label className="text-sm text-muted-foreground">Model</label>
+                    <p className="font-medium">{selected.model_name}</p>
+                  </div>
+                  {selected.object_id && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Object ID</label>
+                      <p className="font-medium">#{selected.object_id}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm text-muted-foreground">User</label>
+                    <p className="font-medium">{selected.user_name || 'System'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">College</label>
+                    <p className="font-medium">{selected.college_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Timestamp</label>
+                    <p className="font-medium">{new Date(selected.timestamp).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Description</label>
+                    <p className="text-sm">{selected.description}</p>
                   </div>
                 </div>
-                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded mt-2 overflow-x-auto max-h-64">
-                  {JSON.stringify(log, null, 2)}
-                </pre>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-6 flex justify-between">
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}
-              disabled={!data.previous}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span>Page {filters.page || 1}</span>
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}
-              disabled={!data.next}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+              {selected.metadata && Object.keys(selected.metadata).length > 0 && (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3">Metadata</h3>
+                  <pre className="text-xs bg-background p-4 rounded overflow-auto max-h-96 border">
+                    {JSON.stringify(selected.metadata, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <details className="bg-muted/30 p-4 rounded-lg">
+                <summary className="cursor-pointer font-semibold mb-2 text-sm">
+                  Raw API Data
+                </summary>
+                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
+                  {JSON.stringify(selected, null, 2)}
+                </pre>
+              </details>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-xs text-muted-foreground">
+                  Note: Activity logs are read-only and maintained for audit purposes. They cannot be modified or deleted.
+                </p>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };

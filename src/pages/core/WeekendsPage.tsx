@@ -1,45 +1,139 @@
 /**
- * Weekends Management Page
+ * Weekends Page - Configure weekend days for institution
  */
 
 import { useState } from 'react';
-import { useWeekends } from '../../hooks/useCore';
-import type { WeekendFilters } from '../../types/core.types';
+import { DataTable, Column } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { WeekendForm } from './components/WeekendForm';
+import { weekendApi } from '../../services/core.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const WeekendsPage = () => {
-  const [filters] = useState<WeekendFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useWeekends(filters);
+const WeekendsPage = () => {
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['weekends', filters],
+    queryFn: () => weekendApi.list(filters),
+  });
+
+  const { data: selected } = useQuery({
+    queryKey: ['weekend', selectedId],
+    queryFn: () => selectedId ? weekendApi.get(selectedId) : null,
+    enabled: !!selectedId,
+  });
+
+  const columns: Column<any>[] = [
+    {
+      key: 'day',
+      label: 'Day of Week',
+      sortable: true,
+      render: (item) => <span className="font-medium">{item.day_display}</span>,
+    },
+    {
+      key: 'college_name',
+      label: 'College',
+      render: (item) => <span className="text-sm text-muted-foreground">{item.college_name}</span>,
+    },
+  ];
+
+  const handleSubmit = async (formData: any) => {
+    if (sidebarMode === 'create') {
+      await weekendApi.create(formData);
+    } else if (selected) {
+      await weekendApi.update(selected.id, formData);
+    }
+  };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Weekends Configuration</h1>
+      <DataTable
+        title="Weekends Configuration"
+        description="Configure weekend days for your institution"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
+        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search weekends..."
+        addButtonLabel="Add Weekend"
+      />
 
-      <button onClick={() => refetch()} className="mb-6 px-4 py-2 bg-gray-600 text-white rounded">
-        Refresh
-      </button>
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        title={sidebarMode === 'create' ? 'Add Weekend Day' : sidebarMode === 'edit' ? 'Edit Weekend Day' : 'Weekend Details'}
+        mode={sidebarMode}
+        width="lg"
+      >
+        {sidebarMode === 'create' && (
+          <WeekendForm
+            mode="create"
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['weekends'] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {isLoading && <div>Loading...</div>}
-      {error && <div className="bg-red-100 p-4 rounded">{error}</div>}
+        {sidebarMode === 'edit' && selected && (
+          <WeekendForm
+            mode="edit"
+            weekend={selected}
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['weekends'] }); queryClient.invalidateQueries({ queryKey: ['weekend', selectedId] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {data && (
-        <>
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p><strong>Total:</strong> {data.count} weekend configurations</p>
-          </div>
+        {sidebarMode === 'view' && selected && (
+          <div className="space-y-6">
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                Edit
+              </button>
+            </div>
 
-          <div className="space-y-4">
-            {data.results.map((weekend) => (
-              <div key={weekend.id} className="p-4 border rounded bg-white dark:bg-gray-800">
-                <h3 className="font-semibold">{weekend.day_display} (Day {weekend.day})</h3>
-                <p className="text-sm text-gray-600">{weekend.college_name}</p>
-                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded mt-2 overflow-x-auto">
-                  {JSON.stringify(weekend, null, 2)}
-                </pre>
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Weekend Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Day of Week</label>
+                    <p className="font-medium text-lg">{selected.day_display}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">College</label>
+                    <p className="font-medium">{selected.college_name}</p>
+                  </div>
+                </div>
               </div>
-            ))}
+
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selected.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selected.updated_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };

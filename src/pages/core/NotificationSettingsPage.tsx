@@ -1,57 +1,259 @@
 /**
- * Notification Settings Page
+ * Notification Settings Page - Manage notification preferences
  */
 
 import { useState } from 'react';
-import { useNotificationSettings } from '../../hooks/useCore';
-import type { NotificationSettingFilters } from '../../types/core.types';
+import { DataTable, Column } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { notificationSettingApi } from '../../services/core.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const NotificationSettingsPage = () => {
-  const [filters] = useState<NotificationSettingFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useNotificationSettings(filters);
+const NotificationSettingsPage = () => {
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['notification-settings', filters],
+    queryFn: () => notificationSettingApi.list(filters),
+  });
+
+  const { data: selected } = useQuery({
+    queryKey: ['notification-setting', selectedId],
+    queryFn: () => selectedId ? notificationSettingApi.get(selectedId) : null,
+    enabled: !!selectedId,
+  });
+
+  const columns: Column<any>[] = [
+    {
+      key: 'college_name',
+      label: 'College',
+      sortable: true,
+      render: (item) => <span className="font-medium">{item.college_name}</span>,
+    },
+    {
+      key: 'sms_enabled',
+      label: 'SMS',
+      render: (item) => (
+        <Badge variant={item.sms_enabled ? 'success' : 'outline'}>
+          {item.sms_enabled ? 'Enabled' : 'Disabled'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'email_enabled',
+      label: 'Email',
+      render: (item) => (
+        <Badge variant={item.email_enabled ? 'success' : 'outline'}>
+          {item.email_enabled ? 'Enabled' : 'Disabled'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'whatsapp_enabled',
+      label: 'WhatsApp',
+      render: (item) => (
+        <Badge variant={item.whatsapp_enabled ? 'success' : 'outline'}>
+          {item.whatsapp_enabled ? 'Enabled' : 'Disabled'}
+        </Badge>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Notification Settings</h1>
+      <DataTable
+        title="Notification Settings"
+        description="Manage notification preferences for SMS, Email, and WhatsApp"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search settings..."
+      />
 
-      <button onClick={() => refetch()} className="mb-6 px-4 py-2 bg-gray-600 text-white rounded">
-        Refresh
-      </button>
-
-      {isLoading && <div>Loading...</div>}
-      {error && <div className="bg-red-100 p-4 rounded">{error}</div>}
-
-      {data && (
-        <>
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p><strong>Total:</strong> {data.count} notification settings</p>
-          </div>
-
-          <div className="space-y-4">
-            {data.results.map((setting) => (
-              <div key={setting.id} className="p-4 border rounded bg-white dark:bg-gray-800">
-                <h3 className="font-semibold mb-2">{setting.college_name} - Notifications</h3>
-                <div className="mb-3 space-y-1">
-                  <p className="text-sm">
-                    <strong>SMS:</strong> {setting.sms_enabled ? 'Enabled' : 'Disabled'}
-                    {setting.sms_enabled && ` (${setting.sms_gateway})`}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Email:</strong> {setting.email_enabled ? 'Enabled' : 'Disabled'}
-                    {setting.email_enabled && ` (${setting.email_gateway})`}
-                  </p>
-                  <p className="text-sm">
-                    <strong>WhatsApp:</strong> {setting.whatsapp_enabled ? 'Enabled' : 'Disabled'}
-                  </p>
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        title="Notification Settings"
+        mode="view"
+        width="xl"
+      >
+        {selected && (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">College Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">College</label>
+                    <p className="font-medium">{selected.college_name}</p>
+                  </div>
                 </div>
-                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded overflow-x-auto max-h-96">
-                  {JSON.stringify(setting, null, 2)}
-                </pre>
               </div>
-            ))}
+
+              {/* SMS Settings */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">SMS Settings</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">SMS Enabled</span>
+                    <Badge variant={selected.sms_enabled ? 'success' : 'outline'}>
+                      {selected.sms_enabled ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                  {selected.sms_enabled && (
+                    <>
+                      <div>
+                        <label className="text-sm text-muted-foreground">SMS Gateway</label>
+                        <p className="font-medium">{selected.sms_gateway || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">API Key</label>
+                        <p className="font-mono text-xs">{selected.sms_api_key ? '••••••••' : 'Not set'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Sender ID</label>
+                        <p className="font-medium">{selected.sms_sender_id || 'Not set'}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Email Settings */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Email Settings</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Email Enabled</span>
+                    <Badge variant={selected.email_enabled ? 'success' : 'outline'}>
+                      {selected.email_enabled ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                  {selected.email_enabled && (
+                    <>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Email Gateway</label>
+                        <p className="font-medium">{selected.email_gateway || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">From Email</label>
+                        <p className="font-medium">{selected.email_from || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">From Name</label>
+                        <p className="font-medium">{selected.email_from_name || 'Not set'}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* WhatsApp Settings */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">WhatsApp Settings</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">WhatsApp Enabled</span>
+                    <Badge variant={selected.whatsapp_enabled ? 'success' : 'outline'}>
+                      {selected.whatsapp_enabled ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                  {selected.whatsapp_enabled && (
+                    <>
+                      <div>
+                        <label className="text-sm text-muted-foreground">API Key</label>
+                        <p className="font-mono text-xs">{selected.whatsapp_api_key ? '••••••••' : 'Not set'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Phone Number</label>
+                        <p className="font-medium">{selected.whatsapp_phone_number || 'Not set'}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Notification Preferences */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Notification Preferences</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Admission Notifications</span>
+                    <Badge variant={selected.notify_admission ? 'success' : 'outline'}>
+                      {selected.notify_admission ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Fee Notifications</span>
+                    <Badge variant={selected.notify_fees ? 'success' : 'outline'}>
+                      {selected.notify_fees ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Attendance Notifications</span>
+                    <Badge variant={selected.notify_attendance ? 'success' : 'outline'}>
+                      {selected.notify_attendance ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Exam Notifications</span>
+                    <Badge variant={selected.notify_exam ? 'success' : 'outline'}>
+                      {selected.notify_exam ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Result Notifications</span>
+                    <Badge variant={selected.notify_result ? 'success' : 'outline'}>
+                      {selected.notify_result ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Event Notifications</span>
+                    <Badge variant={selected.notify_event ? 'success' : 'outline'}>
+                      {selected.notify_event ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selected.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selected.updated_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              <details className="bg-muted/30 p-4 rounded-lg">
+                <summary className="cursor-pointer font-semibold mb-2 text-sm">
+                  Raw API Data
+                </summary>
+                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
+                  {JSON.stringify(selected, null, 2)}
+                </pre>
+              </details>
+
+              <p className="text-xs text-muted-foreground p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
+                Note: Notification settings editing interface coming soon. For now, settings can be modified via API.
+              </p>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };

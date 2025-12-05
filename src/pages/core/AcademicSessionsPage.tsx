@@ -1,144 +1,204 @@
 /**
- * Academic Sessions Management Page
+ * Academic Sessions Page - Manage academic sessions/semesters
  */
 
 import { useState } from 'react';
-import { useAcademicSessions, useCreateAcademicSession } from '../../hooks/useCore';
-import type { AcademicSessionFilters, AcademicSessionCreateInput } from '../../types/core.types';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { AcademicSessionForm } from './components/AcademicSessionForm';
+import { academicSessionApi } from '../../services/core.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const AcademicSessionsPage = () => {
-  const [filters, setFilters] = useState<AcademicSessionFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useAcademicSessions(filters);
-  const createSession = useCreateAcademicSession();
+const AcademicSessionsPage = () => {
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleCreate = async () => {
-    const newSession: AcademicSessionCreateInput = {
-      college: 1,
-      academic_year: 1,
-      name: 'Fall Semester 2025',
-      semester: 1,
-      start_date: '2025-08-01',
-      end_date: '2025-12-20',
-      is_current: false,
-    };
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['academic-sessions', filters],
+    queryFn: () => academicSessionApi.list(filters),
+  });
 
-    try {
-      await createSession.mutate(newSession);
-      refetch();
-      alert('Session created successfully!');
-    } catch (err) {
-      alert('Failed to create session');
+  const { data: selected } = useQuery({
+    queryKey: ['academic-session', selectedId],
+    queryFn: () => selectedId ? academicSessionApi.get(selectedId) : null,
+    enabled: !!selectedId,
+  });
+
+  const columns: Column<any>[] = [
+    {
+      key: 'name',
+      label: 'Session Name',
+      sortable: true,
+      render: (item) => <span className="font-medium">{item.name}</span>,
+    },
+    {
+      key: 'academic_year_name',
+      label: 'Academic Year',
+      render: (item) => <span className="text-sm">{item.academic_year_name}</span>,
+    },
+    {
+      key: 'semester',
+      label: 'Semester',
+      render: (item) => <Badge variant="outline">Semester {item.semester}</Badge>,
+    },
+    {
+      key: 'start_date',
+      label: 'Duration',
+      render: (item) => (
+        <span className="text-sm">{new Date(item.start_date).toLocaleDateString()} - {new Date(item.end_date).toLocaleDateString()}</span>
+      ),
+    },
+    {
+      key: 'is_current',
+      label: 'Current',
+      render: (item) => item.is_current ? <Badge variant="default">Current</Badge> : <Badge variant="outline">Past/Future</Badge>,
+    },
+  ];
+
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'semester',
+      label: 'Semester',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: '1', label: 'Semester 1' },
+        { value: '2', label: 'Semester 2' },
+        { value: '3', label: 'Semester 3' },
+        { value: '4', label: 'Semester 4' },
+        { value: '5', label: 'Semester 5' },
+        { value: '6', label: 'Semester 6' },
+        { value: '7', label: 'Semester 7' },
+        { value: '8', label: 'Semester 8' },
+      ],
+    },
+    {
+      name: 'is_current',
+      label: 'Current',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Current' },
+        { value: 'false', label: 'Past/Future' },
+      ],
+    },
+  ];
+
+  const handleSubmit = async (formData: any) => {
+    if (sidebarMode === 'create') {
+      await academicSessionApi.create(formData);
+    } else if (selected) {
+      await academicSessionApi.update(selected.id, formData);
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Academic Sessions</h1>
+      <DataTable
+        title="Academic Sessions"
+        description="Manage academic sessions and semesters for your institution"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
+        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search sessions..."
+        addButtonLabel="Add Session"
+      />
 
-      <div className="mb-6 flex gap-4">
-        <button
-          onClick={handleCreate}
-          disabled={createSession.isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {createSession.isLoading ? 'Creating...' : 'Create Test Session'}
-        </button>
-        <button
-          onClick={() => refetch()}
-          disabled={isLoading}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Refresh
-        </button>
-      </div>
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        title={sidebarMode === 'create' ? 'Add New Session' : sidebarMode === 'edit' ? 'Edit Session' : selected?.name || 'Session Details'}
+        mode={sidebarMode}
+        width="lg"
+      >
+        {sidebarMode === 'create' && (
+          <AcademicSessionForm
+            mode="create"
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['academic-sessions'] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {/* Filters */}
-      <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-        <h3 className="font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Page Size</label>
-            <select
-              value={filters.page_size}
-              onChange={(e) => setFilters({ ...filters, page_size: Number(e.target.value), page: 1 })}
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Semester</label>
-            <input
-              type="number"
-              min="1"
-              max="8"
-              value={filters.semester || ''}
-              onChange={(e) => setFilters({ ...filters, semester: e.target.value ? Number(e.target.value) : undefined, page: 1 })}
-              placeholder="1-8"
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Search</label>
-            <input
-              type="text"
-              value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              placeholder="Search..."
-              className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-        </div>
-      </div>
+        {sidebarMode === 'edit' && selected && (
+          <AcademicSessionForm
+            mode="edit"
+            academicSession={selected}
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['academic-sessions'] }); queryClient.invalidateQueries({ queryKey: ['academic-session', selectedId] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {isLoading && <div className="text-center py-8">Loading...</div>}
-      {error && (
-        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
+        {sidebarMode === 'view' && selected && (
+          <div className="space-y-6">
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                Edit
+              </button>
+            </div>
 
-      {data && (
-        <>
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p><strong>Total:</strong> {data.count} sessions</p>
-          </div>
-
-          <div className="space-y-4">
-            {data.results.map((session) => (
-              <div key={session.id} className="p-4 border rounded dark:border-gray-700 bg-white dark:bg-gray-800">
-                <h3 className="text-lg font-semibold mb-2">
-                  {session.name} - Semester {session.semester}
-                  {session.is_current && <span className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded">CURRENT</span>}
-                </h3>
-                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded overflow-x-auto">
-                  {JSON.stringify(session, null, 2)}
-                </pre>
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Session Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Session Name</label>
+                    <p className="font-medium text-lg">{selected.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Academic Year</label>
+                    <p className="font-medium">{selected.academic_year_name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Semester</label>
+                    <p className="font-medium">Semester {selected.semester}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">Start Date</label>
+                      <p className="font-medium">{new Date(selected.start_date).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">End Date</label>
+                      <p className="font-medium">{new Date(selected.end_date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Current:</span>
+                    {selected.is_current ? <Badge variant="default">Yes</Badge> : <Badge variant="outline">No</Badge>}
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-6 flex justify-between">
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}
-              disabled={!data.previous}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span>Page {filters.page || 1}</span>
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}
-              disabled={!data.next}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selected.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selected.updated_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };

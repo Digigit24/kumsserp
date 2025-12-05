@@ -1,89 +1,181 @@
 /**
- * Holidays Management Page
+ * Holidays Page - Manage holidays and special dates
  */
 
 import { useState } from 'react';
-import { useHolidays, useCreateHoliday } from '../../hooks/useCore';
-import type { HolidayFilters, HolidayCreateInput } from '../../types/core.types';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { HolidayForm } from './components/HolidayForm';
+import { holidayApi } from '../../services/core.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const HolidaysPage = () => {
-  const [filters, setFilters] = useState<HolidayFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useHolidays(filters);
-  const createHoliday = useCreateHoliday();
+const HolidaysPage = () => {
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleCreate = async () => {
-    const newHoliday: HolidayCreateInput = {
-      college: 1,
-      name: 'Test Holiday',
-      date: '2025-12-25',
-      holiday_type: 'festival',
-      description: 'Test holiday description',
-    };
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['holidays', filters],
+    queryFn: () => holidayApi.list(filters),
+  });
 
-    try {
-      await createHoliday.mutate(newHoliday);
-      refetch();
-      alert('Holiday created!');
-    } catch (err) {
-      alert('Failed to create holiday');
+  const { data: selected } = useQuery({
+    queryKey: ['holiday', selectedId],
+    queryFn: () => selectedId ? holidayApi.get(selectedId) : null,
+    enabled: !!selectedId,
+  });
+
+  const columns: Column<any>[] = [
+    {
+      key: 'name',
+      label: 'Holiday Name',
+      sortable: true,
+      render: (item) => <span className="font-medium">{item.name}</span>,
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      sortable: true,
+      render: (item) => <span className="text-sm">{new Date(item.date).toLocaleDateString()}</span>,
+    },
+    {
+      key: 'holiday_type',
+      label: 'Type',
+      render: (item) => {
+        const typeColors: Record<string, string> = {
+          national: 'default',
+          festival: 'success',
+          college: 'outline',
+          exam: 'destructive',
+        };
+        return <Badge variant={typeColors[item.holiday_type] as any}>{item.holiday_type_display}</Badge>;
+      },
+    },
+  ];
+
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'holiday_type',
+      label: 'Holiday Type',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'national', label: 'National Holiday' },
+        { value: 'festival', label: 'Festival' },
+        { value: 'college', label: 'College Holiday' },
+        { value: 'exam', label: 'Exam Holiday' },
+      ],
+    },
+  ];
+
+  const handleSubmit = async (formData: any) => {
+    if (sidebarMode === 'create') {
+      await holidayApi.create(formData);
+    } else if (selected) {
+      await holidayApi.update(selected.id, formData);
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Holidays</h1>
+      <DataTable
+        title="Holidays"
+        description="Manage holidays and special dates for your institution"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error as string}
+        onRefresh={refetch}
+        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
+        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search holidays..."
+        addButtonLabel="Add Holiday"
+      />
 
-      <div className="mb-6 flex gap-4">
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create Test Holiday
-        </button>
-        <button onClick={() => refetch()} className="px-4 py-2 bg-gray-600 text-white rounded">
-          Refresh
-        </button>
-      </div>
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        title={sidebarMode === 'create' ? 'Add New Holiday' : sidebarMode === 'edit' ? 'Edit Holiday' : selected?.name || 'Holiday Details'}
+        mode={sidebarMode}
+        width="lg"
+      >
+        {sidebarMode === 'create' && (
+          <HolidayForm
+            mode="create"
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['holidays'] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {isLoading && <div>Loading...</div>}
-      {error && <div className="bg-red-100 p-4 rounded">{error}</div>}
+        {sidebarMode === 'edit' && selected && (
+          <HolidayForm
+            mode="edit"
+            holiday={selected}
+            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['holidays'] }); queryClient.invalidateQueries({ queryKey: ['holiday', selectedId] }); setIsSidebarOpen(false); }}
+            onCancel={() => setIsSidebarOpen(false)}
+            onSubmit={handleSubmit}
+          />
+        )}
 
-      {data && (
-        <>
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-            <p><strong>Total:</strong> {data.count} holidays</p>
-          </div>
+        {sidebarMode === 'view' && selected && (
+          <div className="space-y-6">
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                Edit
+              </button>
+            </div>
 
-          <div className="space-y-4">
-            {data.results.map((holiday) => (
-              <div key={holiday.id} className="p-4 border rounded bg-white dark:bg-gray-800">
-                <h3 className="font-semibold">{holiday.name} - {holiday.date}</h3>
-                <p className="text-sm text-gray-600">{holiday.holiday_type_display}</p>
-                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded mt-2 overflow-x-auto">
-                  {JSON.stringify(holiday, null, 2)}
-                </pre>
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Holiday Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Holiday Name</label>
+                    <p className="font-medium text-lg">{selected.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Date</label>
+                    <p className="font-medium">{new Date(selected.date).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Type</label>
+                    <div className="mt-1">
+                      <Badge>{selected.holiday_type_display}</Badge>
+                    </div>
+                  </div>
+                  {selected.description && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Description</label>
+                      <p className="text-sm">{selected.description}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-6 flex justify-between">
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}
-              disabled={!data.previous}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}
-              disabled={!data.next}
-              className="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selected.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selected.updated_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };
