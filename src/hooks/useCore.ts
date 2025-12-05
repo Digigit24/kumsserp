@@ -1,0 +1,643 @@
+/**
+ * Custom React Hooks for Core Module
+ * Manages state and API calls for all Core entities
+ */
+
+import { useState, useEffect } from 'react';
+import {
+  collegeApi,
+  academicYearApi,
+  academicSessionApi,
+  holidayApi,
+  weekendApi,
+  systemSettingApi,
+  notificationSettingApi,
+  activityLogApi,
+} from '../services/core.service';
+import type {
+  College,
+  CollegeListItem,
+  CollegeCreateInput,
+  CollegeUpdateInput,
+  CollegeFilters,
+  AcademicYear,
+  AcademicYearCreateInput,
+  AcademicYearUpdateInput,
+  AcademicYearFilters,
+  AcademicSession,
+  AcademicSessionCreateInput,
+  AcademicSessionFilters,
+  Holiday,
+  HolidayCreateInput,
+  HolidayFilters,
+  Weekend,
+  WeekendFilters,
+  SystemSetting,
+  SystemSettingFilters,
+  NotificationSetting,
+  NotificationSettingFilters,
+  ActivityLog,
+  ActivityLogFilters,
+  PaginatedResponse,
+} from '../types/core.types';
+
+// ============================================================================
+// BASE HOOK TYPE
+// ============================================================================
+
+interface UseQueryResult<T> {
+  data: T | null;
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+interface UseMutationResult<TData, TInput> {
+  mutate: (input: TInput) => Promise<TData | null>;
+  isLoading: boolean;
+  error: string | null;
+  data: TData | null;
+}
+
+// ============================================================================
+// COLLEGE HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch colleges list
+ */
+export const useColleges = (filters?: CollegeFilters): UseQueryResult<PaginatedResponse<CollegeListItem>> => {
+  const [data, setData] = useState<PaginatedResponse<CollegeListItem> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await collegeApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch colleges');
+      console.error('Fetch colleges error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to fetch a single college
+ */
+export const useCollege = (id: number | null): UseQueryResult<College> => {
+  const [data, setData] = useState<College | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await collegeApi.get(id);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch college');
+      console.error('Fetch college error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [id]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to create a college
+ */
+export const useCreateCollege = (): UseMutationResult<College, CollegeCreateInput> => {
+  const [data, setData] = useState<College | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: CollegeCreateInput): Promise<College | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await collegeApi.create(input);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create college';
+      setError(errorMessage);
+      console.error('Create college error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+/**
+ * Hook to update a college
+ */
+export const useUpdateCollege = (): UseMutationResult<College, { id: number; data: CollegeUpdateInput }> => {
+  const [data, setData] = useState<College | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: { id: number; data: CollegeUpdateInput }): Promise<College | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await collegeApi.patch(input.id, input.data);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to update college';
+      setError(errorMessage);
+      console.error('Update college error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+/**
+ * Hook to delete a college
+ */
+export const useDeleteCollege = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await collegeApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete college';
+      setError(errorMessage);
+      console.error('Delete college error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+// ============================================================================
+// ACADEMIC YEAR HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch academic years list
+ */
+export const useAcademicYears = (filters?: AcademicYearFilters): UseQueryResult<PaginatedResponse<AcademicYear>> => {
+  const [data, setData] = useState<PaginatedResponse<AcademicYear> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicYearApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch academic years');
+      console.error('Fetch academic years error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to fetch a single academic year
+ */
+export const useAcademicYear = (id: number | null): UseQueryResult<AcademicYear> => {
+  const [data, setData] = useState<AcademicYear | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicYearApi.get(id);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch academic year');
+      console.error('Fetch academic year error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [id]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to fetch current academic year
+ */
+export const useCurrentAcademicYear = (): UseQueryResult<AcademicYear> => {
+  const [data, setData] = useState<AcademicYear | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicYearApi.getCurrent();
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'No current academic year found');
+      console.error('Fetch current academic year error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to create an academic year
+ */
+export const useCreateAcademicYear = (): UseMutationResult<AcademicYear, AcademicYearCreateInput> => {
+  const [data, setData] = useState<AcademicYear | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: AcademicYearCreateInput): Promise<AcademicYear | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicYearApi.create(input);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create academic year';
+      setError(errorMessage);
+      console.error('Create academic year error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+/**
+ * Hook to update an academic year
+ */
+export const useUpdateAcademicYear = (): UseMutationResult<AcademicYear, { id: number; data: AcademicYearUpdateInput }> => {
+  const [data, setData] = useState<AcademicYear | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: { id: number; data: AcademicYearUpdateInput }): Promise<AcademicYear | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicYearApi.patch(input.id, input.data);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to update academic year';
+      setError(errorMessage);
+      console.error('Update academic year error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+/**
+ * Hook to delete an academic year
+ */
+export const useDeleteAcademicYear = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await academicYearApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete academic year';
+      setError(errorMessage);
+      console.error('Delete academic year error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+// ============================================================================
+// ACADEMIC SESSION HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch academic sessions list
+ */
+export const useAcademicSessions = (filters?: AcademicSessionFilters): UseQueryResult<PaginatedResponse<AcademicSession>> => {
+  const [data, setData] = useState<PaginatedResponse<AcademicSession> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicSessionApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch academic sessions');
+      console.error('Fetch academic sessions error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to create an academic session
+ */
+export const useCreateAcademicSession = (): UseMutationResult<AcademicSession, AcademicSessionCreateInput> => {
+  const [data, setData] = useState<AcademicSession | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: AcademicSessionCreateInput): Promise<AcademicSession | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await academicSessionApi.create(input);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create academic session';
+      setError(errorMessage);
+      console.error('Create academic session error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+// ============================================================================
+// HOLIDAY HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch holidays list
+ */
+export const useHolidays = (filters?: HolidayFilters): UseQueryResult<PaginatedResponse<Holiday>> => {
+  const [data, setData] = useState<PaginatedResponse<Holiday> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await holidayApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch holidays');
+      console.error('Fetch holidays error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+/**
+ * Hook to create a holiday
+ */
+export const useCreateHoliday = (): UseMutationResult<Holiday, HolidayCreateInput> => {
+  const [data, setData] = useState<Holiday | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: HolidayCreateInput): Promise<Holiday | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await holidayApi.create(input);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create holiday';
+      setError(errorMessage);
+      console.error('Create holiday error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+// ============================================================================
+// WEEKEND HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch weekends list
+ */
+export const useWeekends = (filters?: WeekendFilters): UseQueryResult<PaginatedResponse<Weekend>> => {
+  const [data, setData] = useState<PaginatedResponse<Weekend> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await weekendApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch weekends');
+      console.error('Fetch weekends error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+// ============================================================================
+// SYSTEM SETTING HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch system settings list
+ */
+export const useSystemSettings = (filters?: SystemSettingFilters): UseQueryResult<PaginatedResponse<SystemSetting>> => {
+  const [data, setData] = useState<PaginatedResponse<SystemSetting> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await systemSettingApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch system settings');
+      console.error('Fetch system settings error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+// ============================================================================
+// NOTIFICATION SETTING HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch notification settings list
+ */
+export const useNotificationSettings = (filters?: NotificationSettingFilters): UseQueryResult<PaginatedResponse<NotificationSetting>> => {
+  const [data, setData] = useState<PaginatedResponse<NotificationSetting> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await notificationSettingApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch notification settings');
+      console.error('Fetch notification settings error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+// ============================================================================
+// ACTIVITY LOG HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch activity logs list
+ */
+export const useActivityLogs = (filters?: ActivityLogFilters): UseQueryResult<PaginatedResponse<ActivityLog>> => {
+  const [data, setData] = useState<PaginatedResponse<ActivityLog> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await activityLogApi.list(filters);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch activity logs');
+      console.error('Fetch activity logs error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(filters)]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
