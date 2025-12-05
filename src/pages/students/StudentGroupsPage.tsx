@@ -1,54 +1,226 @@
 /**
  * Student Groups Page
- * Displays all student groups from API
+ * Manage student groups (Morning Batch, Evening Batch, etc.)
  */
 
 import { useState } from 'react';
-import { useStudentGroups } from '../../hooks/useStudents';
-import type { StudentGroupFilters } from '../../types/students.types';
+import { useStudentGroups, useStudentGroup } from '../../hooks/useStudents';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { StudentGroupForm } from './components/StudentGroupForm';
+import type { StudentGroupListItem, StudentGroupFilters, StudentGroup } from '../../types/students.types';
 
 export const StudentGroupsPage = () => {
   const [filters, setFilters] = useState<StudentGroupFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentGroups(filters);
 
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { data: selectedGroup } = useStudentGroup(selectedGroupId);
+
+  // Define table columns
+  const columns: Column<StudentGroupListItem>[] = [
+    {
+      key: 'name',
+      label: 'Group Name',
+      sortable: true,
+      render: (group) => (
+        <span className="font-medium">{group.name}</span>
+      ),
+    },
+    {
+      key: 'college_name',
+      label: 'College',
+      render: (group) => (
+        <span className="text-sm text-muted-foreground">{group.college_name}</span>
+      ),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (group) => (
+        <Badge variant={group.is_active ? 'success' : 'destructive'}>
+          {group.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'is_active',
+      label: 'Active Status',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+  ];
+
+  const handleRowClick = (group: StudentGroupListItem) => {
+    setSelectedGroupId(group.id);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedGroupId(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedGroupId(null);
+  };
+
+  const handleFormSuccess = () => {
+    refetch();
+    handleCloseSidebar();
+  };
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Student Groups</h1>
-        <p className="text-gray-600">List of all student groups (Morning Batch, Evening Batch, etc.)</p>
-      </div>
+      <DataTable
+        title="Student Groups"
+        description="Manage student groups such as Morning Batch, Evening Batch, Hostel Students, etc."
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onAdd={handleAdd}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search groups by name..."
+        addButtonLabel="Add Group"
+      />
 
-      <div className="mb-4 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Refresh
-        </button>
-      </div>
+      {/* Detail/Create/Edit Sidebar */}
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={
+          sidebarMode === 'create'
+            ? 'Add New Group'
+            : sidebarMode === 'edit'
+            ? 'Edit Group'
+            : selectedGroup?.name || 'Group Details'
+        }
+        mode={sidebarMode}
+        width="lg"
+      >
+        {sidebarMode === 'create' && (
+          <StudentGroupForm
+            mode="create"
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+          />
+        )}
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-lg">Loading student groups...</p>
-        </div>
-      )}
+        {sidebarMode === 'edit' && selectedGroup && (
+          <StudentGroupForm
+            mode="edit"
+            group={selectedGroup}
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+          />
+        )}
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-          <p className="text-red-800">Error: {error}</p>
-        </div>
-      )}
+        {sidebarMode === 'view' && selectedGroup && (
+          <div className="space-y-6">
+            {/* Header Actions */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleEdit}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Edit Group
+              </button>
+            </div>
 
-      {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
+            {/* Group Details */}
+            <div className="space-y-6">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Basic Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Group Name</label>
+                    <p className="font-medium text-lg">{selectedGroup.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">College</label>
+                    <p className="font-medium">{selectedGroup.college_name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Status</label>
+                    <div className="mt-1">
+                      <Badge variant={selectedGroup.is_active ? 'success' : 'destructive'}>
+                        {selectedGroup.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {selectedGroup.description && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Description</label>
+                      <p className="text-sm">{selectedGroup.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Audit Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3">Audit Information</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Created At</label>
+                    <p>{new Date(selectedGroup.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Updated At</label>
+                    <p>{new Date(selectedGroup.updated_at).toLocaleString()}</p>
+                  </div>
+                  {selectedGroup.created_by && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Created By</label>
+                      <p>{selectedGroup.created_by.full_name || selectedGroup.created_by.username}</p>
+                    </div>
+                  )}
+                  {selectedGroup.updated_by && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Updated By</label>
+                      <p>{selectedGroup.updated_by.full_name || selectedGroup.updated_by.username}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Raw Data */}
+              <details className="bg-muted/30 p-4 rounded-lg">
+                <summary className="cursor-pointer font-semibold mb-2 text-sm">
+                  Raw API Data
+                </summary>
+                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
+                  {JSON.stringify(selectedGroup, null, 2)}
+                </pre>
+              </details>
+            </div>
           </div>
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+        )}
+      </DetailSidebar>
     </div>
   );
 };

@@ -6,9 +6,6 @@
 // Base API URL - Development
 export const API_BASE_URL = 'http://127.0.0.1:8000';
 
-// Tenant ID - Required for all API requests
-export const TENANT_ID = 'all';
-
 /**
  * API Endpoints
  */
@@ -401,12 +398,43 @@ export const API_ENDPOINTS = {
 };
 
 /**
+ * Get the College ID for X-College-ID header
+ * Returns 'all' for super_admin users, otherwise returns the user's college ID
+ */
+const getCollegeId = (): string => {
+  try {
+    const storedUser = localStorage.getItem('kumss_user');
+    if (!storedUser) {
+      return 'all'; // Default to 'all' if no user is stored
+    }
+
+    const user = JSON.parse(storedUser);
+
+    // If user_type is super_admin, return 'all'
+    if (user.userType === 'super_admin' || user.user_type === 'super_admin') {
+      return 'all';
+    }
+
+    // Otherwise, return the user's college ID if available
+    if (user.college) {
+      return String(user.college);
+    }
+
+    // Default to 'all' if college is not set
+    return 'all';
+  } catch (error) {
+    console.error('Error parsing user data for college ID:', error);
+    return 'all';
+  }
+};
+
+/**
  * Default Headers for API requests
  */
 export const getDefaultHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-College-ID': TENANT_ID,
+    'X-College-ID': getCollegeId(),
   };
 
   // Add Authorization header if token exists

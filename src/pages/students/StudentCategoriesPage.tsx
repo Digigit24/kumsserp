@@ -8,6 +8,7 @@ import { useStudentCategories, useStudentCategory } from '../../hooks/useStudent
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { StudentCategoryForm } from './components/StudentCategoryForm';
 import type { StudentCategoryListItem, StudentCategoryFilters, StudentCategory } from '../../types/students.types';
 
 export const StudentCategoriesPage = () => {
@@ -94,6 +95,11 @@ export const StudentCategoriesPage = () => {
     setSelectedCategoryId(null);
   };
 
+  const handleFormSuccess = () => {
+    refetch();
+    handleCloseSidebar();
+  };
+
   return (
     <div className="p-6">
       <DataTable
@@ -128,15 +134,20 @@ export const StudentCategoriesPage = () => {
         width="lg"
       >
         {sidebarMode === 'create' && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Create Category Form Coming Soon...</p>
-          </div>
+          <StudentCategoryForm
+            mode="create"
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+          />
         )}
 
-        {sidebarMode === 'edit' && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Edit Category Form Coming Soon...</p>
-          </div>
+        {sidebarMode === 'edit' && selectedCategory && (
+          <StudentCategoryForm
+            mode="edit"
+            category={selectedCategory}
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseSidebar}
+          />
         )}
 
         {sidebarMode === 'view' && selectedCategory && (

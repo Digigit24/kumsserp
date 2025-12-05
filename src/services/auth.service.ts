@@ -23,6 +23,45 @@ export const getAuthToken = (): string | null => {
 };
 
 /**
+ * Fetch full user details from /api/v1/accounts/users/me/
+ */
+const fetchUserDetails = async (): Promise<User> => {
+  const headers = new Headers();
+  const defaultHeaders = getDefaultHeaders();
+  Object.entries(defaultHeaders).forEach(([key, value]) => {
+    headers.set(key, value);
+  });
+
+  const response = await fetch(buildApiUrl(API_ENDPOINTS.users.me), {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user details');
+  }
+
+  const userData = await response.json();
+
+  return {
+    id: userData.id,
+    username: userData.username,
+    email: userData.email,
+    firstName: userData.first_name,
+    lastName: userData.last_name,
+    fullName: userData.full_name,
+    isStaff: userData.is_staff,
+    isSuperuser: userData.is_superuser,
+    isActive: userData.is_active,
+    userType: userData.user_type,
+    college: userData.college,
+    dateJoined: userData.date_joined || userData.created_at,
+    lastLogin: userData.last_login,
+  };
+};
+
+/**
  * Login user with credentials
  */
 export const loginUser = async (credentials: LoginCredentials): Promise<LoginResponse> => {
@@ -64,18 +103,28 @@ export const loginUser = async (credentials: LoginCredentials): Promise<LoginRes
       console.warn('[loginUser] No token (key) in response! Using session auth?');
     }
 
-    // Extract user info from response
-    const user: User = data.user || {
-      id: data.id || 0,
-      username: credentials.username,
-      email: data.email || '',
-      firstName: data.first_name || data.firstName,
-      lastName: data.last_name || data.lastName,
-      fullName: data.full_name || data.fullName,
-      isStaff: data.is_staff || data.isStaff,
-      isSuperuser: data.is_superuser || data.isSuperuser,
-      isActive: data.is_active !== undefined ? data.is_active : true,
-    };
+    // Fetch full user details from /api/v1/accounts/users/me/
+    let user: User;
+    try {
+      user = await fetchUserDetails();
+      console.log('[loginUser] User details fetched:', user);
+    } catch (error) {
+      console.warn('[loginUser] Failed to fetch user details, using login response data');
+      // Fallback to login response data
+      user = data.user || {
+        id: data.id || 0,
+        username: credentials.username,
+        email: data.email || '',
+        firstName: data.first_name || data.firstName,
+        lastName: data.last_name || data.lastName,
+        fullName: data.full_name || data.fullName,
+        isStaff: data.is_staff || data.isStaff,
+        isSuperuser: data.is_superuser || data.isSuperuser,
+        isActive: data.is_active !== undefined ? data.is_active : true,
+        userType: data.user_type,
+        college: data.college,
+      };
+    }
 
     // Store auth state in localStorage
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));

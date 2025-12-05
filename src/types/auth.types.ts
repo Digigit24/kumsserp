@@ -6,7 +6,7 @@
  * User interface representing authenticated user data
  */
 export interface User {
-  id: number;
+  id: string | number;
   username: string;
   email: string;
   firstName?: string;
@@ -17,6 +17,8 @@ export interface User {
   isActive?: boolean;
   dateJoined?: string;
   lastLogin?: string;
+  userType?: string; // super_admin, college_admin, teacher, student, etc.
+  college?: number | null; // College ID for non-super_admin users
 }
 
 /**
