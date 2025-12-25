@@ -137,10 +137,10 @@ const DepartmentsPage = () => {
       <DataTable
         title="Departments"
         description="Manage departments in the system"
-        data={data}
+        data={data ?? null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error ? error.message : null}
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}
@@ -159,8 +159,8 @@ const DepartmentsPage = () => {
           sidebarMode === 'create'
             ? 'Add New Department'
             : sidebarMode === 'edit'
-            ? 'Edit Department'
-            : selectedDept?.name || 'Department Details'
+              ? 'Edit Department'
+              : selectedDept?.name || 'Department Details'
         }
         mode={sidebarMode}
         width="xl"

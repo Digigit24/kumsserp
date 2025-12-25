@@ -389,6 +389,7 @@ export interface AcademicYearFilters {
   page?: number;
   page_size?: number;
   is_current?: boolean;
+  college?: number;
   is_active?: boolean;
   search?: string;
   ordering?: string;

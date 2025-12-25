@@ -3,11 +3,21 @@
  * Used for creating and editing roles with granular permissions
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Textarea } from '../../../components/ui/textarea';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { Input } from '../../../components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../components/ui/select';
+import { Textarea } from '../../../components/ui/textarea';
+
+import { useQuery } from '@tanstack/react-query';
+import { collegeApi } from '../../../services/core.service';
 import type { Role, RoleCreateInput, RoleUpdateInput } from '../../../types/accounts.types';
 
 interface RoleFormData {
@@ -129,6 +139,13 @@ export const RoleForm = ({ mode, role, onSuccess, onCancel, onSubmit }: RoleForm
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { data: collegesData } = useQuery({
+    queryKey: ['colleges'],
+    queryFn: () => collegeApi.list({ page_size: 1000 }),
+  });
+
+  const colleges = collegesData?.results ?? [];
+
   useEffect(() => {
     if (mode === 'edit' && role) {
       setFormData({
@@ -204,6 +221,7 @@ export const RoleForm = ({ mode, role, onSuccess, onCancel, onSubmit }: RoleForm
 
     try {
       const submitData: any = {
+        college: Number(formData.college),
         name: formData.name,
         code: formData.code,
         description: formData.description || null,
@@ -252,22 +270,38 @@ export const RoleForm = ({ mode, role, onSuccess, onCancel, onSubmit }: RoleForm
             Basic Information
           </h3>
           <div className="space-y-4">
+            {mode === 'edit' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">College</label>
+                <Input value={role?.college_name} disabled />
+              </div>
+            )}
             {mode === 'create' && (
               <div>
-                <label htmlFor="college" className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2">
                   College <span className="text-destructive">*</span>
                 </label>
-                <Input
-                  id="college"
-                  type="number"
-                  value={formData.college}
-                  onChange={(e) => handleChange('college', e.target.value)}
-                  placeholder="Enter college ID"
-                  disabled={isSubmitting}
-                  className={errors.college ? 'border-destructive' : ''}
-                />
-                {errors.college && <p className="text-sm text-destructive mt-1">{errors.college}</p>}
+
+                <Select
+                  value={formData.college ? String(formData.college) : ''}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, college: Number(value) })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select college" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {colleges.map((college: any) => (
+                      <SelectItem key={college.id} value={String(college.id)}>
+                        {college.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
             )}
 
             <div className="grid grid-cols-2 gap-4">

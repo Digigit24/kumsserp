@@ -2,13 +2,13 @@
  * Academic Years Page - Manage academic years
  */
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { academicYearApi, collegeApi } from '../../services/core.service';
 import { AcademicYearForm } from './components/AcademicYearForm';
-import { academicYearApi } from '../../services/core.service';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const AcademicYearsPage = () => {
   const queryClient = useQueryClient();
@@ -27,6 +27,13 @@ const AcademicYearsPage = () => {
     queryFn: () => selectedId ? academicYearApi.get(selectedId) : null,
     enabled: !!selectedId,
   });
+
+  const { data: collegesData } = useQuery({
+    queryKey: ['colleges'],
+    queryFn: () => collegeApi.list({ page_size: 1000 }),
+  });
+  const colleges = collegesData?.results ?? [];
+
 
   const columns: Column<any>[] = [
     {
@@ -94,19 +101,29 @@ const AcademicYearsPage = () => {
       <DataTable
         title="Academic Years"
         description="Manage academic years for your institution"
-        data={data}
+        data={data ?? null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error ? error.message : null}
         onRefresh={refetch}
-        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
-        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
+        onAdd={() => {
+          setSelectedId(null);
+          setSidebarMode('create');
+          setIsSidebarOpen(true);
+        }}
+        onRowClick={(item) => {
+          setSelectedId(item.id);
+          setSidebarMode('view');
+          setIsSidebarOpen(true);
+        }}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
         searchPlaceholder="Search academic years..."
         addButtonLabel="Add Academic Year"
       />
+
+
 
       <DetailSidebar
         isOpen={isSidebarOpen}
@@ -118,20 +135,31 @@ const AcademicYearsPage = () => {
         {sidebarMode === 'create' && (
           <AcademicYearForm
             mode="create"
-            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['academic-years'] }); setIsSidebarOpen(false); }}
+            colleges={colleges}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['academic-years'] });
+              setIsSidebarOpen(false);
+            }}
             onCancel={() => setIsSidebarOpen(false)}
             onSubmit={handleSubmit}
           />
         )}
 
+
         {sidebarMode === 'edit' && selected && (
           <AcademicYearForm
             mode="edit"
             academicYear={selected}
-            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['academic-years'] }); queryClient.invalidateQueries({ queryKey: ['academic-year', selectedId] }); setIsSidebarOpen(false); }}
+            colleges={colleges}   // 👈 MUST
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['academic-years'] });
+              queryClient.invalidateQueries({ queryKey: ['academic-year', selectedId] });
+              setIsSidebarOpen(false);
+            }}
             onCancel={() => setIsSidebarOpen(false)}
             onSubmit={handleSubmit}
           />
+
         )}
 
         {sidebarMode === 'view' && selected && (

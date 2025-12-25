@@ -1,81 +1,77 @@
-/**
- * Academic Year Form Component
- */
-
-import { useState, useEffect } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
 import { Checkbox } from '../../../components/ui/checkbox';
-import { getCurrentUser } from '../../../services/auth.service';
+import { Input } from '../../../components/ui/input';
 
 interface AcademicYearFormProps {
   mode: 'create' | 'edit';
   academicYear?: any;
+  colleges: any[];
   onSuccess: () => void;
   onCancel: () => void;
   onSubmit: (data: any) => Promise<void>;
 }
 
-export const AcademicYearForm = ({ mode, academicYear, onSuccess, onCancel, onSubmit }: AcademicYearFormProps) => {
-  const { theme } = useTheme();
+export const AcademicYearForm = ({
+  mode,
+  academicYear,
+  colleges,
+  onSuccess,
+  onCancel,
+  onSubmit,
+}: AcademicYearFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
-    college: 0,
     year: '',
     start_date: '',
     end_date: '',
     is_current: false,
     is_active: true,
+    college: null as number | null,
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
+  /* ---------- EDIT MODE ---------- */
   useEffect(() => {
     if (mode === 'edit' && academicYear) {
       setFormData({
-        college: academicYear.college,
         year: academicYear.year,
         start_date: academicYear.start_date,
         end_date: academicYear.end_date,
         is_current: academicYear.is_current,
         is_active: academicYear.is_active,
+        college: academicYear.college, // ✅ SINGLE college
       });
-    } else if (mode === 'create') {
-      const user = getCurrentUser();
-      const collegeId = user?.college || 0;
-      setFormData(prev => ({ ...prev, college: collegeId }));
     }
   }, [mode, academicYear]);
 
-  const validateForm = (): boolean => {
+  /* ---------- VALIDATION ---------- */
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.year.trim()) newErrors.year = 'Year is required';
-    if (!formData.start_date) newErrors.start_date = 'Start date is required';
-    if (!formData.end_date) newErrors.end_date = 'End date is required';
+    if (!formData.start_date) newErrors.start_date = 'Start date required';
+    if (!formData.end_date) newErrors.end_date = 'End date required';
 
-    if (formData.start_date && formData.end_date && formData.end_date <= formData.start_date) {
+    if (
+      formData.start_date &&
+      formData.end_date &&
+      formData.end_date <= formData.start_date
+    ) {
       newErrors.end_date = 'End date must be after start date';
+    }
+
+    if (!formData.college) {
+      newErrors.college = 'College is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
+  /* ---------- SUBMIT ---------- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -84,22 +80,18 @@ export const AcademicYearForm = ({ mode, academicYear, onSuccess, onCancel, onSu
     setError(null);
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        year: formData.year,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        is_current: formData.is_current,
+        is_active: formData.is_active,
+        college: formData.college, // ✅ BACKEND KEY
+      });
+
       onSuccess();
     } catch (err: any) {
-      console.error('Form submission error:', err);
-      setError(err.message || 'Failed to save academic year');
-      if (err.errors) {
-        const backendErrors: Record<string, string> = {};
-        Object.entries(err.errors).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            backendErrors[key] = value[0];
-          } else {
-            backendErrors[key] = String(value);
-          }
-        });
-        setErrors(backendErrors);
-      }
+      setError(err?.message || 'Failed to save academic year');
     } finally {
       setIsSubmitting(false);
     }
@@ -108,99 +100,115 @@ export const AcademicYearForm = ({ mode, academicYear, onSuccess, onCancel, onSu
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md">
-          <p className="text-sm font-medium">{error}</p>
+        <div className="border border-destructive bg-destructive/10 text-destructive px-4 py-3 rounded">
+          {error}
         </div>
       )}
 
-      <div className="space-y-4">
+      {/* Academic Year */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Academic Year *
+        </label>
+        <Input
+          value={formData.year}
+          onChange={(e) =>
+            setFormData({ ...formData, year: e.target.value })
+          }
+          placeholder="2025-2026"
+        />
+        {errors.year && (
+          <p className="text-sm text-destructive">{errors.year}</p>
+        )}
+      </div>
+
+      {/* College SELECT */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Select College *
+        </label>
+        <select
+          className="w-full border rounded-md px-3 py-2"
+          value={formData.college ?? ''}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              college: Number(e.target.value),
+            })
+          }
+        >
+          <option value="">-- Select College --</option>
+          {colleges.map((college) => (
+            <option key={college.id} value={college.id}>
+              {college.name}
+            </option>
+          ))}
+        </select>
+
+        {errors.college && (
+          <p className="text-sm text-destructive">{errors.college}</p>
+        )}
+      </div>
+
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="year" className="block text-sm font-medium mb-2">
-            Academic Year <span className="text-destructive">*</span>
+          <label className="block text-sm font-medium mb-1">
+            Start Date *
           </label>
           <Input
-            id="year"
-            value={formData.year}
-            onChange={(e) => handleChange('year', e.target.value)}
-            placeholder="e.g., 2025-2026"
-            disabled={isSubmitting}
-            className={errors.year ? 'border-destructive' : ''}
+            type="date"
+            value={formData.start_date}
+            onChange={(e) =>
+              setFormData({ ...formData, start_date: e.target.value })
+            }
           />
-          {errors.year && <p className="text-sm text-destructive mt-1">{errors.year}</p>}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="start_date" className="block text-sm font-medium mb-2">
-              Start Date <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="start_date"
-              type="date"
-              value={formData.start_date}
-              onChange={(e) => handleChange('start_date', e.target.value)}
-              disabled={isSubmitting}
-              className={errors.start_date ? 'border-destructive' : ''}
-            />
-            {errors.start_date && <p className="text-sm text-destructive mt-1">{errors.start_date}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="end_date" className="block text-sm font-medium mb-2">
-              End Date <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="end_date"
-              type="date"
-              value={formData.end_date}
-              onChange={(e) => handleChange('end_date', e.target.value)}
-              disabled={isSubmitting}
-              className={errors.end_date ? 'border-destructive' : ''}
-            />
-            {errors.end_date && <p className="text-sm text-destructive mt-1">{errors.end_date}</p>}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="is_current"
-              checked={formData.is_current}
-              onCheckedChange={(checked) => handleChange('is_current', checked)}
-              disabled={isSubmitting}
-            />
-            <label htmlFor="is_current" className="text-sm font-medium cursor-pointer">
-              Set as Current Academic Year
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="is_active"
-              checked={formData.is_active}
-              onCheckedChange={(checked) => handleChange('is_active', checked)}
-              disabled={isSubmitting}
-            />
-            <label htmlFor="is_active" className="text-sm font-medium cursor-pointer">
-              Active
-            </label>
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            End Date *
+          </label>
+          <Input
+            type="date"
+            value={formData.end_date}
+            onChange={(e) =>
+              setFormData({ ...formData, end_date: e.target.value })
+            }
+          />
         </div>
       </div>
 
+      {/* Flags */}
+      <div className="flex gap-6">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={formData.is_current}
+            onCheckedChange={(v) =>
+              setFormData({ ...formData, is_current: Boolean(v) })
+            }
+          />
+          <span className="text-sm">Current Year</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={formData.is_active}
+            onCheckedChange={(v) =>
+              setFormData({ ...formData, is_active: Boolean(v) })
+            }
+          />
+          <span className="text-sm">Active</span>
+        </div>
+      </div>
+
+      {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
-          {isSubmitting ? (
-            <>
-              <span className="animate-spin mr-2">⏳</span>
-              Saving...
-            </>
-          ) : (
-            mode === 'create' ? 'Create Academic Year' : 'Update Academic Year'
-          )}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : 'Save Academic Year'}
         </Button>
       </div>
     </form>

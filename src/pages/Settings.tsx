@@ -1,6 +1,6 @@
-import { useTheme } from '../contexts/ThemeContext';
+import { Check, Moon, Palette, Sun, Type } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Moon, Sun, Palette, Type, Check } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Settings = () => {
   const { theme, font, colors, setTheme, setFont, setColors } = useTheme();

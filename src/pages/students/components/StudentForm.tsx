@@ -1,0 +1,637 @@
+/**
+ * Student Form Component - Matches backend API structure
+ */
+
+import { useState, useEffect } from 'react';
+import { studentApi } from '../../../services/students.service';
+import { usePrograms, useClasses, useSections } from '../../../hooks/useAcademic';
+import { useAcademicYears } from '../../../hooks/useCore';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import type { Student } from '../../../types/students.types';
+
+interface StudentFormProps {
+    mode: 'view' | 'create' | 'edit';
+    studentId?: number;
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+
+interface StudentFormData {
+    college: number;
+    admission_number: string;
+    admission_date: string;
+    admission_type: string;
+    roll_number: string;
+    registration_number: string;
+    program: number;
+    current_class: number | null;
+    current_section: number | null;
+    academic_year: number;
+    category: number | null;
+    group: number | null;
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    date_of_birth: string;
+    gender: string;
+    blood_group: string;
+    email: string;
+    phone: string;
+    alternate_phone: string;
+    nationality: string;
+    religion: string;
+    caste: string;
+    mother_tongue: string;
+    aadhar_number: string;
+    pan_number: string;
+}
+
+const ADMISSION_TYPES = [
+    { value: 'regular', label: 'Regular' },
+    { value: 'lateral', label: 'Lateral Entry' },
+    { value: 'transfer', label: 'Transfer' },
+    { value: 'management', label: 'Management Quota' },
+];
+
+const GENDERS = [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+];
+
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFormProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState("basic");
+
+    const { data: programsData } = usePrograms({ page_size: 100, is_active: true });
+    const { data: classesData } = useClasses({ page_size: 100, is_active: true });
+    const { data: sectionsData } = useSections({ page_size: 100, is_active: true });
+    const { data: yearsData } = useAcademicYears({ page_size: 100 });
+
+    const [formData, setFormData] = useState<StudentFormData>({
+        college: 1,
+        admission_number: '',
+        admission_date: new Date().toISOString().split('T')[0],
+        admission_type: 'regular',
+        roll_number: '',
+        registration_number: '',
+        program: 0,
+        current_class: null,
+        current_section: null,
+        academic_year: 0,
+        category: null,
+        group: null,
+        first_name: '',
+        middle_name: '',
+        last_name: '',
+        date_of_birth: '',
+        gender: 'male',
+        blood_group: '',
+        email: '',
+        phone: '',
+        alternate_phone: '',
+        nationality: 'Indian',
+        religion: '',
+        caste: '',
+        mother_tongue: '',
+        aadhar_number: '',
+        pan_number: '',
+    });
+
+    useEffect(() => {
+        if ((mode === 'edit' || mode === 'view') && studentId) {
+            fetchStudent();
+        }
+    }, [mode, studentId]);
+
+    const fetchStudent = async () => {
+        if (!studentId) return;
+        try {
+            setIsFetching(true);
+            const data = await studentApi.get(studentId);
+            setFormData({
+                college: data.college,
+                admission_number: data.admission_number,
+                admission_date: data.admission_date,
+                admission_type: data.admission_type,
+                roll_number: data.roll_number || '',
+                registration_number: data.registration_number,
+                program: data.program,
+                current_class: data.current_class,
+                current_section: data.current_section,
+                academic_year: data.academic_year,
+                category: data.category,
+                group: data.group,
+                first_name: data.first_name,
+                middle_name: data.middle_name || '',
+                last_name: data.last_name,
+                date_of_birth: data.date_of_birth,
+                gender: data.gender,
+                blood_group: data.blood_group || '',
+                email: data.email,
+                phone: data.phone || '',
+                alternate_phone: data.alternate_phone || '',
+                nationality: data.nationality || 'Indian',
+                religion: data.religion || '',
+                caste: data.caste || '',
+                mother_tongue: data.mother_tongue || '',
+                aadhar_number: data.aadhar_number || '',
+                pan_number: data.pan_number || '',
+            });
+        } catch (err: any) {
+            setError(err.message || 'Failed to fetch student');
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Validation
+        if (!formData.first_name || !formData.last_name || !formData.email || !formData.admission_number || !formData.registration_number || !formData.date_of_birth) {
+            setError('Please fill all required fields (marked with *)');
+            return;
+        }
+
+        if (!formData.program || formData.program === 0) {
+            setError('Please select a program');
+            return;
+        }
+
+        if (!formData.academic_year || formData.academic_year === 0) {
+            setError('Please select an academic year');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Prepare payload matching backend structure
+            const payload = {
+                college: formData.college,
+                admission_number: formData.admission_number,
+                admission_date: formData.admission_date,
+                admission_type: formData.admission_type,
+                roll_number: formData.roll_number || null,
+                registration_number: formData.registration_number,
+                program: formData.program,
+                current_class: formData.current_class || null,
+                current_section: formData.current_section || null,
+                academic_year: formData.academic_year,
+                category: formData.category || null,
+                group: formData.group || null,
+                first_name: formData.first_name,
+                middle_name: formData.middle_name || null,
+                last_name: formData.last_name,
+                date_of_birth: formData.date_of_birth,
+                gender: formData.gender,
+                blood_group: formData.blood_group || null,
+                email: formData.email,
+                phone: formData.phone || null,
+                alternate_phone: formData.alternate_phone || null,
+                nationality: formData.nationality || 'Indian',
+                religion: formData.religion || null,
+                caste: formData.caste || null,
+                mother_tongue: formData.mother_tongue || null,
+                aadhar_number: formData.aadhar_number || null,
+                pan_number: formData.pan_number || null,
+            };
+
+            if (mode === 'create') {
+                await studentApi.create(payload as any);
+            } else if (mode === 'edit' && studentId) {
+                await studentApi.update(studentId, payload as any);
+            }
+            onSuccess();
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message || 'Failed to save student');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isFetching) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <p className="text-muted-foreground">Loading...</p>
+            </div>
+        );
+    }
+
+    const isViewMode = mode === 'view';
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
+                    <p className="text-sm text-destructive">{error}</p>
+                </div>
+            )}
+
+            <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+            >
+
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                    <TabsTrigger value="academic">Academic</TabsTrigger>
+                    <TabsTrigger value="contact">Contact</TabsTrigger>
+                </TabsList>
+
+                {/* BASIC INFO TAB */}
+                <TabsContent value="basic" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="first_name">
+                                First Name <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="first_name"
+                                value={formData.first_name}
+                                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="middle_name">Middle Name</Label>
+                            <Input
+                                id="middle_name"
+                                value={formData.middle_name}
+                                onChange={(e) => setFormData({ ...formData, middle_name: e.target.value })}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="last_name">
+                                Last Name <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="last_name"
+                                value={formData.last_name}
+                                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="date_of_birth">
+                                Date of Birth <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="date_of_birth"
+                                type="date"
+                                value={formData.date_of_birth}
+                                onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>
+                                Gender <span className="text-destructive">*</span>
+                            </Label>
+                            <Select
+                                value={formData.gender}
+                                onValueChange={(v) => setFormData({ ...formData, gender: v })}
+                                disabled={isViewMode}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {GENDERS.map((g) => (
+                                        <SelectItem key={g.value} value={g.value}>
+                                            {g.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Blood Group</Label>
+                            <Select
+                                value={formData.blood_group}
+                                onValueChange={(v) => setFormData({ ...formData, blood_group: v })}
+                                disabled={isViewMode}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select blood group" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {BLOOD_GROUPS.map((bg) => (
+                                        <SelectItem key={bg} value={bg}>
+                                            {bg}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="nationality">Nationality</Label>
+                            <Input
+                                id="nationality"
+                                value={formData.nationality}
+                                onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="religion">Religion</Label>
+                            <Input
+                                id="religion"
+                                value={formData.religion}
+                                onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="caste">Caste</Label>
+                            <Input
+                                id="caste"
+                                value={formData.caste}
+                                onChange={(e) => setFormData({ ...formData, caste: e.target.value })}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mother_tongue">Mother Tongue</Label>
+                            <Input
+                                id="mother_tongue"
+                                value={formData.mother_tongue}
+                                onChange={(e) => setFormData({ ...formData, mother_tongue: e.target.value })}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="aadhar_number">Aadhar Number</Label>
+                            <Input
+                                id="aadhar_number"
+                                value={formData.aadhar_number}
+                                onChange={(e) => setFormData({ ...formData, aadhar_number: e.target.value })}
+                                placeholder="XXXX-XXXX-XXXX"
+                                maxLength={12}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="pan_number">PAN Number</Label>
+                            <Input
+                                id="pan_number"
+                                value={formData.pan_number}
+                                onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
+                                placeholder="ABCDE1234F"
+                                maxLength={10}
+                                disabled={isViewMode}
+                            />
+                        </div>
+                    </div>
+                </TabsContent>
+
+                {/* ACADEMIC TAB */}
+                <TabsContent value="academic" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="admission_number">
+                                Admission Number <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="admission_number"
+                                value={formData.admission_number}
+                                onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })}
+                                placeholder="e.g., ADM2024001"
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="registration_number">
+                                Registration Number <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="registration_number"
+                                value={formData.registration_number}
+                                onChange={(e) => setFormData({ ...formData, registration_number: e.target.value })}
+                                placeholder="e.g., REG2024001"
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="roll_number">Roll Number</Label>
+                            <Input
+                                id="roll_number"
+                                value={formData.roll_number}
+                                onChange={(e) => setFormData({ ...formData, roll_number: e.target.value })}
+                                placeholder="e.g., 001"
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="admission_date">
+                                Admission Date <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="admission_date"
+                                type="date"
+                                value={formData.admission_date}
+                                onChange={(e) => setFormData({ ...formData, admission_date: e.target.value })}
+                                disabled={isViewMode}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>
+                            Admission Type <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                            value={formData.admission_type}
+                            onValueChange={(v) => setFormData({ ...formData, admission_type: v })}
+                            disabled={isViewMode}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ADMISSION_TYPES.map((t) => (
+                                    <SelectItem key={t.value} value={t.value}>
+                                        {t.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>
+                            Program <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                            value={formData.program?.toString()}
+                            onValueChange={(v) => setFormData({ ...formData, program: parseInt(v) })}
+                            disabled={isViewMode}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select program" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {programsData?.results.map((p) => (
+                                    <SelectItem key={p.id} value={p.id.toString()}>
+                                        {p.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Current Class</Label>
+                            <Select
+                                value={formData.current_class?.toString() || ''}
+                                onValueChange={(v) => setFormData({ ...formData, current_class: v ? parseInt(v) : null })}
+                                disabled={isViewMode}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select class (optional)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {classesData?.results.map((c) => (
+                                        <SelectItem key={c.id} value={c.id.toString()}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Current Section</Label>
+                            <Select
+                                value={formData.current_section?.toString() || ''}
+                                onValueChange={(v) => setFormData({ ...formData, current_section: v ? parseInt(v) : null })}
+                                disabled={isViewMode || !formData.current_class}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select section (optional)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {sectionsData?.results.map((s) => (
+                                        <SelectItem key={s.id} value={s.id.toString()}>
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>
+                            Academic Year <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                            value={formData.academic_year?.toString()}
+                            onValueChange={(v) => setFormData({ ...formData, academic_year: parseInt(v) })}
+                            disabled={isViewMode}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {yearsData?.results.map((y) => (
+                                    <SelectItem key={y.id} value={y.id.toString()}>
+                                        {y.year} {y.is_current && '(Current)'}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </TabsContent>
+
+                {/* CONTACT TAB */}
+                <TabsContent value="contact" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">
+                            Email <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            placeholder="student@example.com"
+                            disabled={isViewMode}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Phone</Label>
+                            <Input
+                                id="phone"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                placeholder="+91 XXXXX XXXXX"
+                                disabled={isViewMode}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="alternate_phone">Alternate Phone</Label>
+                            <Input
+                                id="alternate_phone"
+                                value={formData.alternate_phone}
+                                onChange={(e) => setFormData({ ...formData, alternate_phone: e.target.value })}
+                                placeholder="+91 XXXXX XXXXX"
+                                disabled={isViewMode}
+                            />
+                        </div>
+                    </div>
+                </TabsContent>
+            </Tabs>
+
+            {!isViewMode && (
+                <div className="flex gap-3 pt-4 border-t sticky bottom-0 bg-background">
+                    <Button type="submit" disabled={isLoading} className="flex-1">
+                        {isLoading ? 'Saving...' : mode === 'create' ? 'Create Student' : 'Update Student'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                        Cancel
+                    </Button>
+                </div>
+            )}
+        </form>
+    );
+}

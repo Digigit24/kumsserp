@@ -2,23 +2,27 @@
  * React hook for fetching certificates
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { certificateApi } from '../services/students.service';
+import type { PaginatedResponse } from '../types/core.types';
 import type {
     Certificate,
-    CertificateFilters,
     CertificateCreateInput,
+    CertificateFilters,
     CertificateUpdateInput,
 } from '../types/students.types';
-import type { PaginatedResponse } from '../types/core.types';
+
+import type { CertificateListItem } from '../types/students.types';
 
 export const useCertificates = (filters?: CertificateFilters) => {
-    return useQuery<PaginatedResponse<Certificate>>({
+    return useQuery<PaginatedResponse<CertificateListItem>>({
         queryKey: ['certificates', filters],
         queryFn: () => certificateApi.list(filters),
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
     });
 };
+
+
 
 export const useCertificate = (id: number | null) => {
     return useQuery<Certificate>({

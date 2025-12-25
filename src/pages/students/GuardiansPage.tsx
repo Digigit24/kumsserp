@@ -40,8 +40,8 @@ export const GuardiansPage = () => {
       )}
 
       {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="bg-white border border-gray-200 dark:bg-black rounded">
+          <div className="p-4 bg-gray-50 border-b border-gray-200 dark:bg-black text-white">
             <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
           </div>
           <pre className="p-4 overflow-auto max-h-[600px] text-xs">

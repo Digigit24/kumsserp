@@ -1,5 +1,5 @@
-import axios from "axios";
 import { API_BASE_URL, getDefaultHeaders } from "@/config/api.config";
+import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -12,13 +12,13 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage
-    const token = localStorage.getItem('kumss_auth_token');
+    const token = localStorage.getItem('access');
 
     console.log('[apiClient] Request interceptor - Token:', token);
 
     // Add Authorization header if token exists
     if (token) {
-      config.headers.Authorization = `Token ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
       console.log('[apiClient] Added Authorization header to request');
     } else {
       console.warn('[apiClient] No token found in localStorage');

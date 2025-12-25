@@ -3,7 +3,6 @@
  * All types matching Django backend models
  */
 
-import { PaginatedResponse } from './core.types';
 import { UserBasic } from './accounts.types';
 
 // ============================================================================
@@ -386,6 +385,7 @@ export interface ClassTimeUpdateInput extends Partial<ClassTimeCreateInput> {}
 
 export interface Timetable extends AuditFields {
   id: number;
+  college: number;
   class_obj: number;
   class_name: string;
   section: number;
@@ -423,6 +423,7 @@ export interface TimetableListItem {
 
 export interface TimetableCreateInput {
   class_obj: number;
+  college: number;
   section: number;
   subject_assignment: number;
   day_of_week: number;
@@ -497,6 +498,7 @@ export interface ClassTeacherCreateInput {
   assigned_from: string;
   assigned_to?: string | null;
   is_current?: boolean;
+  academic_session: number;
   is_active?: boolean;
 }
 

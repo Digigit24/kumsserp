@@ -3,17 +3,17 @@
  * Displays and manages student certificates
  */
 
+import { Award, CheckCircle2, Edit, Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Award, Download, Trash2, Plus, CheckCircle2, Edit } from 'lucide-react';
-import { Card, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
-import { Skeleton } from '../../../components/ui/skeleton';
-import { EmptyState } from '../../../components/common/EmptyState';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
-import { IssueCertificateDialog } from './IssueCertificateDialog';
+import { EmptyState } from '../../../components/common/EmptyState';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
+import { Skeleton } from '../../../components/ui/skeleton';
 import { useCertificates, useDeleteCertificate } from '../../../hooks/useCertificates';
-import type { Certificate } from '../../../types/students.types';
+import type { Certificate, CertificateListItem } from '../../../types/students.types';
+import { IssueCertificateDialog } from './IssueCertificateDialog';
 
 interface CertificatesTabProps {
     studentId: number;
@@ -28,7 +28,8 @@ export const CertificatesTab: React.FC<CertificatesTabProps> = ({ studentId }) =
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [editingCertificate, setEditingCertificate] = useState<Certificate | null>(null);
 
-    const certificates = data?.results || [];
+    const certificates: CertificateListItem[] = data?.results ?? [];
+
 
     const handleDelete = async () => {
         if (selectedCertId) {
@@ -91,7 +92,7 @@ export const CertificatesTab: React.FC<CertificatesTabProps> = ({ studentId }) =
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {certificates.map((cert, index) => (
-                        <Card key={cert.id} variant="elevated" className="animate-slide-in" style={{ animationDelay: `${index * 50}ms` }}>
+                        <Card key={cert.id} className="animate-slide-in" style={{ animationDelay: `${index * 50}ms` }}>
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
@@ -116,12 +117,15 @@ export const CertificatesTab: React.FC<CertificatesTabProps> = ({ studentId }) =
                                         <span className="text-muted-foreground">Issue Date</span>
                                         <span className="font-medium">{new Date(cert.issue_date).toLocaleDateString()}</span>
                                     </div>
-                                    {cert.valid_until && (
+                                    {cert.issue_date && (
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Valid Until</span>
-                                            <span className="font-medium">{new Date(cert.valid_until).toLocaleDateString()}</span>
+                                            <span className="text-muted-foreground">Issue Date</span>
+                                            <span className="font-medium">
+                                                {new Date(cert.issue_date).toLocaleDateString()}
+                                            </span>
                                         </div>
                                     )}
+{/* 
                                     {cert.verification_code && (
                                         <div className="mt-3 pt-3 border-t">
                                             <p className="text-xs text-muted-foreground mb-1">Verification Code</p>
@@ -136,7 +140,7 @@ export const CertificatesTab: React.FC<CertificatesTabProps> = ({ studentId }) =
                                             <Download className="h-4 w-4 mr-2" />
                                             Download
                                         </Button>
-                                    )}
+                                    )} */}
                                     <Button
                                         variant="ghost"
                                         size="icon"

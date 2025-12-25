@@ -1,15 +1,10 @@
-/**
- * Academic Sessions Page - Manage academic sessions/semesters
- */
-
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { AcademicSessionForm } from './components/AcademicSessionForm';
 import { academicSessionApi } from '../../services/core.service';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
+import { AcademicSessionForm } from './components/AcademicSessionForm';
 const AcademicSessionsPage = () => {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
@@ -36,9 +31,9 @@ const AcademicSessionsPage = () => {
       render: (item) => <span className="font-medium">{item.name}</span>,
     },
     {
-      key: 'academic_year_name',
+      key: 'academic_year_label',
       label: 'Academic Year',
-      render: (item) => <span className="text-sm">{item.academic_year_name}</span>,
+      render: (item) => <span className="text-sm">{item.academic_year_label}</span>,
     },
     {
       key: 'semester',
@@ -101,13 +96,21 @@ const AcademicSessionsPage = () => {
       <DataTable
         title="Academic Sessions"
         description="Manage academic sessions and semesters for your institution"
-        data={data}
+        data={data ?? null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error ? error.message : null}
         onRefresh={refetch}
-        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
-        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
+        onAdd={() => {
+          setSelectedId(null);
+          setSidebarMode('create');
+          setIsSidebarOpen(true);
+        }}
+        onRowClick={(item) => {
+          setSelectedId(item.id);
+          setSidebarMode('view');
+          setIsSidebarOpen(true);
+        }}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
@@ -159,7 +162,7 @@ const AcademicSessionsPage = () => {
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Academic Year</label>
-                    <p className="font-medium">{selected.academic_year_name}</p>
+                    <p className="font-medium">{selected.academic_year_label}</p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Semester</label>
