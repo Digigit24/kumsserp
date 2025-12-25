@@ -5,40 +5,40 @@
 
 import { API_ENDPOINTS, buildApiUrl, getDefaultHeaders } from '../config/api.config';
 import type {
-  College,
-  CollegeListItem,
-  CollegeCreateInput,
-  CollegeUpdateInput,
-  CollegeFilters,
-  AcademicYear,
-  AcademicYearCreateInput,
-  AcademicYearUpdateInput,
-  AcademicYearFilters,
   AcademicSession,
   AcademicSessionCreateInput,
-  AcademicSessionUpdateInput,
   AcademicSessionFilters,
-  Holiday,
-  HolidayCreateInput,
-  HolidayUpdateInput,
-  HolidayFilters,
-  Weekend,
-  WeekendCreateInput,
-  WeekendUpdateInput,
-  WeekendFilters,
-  SystemSetting,
-  SystemSettingCreateInput,
-  SystemSettingUpdateInput,
-  SystemSettingFilters,
-  NotificationSetting,
-  NotificationSettingCreateInput,
-  NotificationSettingUpdateInput,
-  NotificationSettingFilters,
+  AcademicSessionUpdateInput,
+  AcademicYear,
+  AcademicYearCreateInput,
+  AcademicYearFilters,
+  AcademicYearUpdateInput,
   ActivityLog,
   ActivityLogFilters,
-  PaginatedResponse,
   BulkDeleteInput,
   BulkDeleteResponse,
+  College,
+  CollegeCreateInput,
+  CollegeFilters,
+  CollegeListItem,
+  CollegeUpdateInput,
+  Holiday,
+  HolidayCreateInput,
+  HolidayFilters,
+  HolidayUpdateInput,
+  NotificationSetting,
+  NotificationSettingCreateInput,
+  NotificationSettingFilters,
+  NotificationSettingUpdateInput,
+  PaginatedResponse,
+  SystemSetting,
+  SystemSettingCreateInput,
+  SystemSettingFilters,
+  SystemSettingUpdateInput,
+  Weekend,
+  WeekendCreateInput,
+  WeekendFilters,
+  WeekendUpdateInput,
 } from '../types/core.types';
 
 // ============================================================================
@@ -59,7 +59,7 @@ const buildQueryString = (params: Record<string, any>): string => {
 const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
   // Get token explicitly
   const token = localStorage.getItem('kumss_auth_token');
-
+  const tenantId = localStorage.getItem('tenant_id');
   console.log('[fetchApi] Token from localStorage:', token);
 
   // Build headers - CRITICAL: Must create Headers object properly
@@ -92,6 +92,12 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
   }
 
   console.log('[fetchApi] Final headers:', Object.fromEntries(headers.entries()));
+
+  // CRITICAL: Add Tenant Header for Multi-Tenant Routing
+if (tenantId && !headers.has('X-Tenant-ID')) {
+  headers.set('X-Tenant-ID', tenantId);
+  console.log('[fetchApi] Added X-Tenant-ID header:', tenantId);
+}
 
   const response = await fetch(url, {
     ...options,

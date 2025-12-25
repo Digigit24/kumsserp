@@ -1,12 +1,19 @@
 /**
  * Weekend Form Component
+ * College selection is MANDATORY (Super Admin + Admin)
  */
 
-import { useState, useEffect } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { getCurrentUser } from '../../../services/auth.service';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../components/ui/select';
+import { collegeApi } from '../../../services/core.service';
 
 interface WeekendFormProps {
   mode: 'create' | 'edit';
@@ -16,34 +23,48 @@ interface WeekendFormProps {
   onSubmit: (data: any) => Promise<void>;
 }
 
-export const WeekendForm = ({ mode, weekend, onSuccess, onCancel, onSubmit }: WeekendFormProps) => {
-  const { theme } = useTheme();
+export const WeekendForm = ({
+  mode,
+  weekend,
+  onSuccess,
+  onCancel,
+  onSubmit,
+}: WeekendFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState({
-    college: 0,
-    day: 0,
-  });
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  /* ---------------- FORM STATE ---------------- */
+  const [formData, setFormData] = useState({
+    college: null as number | null,
+    day: null as number | null,
+    is_active: true,
+  });
+
+  /* ---------------- FETCH COLLEGES ---------------- */
+  const { data: collegesData } = useQuery({
+    queryKey: ['colleges'],
+    queryFn: () => collegeApi.list({ page_size: 1000 }),
+  });
+
+  const colleges = collegesData?.results ?? [];
+
+  /* ---------------- EDIT MODE ---------------- */
   useEffect(() => {
     if (mode === 'edit' && weekend) {
       setFormData({
         college: weekend.college,
         day: weekend.day,
+        is_active: weekend.is_active ?? true,
       });
-    } else if (mode === 'create') {
-      const user = getCurrentUser();
-      const collegeId = user?.college || 0;
-      setFormData(prev => ({ ...prev, college: collegeId }));
     }
   }, [mode, weekend]);
 
-  const validateForm = (): boolean => {
+  /* ---------------- VALIDATION ---------------- */
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    if (!formData.college) newErrors.college = 'College is required';
     if (formData.day === null || formData.day === undefined) {
       newErrors.day = 'Day is required';
     }
@@ -52,17 +73,7 @@ export const WeekendForm = ({ mode, weekend, onSuccess, onCancel, onSubmit }: We
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -71,22 +82,15 @@ export const WeekendForm = ({ mode, weekend, onSuccess, onCancel, onSubmit }: We
     setError(null);
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        college: formData.college, // ✅ REQUIRED
+        day: formData.day,
+        is_active: formData.is_active,
+      });
+
       onSuccess();
     } catch (err: any) {
-      console.error('Form submission error:', err);
-      setError(err.message || 'Failed to save weekend');
-      if (err.errors) {
-        const backendErrors: Record<string, string> = {};
-        Object.entries(err.errors).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            backendErrors[key] = value[0];
-          } else {
-            backendErrors[key] = String(value);
-          }
-        });
-        setErrors(backendErrors);
-      }
+      setError(err?.message || 'Failed to save weekend');
     } finally {
       setIsSubmitting(false);
     }
@@ -106,50 +110,82 @@ export const WeekendForm = ({ mode, weekend, onSuccess, onCancel, onSubmit }: We
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md">
-          <p className="text-sm font-medium">{error}</p>
+          {error}
         </div>
       )}
 
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="day" className="block text-sm font-medium mb-2">
-            Day of Week <span className="text-destructive">*</span>
-          </label>
-          <Select
-            value={String(formData.day)}
-            onValueChange={(value) => handleChange('day', parseInt(value))}
+      {/* -------- College -------- */}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Select College <span className="text-destructive">*</span>
+        </label>
+
+        <Select
+          value={formData.college ? String(formData.college) : ''}
+          onValueChange={(value) =>
+            setFormData({ ...formData, college: Number(value) })
+          }
+        >
+          <SelectTrigger
+            className={`bg-background text-foreground border ${errors.college ? 'border-destructive' : ''
+              }`}
           >
-            <SelectTrigger className={errors.day ? 'border-destructive' : ''}>
-              <SelectValue placeholder="Select day" />
-            </SelectTrigger>
-            <SelectContent>
-              {dayOptions.map((option) => (
-                <SelectItem key={option.value} value={String(option.value)}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.day && <p className="text-sm text-destructive mt-1">{errors.day}</p>}
-          <p className="text-xs text-muted-foreground mt-2">
-            Select the day of the week that is a weekend for your institution
-          </p>
-        </div>
+            <SelectValue placeholder="Select college" />
+          </SelectTrigger>
+
+          <SelectContent className="bg-background text-foreground">
+            {colleges.map((college: any) => (
+              <SelectItem key={college.id} value={String(college.id)}>
+                {college.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {errors.college && (
+          <p className="text-sm text-destructive mt-1">{errors.college}</p>
+        )}
       </div>
 
+
+      {/* -------- Day -------- */}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Day of Week <span className="text-destructive">*</span>
+        </label>
+        <Select
+          value={formData.day !== null ? String(formData.day) : ''}
+          onValueChange={(value) =>
+            setFormData({ ...formData, day: Number(value) })
+          }
+        >
+          <SelectTrigger className={errors.day ? 'border-destructive' : ''}>
+            <SelectValue placeholder="Select day" />
+          </SelectTrigger>
+          <SelectContent className="bg-background text-foreground">
+            {dayOptions.map((option) => (
+              <SelectItem key={option.value} value={String(option.value)}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.day && (
+          <p className="text-sm text-destructive mt-1">{errors.day}</p>
+        )}
+      </div>
+
+      {/* -------- Actions -------- */}
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
-          {isSubmitting ? (
-            <>
-              <span className="animate-spin mr-2">⏳</span>
-              Saving...
-            </>
-          ) : (
-            mode === 'create' ? 'Add Weekend' : 'Update Weekend'
-          )}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? 'Saving...'
+            : mode === 'create'
+              ? 'Add Weekend'
+              : 'Update Weekend'}
         </Button>
       </div>
     </form>

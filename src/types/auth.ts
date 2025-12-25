@@ -5,6 +5,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   key: string;
+  user?: AuthUser;
 }
 
 export interface AuthUser {

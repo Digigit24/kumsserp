@@ -6,45 +6,62 @@
 import { useState } from 'react';
 import { useStudentMedicalRecords } from '../../hooks/useStudents';
 import type { StudentMedicalRecordFilters } from '../../types/students.types';
+import { Button } from '../../components/ui/button';
 
 export const MedicalRecordsPage = () => {
-  const [filters, setFilters] = useState<StudentMedicalRecordFilters>({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useStudentMedicalRecords(filters);
+  const [filters, setFilters] = useState<StudentMedicalRecordFilters>({
+    page: 1,
+    page_size: 20,
+  });
+
+  const { data, isLoading, error, refetch } =
+    useStudentMedicalRecords(filters);
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6 animate-fade-in">
+      {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Student Medical Records</h1>
-        <p className="text-gray-600">List of all student medical records</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Student Medical Records
+        </h1>
+        <p className="text-muted-foreground">
+          List of all student medical records
+        </p>
       </div>
 
+      {/* Actions */}
       <div className="mb-4 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
+        <Button onClick={() => refetch()}>
           Refresh
-        </button>
+        </Button>
       </div>
 
+      {/* Loading */}
       {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-lg">Loading medical records...</p>
+        <div className="text-center py-8 text-muted-foreground">
+          <p className="text-lg">Loading medical records…</p>
         </div>
       )}
 
+      {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-          <p className="text-red-800">Error: {error}</p>
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 mb-4">
+          <p className="text-destructive font-medium">
+            Error: {String(error)}
+          </p>
         </div>
       )}
 
+      {/* Data */}
       {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
+        <div className="rounded-lg border border-border bg-card">
+          <div className="p-4 border-b border-border bg-muted/40">
+            <h2 className="text-lg font-semibold text-foreground">
+              Full API Response (JSON)
+            </h2>
           </div>
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs">
+
+          <pre className="p-4 overflow-auto max-h-[600px] text-xs text-foreground">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>

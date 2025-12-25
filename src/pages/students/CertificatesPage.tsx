@@ -1,54 +1,116 @@
 /**
  * Certificates Page
- * Displays all certificates from API
+ * Manages student certificates with CRUD operations
  */
 
 import { useState } from 'react';
+import { Column, DataTable } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
 import { useCertificates } from '../../hooks/useStudents';
-import type { CertificateFilters } from '../../types/students.types';
+import type { CertificateFilters, CertificateListItem } from '../../types/students.types';
+import { CertificateForm } from './components/CertificateForm';
 
 export const CertificatesPage = () => {
   const [filters, setFilters] = useState<CertificateFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useCertificates(filters);
 
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedCertificate, setSelectedCertificate] = useState<CertificateListItem | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const columns: Column<CertificateListItem>[] = [
+    {
+      key: 'certificate_number',
+      label: 'Certificate No.',
+      sortable: true,
+      className: 'font-medium',
+    },
+    {
+      key: 'student_name',
+      label: 'Student Name',
+      sortable: true,
+      className: 'font-semibold',
+    },
+    {
+      key: 'certificate_type',
+      label: 'Type',
+      sortable: true,
+      render: (cert) => (
+        <Badge variant="outline" className="capitalize">
+          {cert.certificate_type.replace('_', ' ')}
+        </Badge>
+      ),
+    },
+    {
+      key: 'issue_date',
+      label: 'Issue Date',
+      sortable: true,
+      render: (cert) => new Date(cert.issue_date).toLocaleDateString(),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (cert) => (
+        <Badge variant={cert.is_active ? 'default' : 'secondary'}>
+          {cert.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
+
+  const handleRowClick = (certificate: CertificateListItem) => {
+    setSelectedCertificate(certificate);
+    setSidebarMode('edit');
+    setIsSidebarOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedCertificate(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Certificates</h1>
-        <p className="text-gray-600">List of all certificates (Bonafide, TC, Marksheet, Degree)</p>
-      </div>
+    <div className="p-4 md:p-6 animate-fade-in">
+      <DataTable
+        title="Student Certificates"
+        description="Manage student certificates (Bonafide, TC, Marksheet, Degree). Click on any row to edit."
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onAdd={handleAdd}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search certificates..."
+        addButtonLabel="Issue Certificate"
+      />
 
-      <div className="mb-4 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Refresh
-        </button>
-      </div>
-
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-lg">Loading certificates...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-          <p className="text-red-800">Error: {error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
-          </div>
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        title={
+          sidebarMode === 'create'
+            ? 'Issue Certificate'
+            : sidebarMode === 'edit'
+              ? 'Edit Certificate'
+              : 'Certificate Details'
+        }
+        mode={sidebarMode}
+      >
+        <CertificateForm
+          mode={sidebarMode}
+          certificateId={selectedCertificate?.id}
+          onSuccess={() => {
+            setIsSidebarOpen(false);
+            refetch();
+          }}
+          onCancel={() => setIsSidebarOpen(false)}
+        />
+      </DetailSidebar>
     </div>
   );
 };

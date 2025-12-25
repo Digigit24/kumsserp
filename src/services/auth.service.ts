@@ -4,7 +4,7 @@
  */
 
 import { API_ENDPOINTS, buildApiUrl, getDefaultHeaders } from '../config/api.config';
-import type { LoginCredentials, LoginResponse, User, ApiError } from '../types/auth.types';
+import type { ApiError, LoginCredentials, LoginResponse, User } from '../types/auth.types';
 
 /**
  * Local storage keys
