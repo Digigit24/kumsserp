@@ -3,15 +3,15 @@
  * Teachers can create test papers with questions and send to store for printing
  */
 
+import { Plus, Save, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Badge } from '../../components/ui/badge';
-import { Plus, Trash2, Send, Save } from 'lucide-react';
+import { Textarea } from '../../components/ui/textarea';
 
 interface Question {
   id?: number;
@@ -89,7 +89,7 @@ const CreateTestPage = () => {
   const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Create Test Paper</h1>

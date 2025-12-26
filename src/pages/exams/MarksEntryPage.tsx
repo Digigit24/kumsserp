@@ -4,12 +4,12 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { StudentMarksForm } from './forms';
 import { StudentMarks, mockStudentMarksPaginated } from '../../data/examinationMockData';
+import { StudentMarksForm } from './forms';
 
 const MarksEntryPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -97,7 +97,7 @@ const MarksEntryPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Marks Entry</h1>
         <p className="text-muted-foreground">Enter and manage student marks</p>

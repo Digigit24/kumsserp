@@ -3,13 +3,13 @@
  * Admin view for tabulation sheets
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
 import { Download } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 const TabulationSheetsPage = () => {
   return (
-    <div className="space-y-6">
+    <div className="">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Tabulation Sheets</h1>

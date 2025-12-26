@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column } from '../../components/common/DataTable';
+import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 
 interface GradeSheet {
@@ -46,7 +46,7 @@ const GradeSheetsPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Grade Sheets</h1>
         <p className="text-muted-foreground">View student grade sheets</p>

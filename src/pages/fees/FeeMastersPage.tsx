@@ -3,12 +3,12 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeMasterForm } from './forms';
 import { FeeMaster, mockFeeMastersPaginated } from '../../data/feesMockData';
+import { FeeMasterForm } from './forms';
 
 const FeeMastersPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -87,7 +87,7 @@ const FeeMastersPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Fee Masters</h1>
         <p className="text-muted-foreground">Manage fee types and categories</p>

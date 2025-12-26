@@ -4,12 +4,12 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ExamForm } from './forms';
 import { Exam, mockExamsPaginated } from '../../data/examinationMockData';
+import { ExamForm } from './forms';
 
 const ExamsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -99,7 +99,7 @@ const ExamsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Examinations</h1>
         <p className="text-muted-foreground">Manage examinations and exam schedules</p>

@@ -4,12 +4,12 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ExamScheduleForm } from './forms';
 import { ExamSchedule, mockExamSchedulesPaginated } from '../../data/examinationMockData';
+import { ExamScheduleForm } from './forms';
 
 const ExamSchedulesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -85,7 +85,7 @@ const ExamSchedulesPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Exam Schedules</h1>
         <p className="text-muted-foreground">Manage exam schedules and timetables</p>

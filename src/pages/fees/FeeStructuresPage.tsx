@@ -3,12 +3,12 @@
  */
 
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeStructureForm } from './forms';
 import { FeeStructure, mockFeeStructuresPaginated } from '../../data/feesMockData';
+import { FeeStructureForm } from './forms';
 
 const FeeStructuresPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -78,7 +78,7 @@ const FeeStructuresPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="">
       <div>
         <h1 className="text-3xl font-bold">Fee Structures</h1>
         <p className="text-muted-foreground">Manage fee structures for different programs and classes</p>

@@ -3,13 +3,13 @@
  * Generate and manage student progress cards
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
 import { FileText } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 const ProgressCardsPage = () => {
   return (
-    <div className="space-y-6">
+    <div className="">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Progress Cards</h1>
