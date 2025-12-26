@@ -1,5 +1,6 @@
 import React from 'react';
 import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
+import { StudentDashboard } from './student/StudentDashboard';
 
 export const Dashboard: React.FC = () => {
   // Get user type from localStorage
@@ -17,6 +18,10 @@ export const Dashboard: React.FC = () => {
   // Conditional rendering based on user type
   if (userType === 'teacher') {
     return <TeacherDashboard />;
+  }
+
+  if (userType === 'student') {
+    return <StudentDashboard />;
   }
 
   // Default dashboard for other user types

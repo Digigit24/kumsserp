@@ -8,12 +8,19 @@ import {
   BookOpen,
   CreditCard,
   Trophy,
-  Bell
+  Bell,
+  ClipboardList,
+  GraduationCap,
+  BarChart3,
+  UserCircle,
+  FileCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { AttendanceCalendar } from '@/components/attendance/AttendanceCalendar';
 
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -53,6 +60,21 @@ export const StudentDashboard: React.FC = () => {
     { id: 2, title: 'Sports Day Registration', date: '2025-12-18', type: 'event' },
   ];
 
+  // Test Marks Data
+  const recentTestMarks = [
+    { id: 1, subject: 'Mathematics', test: 'Unit Test 3', marks: 85, totalMarks: 100, grade: 'A', date: '2025-12-15' },
+    { id: 2, subject: 'Physics', test: 'Mid-term Exam', marks: 78, totalMarks: 100, grade: 'B+', date: '2025-12-10' },
+    { id: 3, subject: 'Chemistry', test: 'Unit Test 3', marks: 92, totalMarks: 100, grade: 'A+', date: '2025-12-08' },
+    { id: 4, subject: 'English', test: 'Essay Test', marks: 88, totalMarks: 100, grade: 'A', date: '2025-12-05' },
+  ];
+
+  const getGradeColor = (grade: string) => {
+    if (grade === 'A+' || grade === 'A') return 'success';
+    if (grade === 'B+' || grade === 'B') return 'default';
+    if (grade === 'C+' || grade === 'C') return 'warning';
+    return 'destructive';
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,6 +84,81 @@ export const StudentDashboard: React.FC = () => {
           Welcome back! Here's your overview for today
         </p>
       </div>
+
+      {/* Quick Actions - Prominent at Top */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-900">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-blue-600" />
+            Quick Actions
+          </CardTitle>
+          <CardDescription>Frequently used actions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
+              onClick={() => navigate('/attendance/my-attendance')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <ClipboardList className="h-6 w-6 text-blue-600" />
+                <span className="text-xs font-medium">My Attendance</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-green-50 dark:hover:bg-green-950/30 transition-all"
+              onClick={() => navigate('/student/examinations/results')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Trophy className="h-6 w-6 text-green-600" />
+                <span className="text-xs font-medium">My Results</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all"
+              onClick={() => navigate('/student/fees')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <CreditCard className="h-6 w-6 text-purple-600" />
+                <span className="text-xs font-medium">Pay Fees</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-all"
+              onClick={() => navigate('/student/academics/assignments')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <FileCheck className="h-6 w-6 text-orange-600" />
+                <span className="text-xs font-medium">Assignments</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-pink-50 dark:hover:bg-pink-950/30 transition-all"
+              onClick={() => navigate('/student/certificates')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <FileText className="h-6 w-6 text-pink-600" />
+                <span className="text-xs font-medium">Certificates</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 bg-white dark:bg-gray-950 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition-all"
+              onClick={() => navigate('/student/profile')}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <UserCircle className="h-6 w-6 text-cyan-600" />
+                <span className="text-xs font-medium">My Profile</span>
+              </div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Priority Cards - Top Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -82,10 +179,10 @@ export const StudentDashboard: React.FC = () => {
         </Card>
 
         {/* Attendance Status Card */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/student/academics/attendance')}>
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/attendance/my-attendance')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Attendance (This Month)
+              Attendance
             </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -132,10 +229,75 @@ export const StudentDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Secondary Widgets - Main Content */}
+      {/* Main Content - With Attendance Calendar and Test Marks */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Mini Attendance Calendar - Full Width on Small, 2 cols on Large */}
+        <div className="lg:col-span-2">
+          <AttendanceCalendar
+            showStats={true}
+            showLegend={true}
+            compact={false}
+          />
+        </div>
+
+        {/* Test Marks Widget */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Recent Test Marks
+            </CardTitle>
+            <CardDescription>Your latest test scores</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentTestMarks.map((test) => (
+                <div key={test.id} className="p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{test.subject}</p>
+                      <p className="text-xs text-muted-foreground">{test.test}</p>
+                    </div>
+                    <Badge variant={getGradeColor(test.grade)}>
+                      {test.grade}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold">{test.marks}</span>
+                      <span className="text-sm text-muted-foreground">/ {test.totalMarks}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(test.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        test.marks / test.totalMarks >= 0.9 ? 'bg-green-500' :
+                        test.marks / test.totalMarks >= 0.75 ? 'bg-blue-500' :
+                        test.marks / test.totalMarks >= 0.6 ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}
+                      style={{ width: `${(test.marks / test.totalMarks) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                onClick={() => navigate('/student/examinations/results')}
+              >
+                View All Results
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Today's Classes Detail */}
-        <Card className="lg:col-span-2">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -144,24 +306,24 @@ export const StudentDashboard: React.FC = () => {
             <CardDescription>Your classes for today</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {todaysClasses.map((class_) => (
                 <div key={class_.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                      class_.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                      class_.status === 'completed' ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20'
                     }`}>
                       <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium">{class_.subject}</p>
-                      <p className="text-sm text-muted-foreground">{class_.room}</p>
+                      <p className="font-medium text-sm">{class_.subject}</p>
+                      <p className="text-xs text-muted-foreground">{class_.room}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-sm">{class_.time}</p>
+                    <p className="font-medium text-xs">{class_.time}</p>
                     <Badge variant={class_.status === 'completed' ? 'success' : 'default'} className="mt-1">
-                      {class_.status === 'completed' ? 'Completed' : 'Upcoming'}
+                      {class_.status === 'completed' ? 'Done' : 'Upcoming'}
                     </Badge>
                   </div>
                 </div>
@@ -243,114 +405,7 @@ export const StudentDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Notices / Announcements */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notices
-            </CardTitle>
-            <CardDescription>Recent announcements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentNotices.map((notice) => (
-                <div key={notice.id} className="p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer">
-                  <div className="flex items-start justify-between mb-1">
-                    <p className="font-medium text-sm">{notice.title}</p>
-                    {notice.type === 'important' && (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(notice.date).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={() => navigate('/student/notices')}
-              >
-                View All Notices
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Results */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Recent Results
-            </CardTitle>
-            <CardDescription>Your latest exam results</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg border">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium">Mathematics</p>
-                  <Badge variant="success">85%</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">Mid-term Exam</p>
-              </div>
-              <div className="p-3 rounded-lg border">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium">Physics</p>
-                  <Badge variant="success">78%</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">Mid-term Exam</p>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={() => navigate('/student/examinations/results')}
-              >
-                View All Results
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Frequently used actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20" onClick={() => navigate('/student/fees')}>
-              <div className="flex flex-col items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                <span className="text-sm">Pay Fees</span>
-              </div>
-            </Button>
-            <Button variant="outline" className="h-20" onClick={() => navigate('/student/certificates')}>
-              <div className="flex flex-col items-center gap-2">
-                <FileText className="h-5 w-5" />
-                <span className="text-sm">Request Certificate</span>
-              </div>
-            </Button>
-            <Button variant="outline" className="h-20" onClick={() => navigate('/student/academics/attendance')}>
-              <div className="flex flex-col items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="text-sm">View Attendance</span>
-              </div>
-            </Button>
-            <Button variant="outline" className="h-20" onClick={() => navigate('/student/support')}>
-              <div className="flex flex-col items-center gap-2">
-                <Bell className="h-5 w-5" />
-                <span className="text-sm">Get Help</span>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
