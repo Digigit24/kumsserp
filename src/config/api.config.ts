@@ -393,6 +393,297 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/students/id-cards/${id}/`,
     delete: (id: number) => `/api/v1/students/id-cards/${id}/`,
   },
+
+  // Examination Module - Exam Types
+  examTypes: {
+    list: "/api/v1/examinations/exam-types/",
+    create: "/api/v1/examinations/exam-types/",
+    detail: (id: number) => `/api/v1/examinations/exam-types/${id}/`,
+    update: (id: number) => `/api/v1/examinations/exam-types/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/exam-types/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/exam-types/${id}/`,
+  },
+
+  // Examination Module - Exams
+  exams: {
+    list: "/api/v1/examinations/exams/",
+    create: "/api/v1/examinations/exams/",
+    detail: (id: number) => `/api/v1/examinations/exams/${id}/`,
+    update: (id: number) => `/api/v1/examinations/exams/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/exams/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/exams/${id}/`,
+    publish: (id: number) => `/api/v1/examinations/exams/${id}/publish/`,
+  },
+
+  // Examination Module - Exam Schedules
+  examSchedules: {
+    list: "/api/v1/examinations/exam-schedules/",
+    create: "/api/v1/examinations/exam-schedules/",
+    detail: (id: number) => `/api/v1/examinations/exam-schedules/${id}/`,
+    update: (id: number) => `/api/v1/examinations/exam-schedules/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/exam-schedules/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/exam-schedules/${id}/`,
+  },
+
+  // Examination Module - Marks Entry
+  marksEntry: {
+    list: "/api/v1/examinations/marks-entry/",
+    create: "/api/v1/examinations/marks-entry/",
+    detail: (id: number) => `/api/v1/examinations/marks-entry/${id}/`,
+    update: (id: number) => `/api/v1/examinations/marks-entry/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/marks-entry/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/marks-entry/${id}/`,
+    bulkCreate: "/api/v1/examinations/marks-entry/bulk_create/",
+    verify: (id: number) => `/api/v1/examinations/marks-entry/${id}/verify/`,
+  },
+
+  // Examination Module - Grades
+  grades: {
+    list: "/api/v1/examinations/grades/",
+    create: "/api/v1/examinations/grades/",
+    detail: (id: number) => `/api/v1/examinations/grades/${id}/`,
+    update: (id: number) => `/api/v1/examinations/grades/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/grades/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/grades/${id}/`,
+  },
+
+  // Examination Module - Results
+  results: {
+    list: "/api/v1/examinations/results/",
+    create: "/api/v1/examinations/results/",
+    detail: (id: number) => `/api/v1/examinations/results/${id}/`,
+    update: (id: number) => `/api/v1/examinations/results/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/results/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/results/${id}/`,
+    publish: (id: number) => `/api/v1/examinations/results/${id}/publish/`,
+    student: (studentId: number) => `/api/v1/examinations/results/student/${studentId}/`,
+  },
+
+  // Examination Module - Test Papers
+  testPapers: {
+    list: "/api/v1/examinations/test-papers/",
+    create: "/api/v1/examinations/test-papers/",
+    detail: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
+    update: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
+    sendToStore: (id: number) => `/api/v1/examinations/test-papers/${id}/send_to_store/`,
+  },
+
+  // Attendance Module - Student Attendance
+  studentAttendance: {
+    list: "/api/v1/attendance/students/",
+    create: "/api/v1/attendance/students/",
+    detail: (id: number) => `/api/v1/attendance/students/${id}/`,
+    update: (id: number) => `/api/v1/attendance/students/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/students/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/students/${id}/`,
+    bulkCreate: "/api/v1/attendance/students/bulk_create/",
+    summary: (studentId: number) => `/api/v1/attendance/students/summary/${studentId}/`,
+  },
+
+  // Attendance Module - Staff Attendance
+  staffAttendance: {
+    list: "/api/v1/attendance/staff/",
+    create: "/api/v1/attendance/staff/",
+    detail: (id: number) => `/api/v1/attendance/staff/${id}/`,
+    update: (id: number) => `/api/v1/attendance/staff/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/staff/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/staff/${id}/`,
+  },
+
+  // Attendance Module - Subject Attendance
+  subjectAttendance: {
+    list: "/api/v1/attendance/subjects/",
+    create: "/api/v1/attendance/subjects/",
+    detail: (id: number) => `/api/v1/attendance/subjects/${id}/`,
+    update: (id: number) => `/api/v1/attendance/subjects/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/subjects/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/subjects/${id}/`,
+  },
+
+  // Attendance Module - Notifications
+  attendanceNotifications: {
+    list: "/api/v1/attendance/notifications/",
+    create: "/api/v1/attendance/notifications/",
+    detail: (id: number) => `/api/v1/attendance/notifications/${id}/`,
+    update: (id: number) => `/api/v1/attendance/notifications/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/notifications/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/notifications/${id}/`,
+    send: (id: number) => `/api/v1/attendance/notifications/${id}/send/`,
+  },
+
+  // Fees Module - Fee Masters
+  feeMasters: {
+    list: "/api/v1/fees/masters/",
+    create: "/api/v1/fees/masters/",
+    detail: (id: number) => `/api/v1/fees/masters/${id}/`,
+    update: (id: number) => `/api/v1/fees/masters/${id}/`,
+    patch: (id: number) => `/api/v1/fees/masters/${id}/`,
+    delete: (id: number) => `/api/v1/fees/masters/${id}/`,
+  },
+
+  // Fees Module - Fee Structures
+  feeStructures: {
+    list: "/api/v1/fees/structures/",
+    create: "/api/v1/fees/structures/",
+    detail: (id: number) => `/api/v1/fees/structures/${id}/`,
+    update: (id: number) => `/api/v1/fees/structures/${id}/`,
+    patch: (id: number) => `/api/v1/fees/structures/${id}/`,
+    delete: (id: number) => `/api/v1/fees/structures/${id}/`,
+  },
+
+  // Fees Module - Fee Discounts
+  feeDiscounts: {
+    list: "/api/v1/fees/discounts/",
+    create: "/api/v1/fees/discounts/",
+    detail: (id: number) => `/api/v1/fees/discounts/${id}/`,
+    update: (id: number) => `/api/v1/fees/discounts/${id}/`,
+    patch: (id: number) => `/api/v1/fees/discounts/${id}/`,
+    delete: (id: number) => `/api/v1/fees/discounts/${id}/`,
+  },
+
+  // Fees Module - Fee Fines
+  feeFines: {
+    list: "/api/v1/fees/fines/",
+    create: "/api/v1/fees/fines/",
+    detail: (id: number) => `/api/v1/fees/fines/${id}/`,
+    update: (id: number) => `/api/v1/fees/fines/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fines/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fines/${id}/`,
+  },
+
+  // Fees Module - Fee Collections
+  feeCollections: {
+    list: "/api/v1/fees/collections/",
+    create: "/api/v1/fees/collections/",
+    detail: (id: number) => `/api/v1/fees/collections/${id}/`,
+    update: (id: number) => `/api/v1/fees/collections/${id}/`,
+    patch: (id: number) => `/api/v1/fees/collections/${id}/`,
+    delete: (id: number) => `/api/v1/fees/collections/${id}/`,
+    cancel: (id: number) => `/api/v1/fees/collections/${id}/cancel/`,
+    studentStatus: (studentId: number) => `/api/v1/fees/collections/student/${studentId}/status/`,
+  },
+
+  // Library Module - Books
+  books: {
+    list: "/api/v1/library/books/",
+    create: "/api/v1/library/books/",
+    detail: (id: number) => `/api/v1/library/books/${id}/`,
+    update: (id: number) => `/api/v1/library/books/${id}/`,
+    patch: (id: number) => `/api/v1/library/books/${id}/`,
+    delete: (id: number) => `/api/v1/library/books/${id}/`,
+  },
+
+  // Library Module - Members
+  libraryMembers: {
+    list: "/api/v1/library/members/",
+    create: "/api/v1/library/members/",
+    detail: (id: number) => `/api/v1/library/members/${id}/`,
+    update: (id: number) => `/api/v1/library/members/${id}/`,
+    patch: (id: number) => `/api/v1/library/members/${id}/`,
+    delete: (id: number) => `/api/v1/library/members/${id}/`,
+    block: (id: number) => `/api/v1/library/members/${id}/block/`,
+    unblock: (id: number) => `/api/v1/library/members/${id}/unblock/`,
+  },
+
+  // Library Module - Book Issues
+  bookIssues: {
+    list: "/api/v1/library/issues/",
+    create: "/api/v1/library/issues/",
+    detail: (id: number) => `/api/v1/library/issues/${id}/`,
+    update: (id: number) => `/api/v1/library/issues/${id}/`,
+    patch: (id: number) => `/api/v1/library/issues/${id}/`,
+    delete: (id: number) => `/api/v1/library/issues/${id}/`,
+    renew: (id: number) => `/api/v1/library/issues/${id}/renew/`,
+  },
+
+  // Library Module - Book Returns
+  bookReturns: {
+    list: "/api/v1/library/returns/",
+    create: "/api/v1/library/returns/",
+    detail: (id: number) => `/api/v1/library/returns/${id}/`,
+    update: (id: number) => `/api/v1/library/returns/${id}/`,
+    patch: (id: number) => `/api/v1/library/returns/${id}/`,
+    delete: (id: number) => `/api/v1/library/returns/${id}/`,
+  },
+
+  // HR Module - Leave Applications
+  leaveApplications: {
+    list: "/api/v1/hr/leave-applications/",
+    create: "/api/v1/hr/leave-applications/",
+    detail: (id: number) => `/api/v1/hr/leave-applications/${id}/`,
+    update: (id: number) => `/api/v1/hr/leave-applications/${id}/`,
+    patch: (id: number) => `/api/v1/hr/leave-applications/${id}/`,
+    delete: (id: number) => `/api/v1/hr/leave-applications/${id}/`,
+    cancel: (id: number) => `/api/v1/hr/leave-applications/${id}/cancel/`,
+  },
+
+  // HR Module - Leave Approvals
+  leaveApprovals: {
+    list: "/api/v1/hr/leave-approvals/",
+    create: "/api/v1/hr/leave-approvals/",
+    detail: (id: number) => `/api/v1/hr/leave-approvals/${id}/`,
+    update: (id: number) => `/api/v1/hr/leave-approvals/${id}/`,
+    patch: (id: number) => `/api/v1/hr/leave-approvals/${id}/`,
+    delete: (id: number) => `/api/v1/hr/leave-approvals/${id}/`,
+    approve: (id: number) => `/api/v1/hr/leave-approvals/${id}/approve/`,
+    reject: (id: number) => `/api/v1/hr/leave-approvals/${id}/reject/`,
+  },
+
+  // HR Module - Salary Structures
+  salaryStructures: {
+    list: "/api/v1/hr/salary-structures/",
+    create: "/api/v1/hr/salary-structures/",
+    detail: (id: number) => `/api/v1/hr/salary-structures/${id}/`,
+    update: (id: number) => `/api/v1/hr/salary-structures/${id}/`,
+    patch: (id: number) => `/api/v1/hr/salary-structures/${id}/`,
+    delete: (id: number) => `/api/v1/hr/salary-structures/${id}/`,
+  },
+
+  // HR Module - Payrolls
+  payrolls: {
+    list: "/api/v1/hr/payrolls/",
+    create: "/api/v1/hr/payrolls/",
+    detail: (id: number) => `/api/v1/hr/payrolls/${id}/`,
+    update: (id: number) => `/api/v1/hr/payrolls/${id}/`,
+    patch: (id: number) => `/api/v1/hr/payrolls/${id}/`,
+    delete: (id: number) => `/api/v1/hr/payrolls/${id}/`,
+    process: (id: number) => `/api/v1/hr/payrolls/${id}/process/`,
+    payslip: (id: number) => `/api/v1/hr/payrolls/${id}/payslip/`,
+  },
+
+  // Reports Module - Templates
+  reportTemplates: {
+    list: "/api/v1/reports/templates/",
+    create: "/api/v1/reports/templates/",
+    detail: (id: number) => `/api/v1/reports/templates/${id}/`,
+    update: (id: number) => `/api/v1/reports/templates/${id}/`,
+    patch: (id: number) => `/api/v1/reports/templates/${id}/`,
+    delete: (id: number) => `/api/v1/reports/templates/${id}/`,
+  },
+
+  // Reports Module - Generated Reports
+  generatedReports: {
+    list: "/api/v1/reports/generated/",
+    create: "/api/v1/reports/generated/",
+    detail: (id: number) => `/api/v1/reports/generated/${id}/`,
+    update: (id: number) => `/api/v1/reports/generated/${id}/`,
+    patch: (id: number) => `/api/v1/reports/generated/${id}/`,
+    delete: (id: number) => `/api/v1/reports/generated/${id}/`,
+    download: (id: number) => `/api/v1/reports/generated/${id}/download/`,
+    generate: "/api/v1/reports/generated/generate/",
+  },
+
+  // Reports Module - Saved Reports
+  savedReports: {
+    list: "/api/v1/reports/saved/",
+    create: "/api/v1/reports/saved/",
+    detail: (id: number) => `/api/v1/reports/saved/${id}/`,
+    update: (id: number) => `/api/v1/reports/saved/${id}/`,
+    patch: (id: number) => `/api/v1/reports/saved/${id}/`,
+    delete: (id: number) => `/api/v1/reports/saved/${id}/`,
+  },
 };
 
 /**

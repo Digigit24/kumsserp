@@ -97,6 +97,52 @@ const CreateAssignmentPage = lazy(() => import("../pages/assignments").then(m =>
 const AssignmentsListPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.AssignmentsListPage })));
 const SubmissionsPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.SubmissionsPage })));
 
+// Examinations Module
+const ExamsPage = lazy(() => import("../pages/exams/ExamsPage"));
+const ExamTypesPage = lazy(() => import("../pages/exams/ExamTypesPage"));
+const ExamSchedulesPage = lazy(() => import("../pages/exams/ExamSchedulesPage"));
+const MarksEntryPage = lazy(() => import("../pages/exams/MarksEntryPage"));
+const GradeSheetsPage = lazy(() => import("../pages/exams/GradeSheetsPage"));
+const MarksRegistersPage = lazy(() => import("../pages/exams/MarksRegistersPage"));
+const ProgressCardsPage = lazy(() => import("../pages/exams/ProgressCardsPage"));
+const TabulationSheetsPage = lazy(() => import("../pages/exams/TabulationSheetsPage"));
+const CreateTestPage = lazy(() => import("../pages/exams/CreateTestPage"));
+
+// Attendance Module
+const StudentAttendancePage = lazy(() => import("../pages/attendance/StudentAttendancePage"));
+const StaffAttendancePage = lazy(() => import("../pages/attendance/StaffAttendancePage"));
+const SubjectAttendancePage = lazy(() => import("../pages/attendance/SubjectAttendancePage"));
+const AttendanceNotificationsPage = lazy(() => import("../pages/attendance/AttendanceNotificationsPage"));
+
+// Fees Module
+const FeeMastersPage = lazy(() => import("../pages/fees/FeeMastersPage"));
+const FeeStructuresPage = lazy(() => import("../pages/fees/FeeStructuresPage"));
+const FeeCollectionsPage = lazy(() => import("../pages/fees/FeeCollectionsPage"));
+const FeeDiscountsPage = lazy(() => import("../pages/fees/FeeDiscountsPage"));
+const FeeFinesPage = lazy(() => import("../pages/fees/FeeFinesPage"));
+
+// Library Module
+const BooksPage = lazy(() => import("../pages/library/BooksPage"));
+const LibraryMembersPage = lazy(() => import("../pages/library/LibraryMembersPage"));
+const BookIssuesPage = lazy(() => import("../pages/library/BookIssuesPage"));
+const BookReturnsPage = lazy(() => import("../pages/library/BookReturnsPage"));
+const MyBooksPage = lazy(() => import("../pages/library/MyBooksPage"));
+
+// HR Module
+const LeaveApplicationsPage = lazy(() => import("../pages/hr/LeaveApplicationsPage"));
+const LeaveApprovalsPage = lazy(() => import("../pages/hr/LeaveApprovalsPage"));
+const SalaryStructuresPage = lazy(() => import("../pages/hr/SalaryStructuresPage"));
+const PayrollsPage = lazy(() => import("../pages/hr/PayrollsPage"));
+
+// Reports Module
+const ReportTemplatesPage = lazy(() => import("../pages/reports/ReportTemplatesPage"));
+const GeneratedReportsPage = lazy(() => import("../pages/reports/GeneratedReportsPage"));
+const SavedReportsPage = lazy(() => import("../pages/reports/SavedReportsPage"));
+
+// Profile Module
+const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
+const ProfileSettingsPage = lazy(() => import("../pages/profile/ProfileSettingsPage"));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -180,6 +226,53 @@ export default function AppRoutes() {
                     <Route path="assignments/create" element={<LazyRoute component={CreateAssignmentPage} />} />
                     <Route path="assignments/list" element={<LazyRoute component={AssignmentsListPage} />} />
                     <Route path="assignments/submissions" element={<LazyRoute component={SubmissionsPage} />} />
+
+                    {/* Examinations Module */}
+                    <Route path="exams/exams" element={<LazyRoute component={ExamsPage} />} />
+                    <Route path="exams/types" element={<LazyRoute component={ExamTypesPage} />} />
+                    <Route path="exams/schedules" element={<LazyRoute component={ExamSchedulesPage} />} />
+                    <Route path="exams/marks-entry" element={<LazyRoute component={MarksEntryPage} />} />
+                    <Route path="exams/grade-sheets" element={<LazyRoute component={GradeSheetsPage} />} />
+                    <Route path="exams/marks-registers" element={<LazyRoute component={MarksRegistersPage} />} />
+                    <Route path="exams/progress-cards" element={<LazyRoute component={ProgressCardsPage} />} />
+                    <Route path="exams/tabulation-sheets" element={<LazyRoute component={TabulationSheetsPage} />} />
+                    <Route path="exams/create-test" element={<LazyRoute component={CreateTestPage} />} />
+
+                    {/* Attendance Module */}
+                    <Route path="attendance/students" element={<LazyRoute component={StudentAttendancePage} />} />
+                    <Route path="attendance/staff" element={<LazyRoute component={StaffAttendancePage} />} />
+                    <Route path="attendance/subjects" element={<LazyRoute component={SubjectAttendancePage} />} />
+                    <Route path="attendance/notifications" element={<LazyRoute component={AttendanceNotificationsPage} />} />
+
+                    {/* Fees Module */}
+                    <Route path="fees/masters" element={<LazyRoute component={FeeMastersPage} />} />
+                    <Route path="fees/structures" element={<LazyRoute component={FeeStructuresPage} />} />
+                    <Route path="fees/collections" element={<LazyRoute component={FeeCollectionsPage} />} />
+                    <Route path="fees/discounts" element={<LazyRoute component={FeeDiscountsPage} />} />
+                    <Route path="fees/fines" element={<LazyRoute component={FeeFinesPage} />} />
+                    <Route path="fees/my-fees" element={<LazyRoute component={Fees} />} />
+
+                    {/* Library Module */}
+                    <Route path="library/books" element={<LazyRoute component={BooksPage} />} />
+                    <Route path="library/members" element={<LazyRoute component={LibraryMembersPage} />} />
+                    <Route path="library/issues" element={<LazyRoute component={BookIssuesPage} />} />
+                    <Route path="library/returns" element={<LazyRoute component={BookReturnsPage} />} />
+                    <Route path="library/my-books" element={<LazyRoute component={MyBooksPage} />} />
+
+                    {/* HR Module */}
+                    <Route path="hr/leave-applications" element={<LazyRoute component={LeaveApplicationsPage} />} />
+                    <Route path="hr/leave-approvals" element={<LazyRoute component={LeaveApprovalsPage} />} />
+                    <Route path="hr/salary-structures" element={<LazyRoute component={SalaryStructuresPage} />} />
+                    <Route path="hr/payrolls" element={<LazyRoute component={PayrollsPage} />} />
+
+                    {/* Reports Module */}
+                    <Route path="reports/templates" element={<LazyRoute component={ReportTemplatesPage} />} />
+                    <Route path="reports/generated" element={<LazyRoute component={GeneratedReportsPage} />} />
+                    <Route path="reports/saved" element={<LazyRoute component={SavedReportsPage} />} />
+
+                    {/* Profile Module */}
+                    <Route path="profile" element={<LazyRoute component={ProfilePage} />} />
+                    <Route path="profile/settings" element={<LazyRoute component={ProfileSettingsPage} />} />
                 </Route>
             </Route>
 
