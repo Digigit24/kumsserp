@@ -22,6 +22,7 @@ interface TodayClass {
   time: string;
   room: string;
   attendanceTaken: boolean;
+  attendancePercentage?: number;
 }
 
 interface PendingItem {
@@ -66,6 +67,7 @@ export const TeacherDashboard: React.FC = () => {
       time: '11:00 AM - 12:00 PM',
       room: 'Lab 1',
       attendanceTaken: true,
+      attendancePercentage: 93.33,
     },
     {
       id: '3',
@@ -228,9 +230,14 @@ export const TeacherDashboard: React.FC = () => {
                     <div className="text-xs text-muted-foreground mt-1">
                       {cls.time} • {cls.room}
                     </div>
+                    {cls.attendanceTaken && cls.attendancePercentage !== undefined && (
+                      <div className="text-xs font-medium text-green-600 mt-1">
+                        Attendance: {cls.attendancePercentage.toFixed(2)}%
+                      </div>
+                    )}
                   </div>
                   {!cls.attendanceTaken ? (
-                    <Link to="/teacher/attendance">
+                    <Link to={`/attendance/marking?session=${cls.id}`}>
                       <Button size="sm" variant="default">
                         <ClipboardList className="h-4 w-4 mr-1" />
                         Take Attendance
