@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Save, X, Mail, Phone, Calendar, User, GraduationCap, CreditCard, FileText, Heart, Award } from 'lucide-react';
+import { ArrowLeft, Edit, Save, X, Mail, Phone, Calendar, User, GraduationCap, CreditCard, FileText, Heart, Award, ClipboardList } from 'lucide-react';
 import { useStudent } from '../../hooks/useStudents';
 import { studentApi } from '../../services/students.service';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
@@ -21,6 +21,7 @@ import { GuardiansTab } from './components/GuardiansTab';
 import { DocumentsTab } from './components/DocumentsTab';
 import { MedicalTab } from './components/MedicalTab';
 import { CertificatesTab } from './components/CertificatesTab';
+import { AttendanceTab } from './components/AttendanceTab';
 
 export const StudentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -346,6 +347,11 @@ export const StudentDetailPage = () => {
               <Award className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Certificates</span>
               <span className="sm:hidden">Certs</span>
+            </TabsTrigger>
+            <TabsTrigger value="attendance">
+              <ClipboardList className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Attendance</span>
+              <span className="sm:hidden">Attend</span>
             </TabsTrigger>
           </TabsList>
 
@@ -674,6 +680,10 @@ export const StudentDetailPage = () => {
 
           <TabsContent value="certificates">
             <CertificatesTab studentId={student.id} />
+          </TabsContent>
+
+          <TabsContent value="attendance">
+            <AttendanceTab studentId={student.id} />
           </TabsContent>
         </Tabs>
       </div>
