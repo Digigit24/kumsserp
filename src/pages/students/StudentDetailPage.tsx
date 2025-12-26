@@ -22,6 +22,7 @@ import { DocumentsTab } from './components/DocumentsTab';
 import { MedicalTab } from './components/MedicalTab';
 import { CertificatesTab } from './components/CertificatesTab';
 import { AttendanceTab } from './components/AttendanceTab';
+import { FeesTab } from './components/FeesTab';
 
 export const StudentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -352,6 +353,11 @@ export const StudentDetailPage = () => {
               <ClipboardList className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Attendance</span>
               <span className="sm:hidden">Attend</span>
+            </TabsTrigger>
+            <TabsTrigger value="fees">
+              <CreditCard className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Fees</span>
+              <span className="sm:hidden">Fees</span>
             </TabsTrigger>
           </TabsList>
 
@@ -684,6 +690,10 @@ export const StudentDetailPage = () => {
 
           <TabsContent value="attendance">
             <AttendanceTab studentId={student.id} />
+          </TabsContent>
+
+          <TabsContent value="fees">
+            <FeesTab studentId={student.id} />
           </TabsContent>
         </Tabs>
       </div>
