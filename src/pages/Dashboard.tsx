@@ -1,5 +1,6 @@
 import React from 'react';
 import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
+import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { StudentDashboard } from './student/StudentDashboard';
 
 export const Dashboard: React.FC = () => {
@@ -16,6 +17,10 @@ export const Dashboard: React.FC = () => {
   const userType = getUserType();
 
   // Conditional rendering based on user type
+  if (userType === 'super_admin' || userType === 'college_admin') {
+    return <AdminDashboard />;
+  }
+
   if (userType === 'teacher') {
     return <TeacherDashboard />;
   }
@@ -24,20 +29,6 @@ export const Dashboard: React.FC = () => {
     return <StudentDashboard />;
   }
 
-  // Default dashboard for other user types
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Welcome to your dashboard
-        </p>
-      </div>
-
-      {/* Empty dashboard content - ready for your custom content */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Add your dashboard widgets here */}
-      </div>
-    </div>
-  );
+  // Default dashboard for other user types (fallback to admin)
+  return <AdminDashboard />;
 };
