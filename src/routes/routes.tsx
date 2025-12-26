@@ -74,6 +74,23 @@ const StudentPromotionsPage = lazy(() => import("../pages/students").then(m => (
 const CertificatesPage = lazy(() => import("../pages/students").then(m => ({ default: m.CertificatesPage })));
 const StudentIDCardsPage = lazy(() => import("../pages/students").then(m => ({ default: m.StudentIDCardsPage })));
 
+// Attendance Module
+const StudentAttendancePage = lazy(() => import("../pages/attendance/StudentAttendancePage"));
+const SubjectAttendancePage = lazy(() => import("../pages/attendance/SubjectAttendancePage"));
+const MyAttendancePage = lazy(() => import("../pages/attendance/MyAttendancePage"));
+
+// Exams Module
+const ExamsPage = lazy(() => import("../pages/exams/ExamsPage"));
+const ExamSchedulesPage = lazy(() => import("../pages/exams/ExamSchedulesPage"));
+const MarksRegisterPage = lazy(() => import("../pages/exams/MarksRegisterPage"));
+const MyResultsPage = lazy(() => import("../pages/exams/MyResultsPage"));
+
+// Fees Module
+const MyFeesPage = lazy(() => import("../pages/fees/MyFeesPage"));
+
+// Library Module
+const MyBooksPage = lazy(() => import("../pages/library/MyBooksPage"));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -134,6 +151,23 @@ export default function AppRoutes() {
                     <Route path="academic/timetables" element={<LazyRoute component={TimetablesPage} />} />
                     <Route path="academic/lab-schedules" element={<LazyRoute component={LabSchedulesPage} />} />
                     <Route path="academic/class-teachers" element={<LazyRoute component={ClassTeachersPage} />} />
+
+                    {/* Attendance Module */}
+                    <Route path="attendance/students" element={<LazyRoute component={StudentAttendancePage} />} />
+                    <Route path="attendance/subjects" element={<LazyRoute component={SubjectAttendancePage} />} />
+                    <Route path="attendance/my-attendance" element={<LazyRoute component={MyAttendancePage} />} />
+
+                    {/* Exams Module */}
+                    <Route path="exams/exams" element={<LazyRoute component={ExamsPage} />} />
+                    <Route path="exams/schedules" element={<LazyRoute component={ExamSchedulesPage} />} />
+                    <Route path="exams/marks-register" element={<LazyRoute component={MarksRegisterPage} />} />
+                    <Route path="exams/my-results" element={<LazyRoute component={MyResultsPage} />} />
+
+                    {/* Fees Module */}
+                    <Route path="fees/my-fees" element={<LazyRoute component={MyFeesPage} />} />
+
+                    {/* Library Module */}
+                    <Route path="library/my-books" element={<LazyRoute component={MyBooksPage} />} />
                 </Route>
             </Route>
 
