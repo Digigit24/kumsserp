@@ -390,34 +390,6 @@ export const PrintRequestsPage: React.FC = () => {
         </Dialog>
       </div>
 
-      {/* Urgent Notifications Banner */}
-      {stats.urgent > 0 && (
-        <Card className="border-orange-500 bg-orange-500/10 animate-pulse">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-500 text-white rounded-lg">
-                <Bell className="h-6 w-6" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-orange-900 dark:text-orange-100">
-                  Urgent Print Requests Pending!
-                </h4>
-                <p className="text-sm text-orange-800 dark:text-orange-200">
-                  You have {stats.urgent} urgent print request{stats.urgent > 1 ? 's' : ''} that need immediate attention.
-                </p>
-              </div>
-              <Button
-                variant="default"
-                className="bg-orange-600 hover:bg-orange-700"
-                onClick={() => setPriorityFilter('urgent')}
-              >
-                View Urgent
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
