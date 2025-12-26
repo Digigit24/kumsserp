@@ -354,6 +354,66 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= MY CLASSES (TEACHER ONLY) =================
+  {
+    group: "My Classes",
+    icon: School,
+    roles: ["teacher"],
+    items: [
+      {
+        name: "Attendance",
+        href: "/teacher/attendance",
+        icon: ClipboardList,
+        roles: ["teacher"],
+      },
+      {
+        name: "Students",
+        href: "/teacher/students",
+        icon: Users,
+        roles: ["teacher"],
+      },
+      {
+        name: "Subjects",
+        href: "/teacher/subjects",
+        icon: BookOpen,
+        roles: ["teacher"],
+      },
+    ],
+  },
+
+  // ================= ASSIGNMENTS (TEACHER) =================
+  {
+    group: "Assignments",
+    icon: FileText,
+    roles: ["teacher", "student"],
+    items: [
+      {
+        name: "Create Assignment",
+        href: "/assignments/create",
+        icon: FileText,
+        roles: ["teacher"],
+      },
+      {
+        name: "My Assignments",
+        href: "/assignments/list",
+        icon: FileText,
+        roles: ["teacher"],
+      },
+      {
+        name: "Submissions",
+        href: "/assignments/submissions",
+        icon: ClipboardList,
+        roles: ["teacher"],
+      },
+      {
+        name: "View Assignments",
+        href: "/assignments/student",
+        icon: FileText,
+        roles: ["student"],
+      },
+    ],
+  },
+
   // ================= CORE (ADMIN ONLY) =================
   {
     group: "Core",
@@ -658,6 +718,18 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin", "teacher", "student"], // All can view
       },
       {
+        name: "Marks Entry",
+        href: "/exams/marks-entry",
+        icon: PenTool,
+        roles: ["teacher"], // Teacher-specific marks entry
+      },
+      {
+        name: "Grade Sheets",
+        href: "/exams/grade-sheets",
+        icon: FileText,
+        roles: ["teacher"], // Teacher can view grade sheets
+      },
+      {
         name: "Marks Registers",
         href: "/exams/marks-registers",
         icon: FileText,
@@ -884,6 +956,27 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/communication/message-logs",
         icon: FileText,
         roles: ["super_admin", "college_admin"],
+      },
+    ],
+  },
+
+  // ================= PROFILE (ALL USERS) =================
+  {
+    group: "Profile",
+    icon: Users,
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+    items: [
+      {
+        name: "My Profile",
+        href: "/profile",
+        icon: Users,
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+      },
+      {
+        name: "Settings",
+        href: "/profile/settings",
+        icon: Settings,
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
       },
     ],
   },
