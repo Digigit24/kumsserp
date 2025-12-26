@@ -844,6 +844,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         icon: BookOpen,
         roles: ["student", "teacher"],
       },
+      {
+        name: "Student Library", // Comprehensive library page for students
+        href: "/library/student",
+        icon: Library,
+        roles: ["student"],
+      },
     ],
   },
 
@@ -956,7 +962,19 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Communication Center",
         href: "/communication",
         icon: MessageSquare,
-        roles: ["super_admin", "college_admin", "teacher"], // Admins and teachers can send
+        roles: ["super_admin", "college_admin"], // Admin communication center
+      },
+      {
+        name: "Teacher Messages",
+        href: "/communication/teacher",
+        icon: MessageSquare,
+        roles: ["teacher"], // Teacher communication
+      },
+      {
+        name: "Messages",
+        href: "/communication/student",
+        icon: MessageSquare,
+        roles: ["student"], // Student communication
       },
       {
         name: "Notices",

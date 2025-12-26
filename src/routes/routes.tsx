@@ -149,10 +149,15 @@ const ProfileSettingsPage = lazy(() => import("../pages/profile/ProfileSettingsP
 
 // Communication Module
 const CommunicationPage = lazy(() => import("../pages/communication/CommunicationPage"));
+const StudentCommunicationPage = lazy(() => import("../pages/communication/StudentCommunicationPage"));
+const TeacherCommunicationPage = lazy(() => import("../pages/communication/TeacherCommunicationPage"));
 
 // Store Module
 const StoreItemsPage = lazy(() => import("../pages/store/StoreItemsPage"));
 const PrintRequestsPage = lazy(() => import("../pages/store/PrintRequestsPage"));
+
+// Library Student Module
+const StudentLibraryPage = lazy(() => import("../pages/library/StudentLibraryPage"));
 
 export default function AppRoutes() {
     return (
@@ -273,6 +278,7 @@ export default function AppRoutes() {
                     <Route path="library/issues" element={<LazyRoute component={BookIssuesPage} />} />
                     <Route path="library/returns" element={<LazyRoute component={BookReturnsPage} />} />
                     <Route path="library/my-books" element={<LazyRoute component={MyBooksPage} />} />
+                    <Route path="library/student" element={<LazyRoute component={StudentLibraryPage} />} />
 
                     {/* HR Module */}
                     <Route path="hr/leave-applications" element={<LazyRoute component={LeaveApplicationsPage} />} />
@@ -291,6 +297,8 @@ export default function AppRoutes() {
 
                     {/* Communication Module */}
                     <Route path="communication" element={<LazyRoute component={CommunicationPage} />} />
+                    <Route path="communication/student" element={<LazyRoute component={StudentCommunicationPage} />} />
+                    <Route path="communication/teacher" element={<LazyRoute component={TeacherCommunicationPage} />} />
 
                     {/* Store Module */}
                     <Route path="store/items" element={<LazyRoute component={StoreItemsPage} />} />
