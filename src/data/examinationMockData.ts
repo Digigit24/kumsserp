@@ -335,6 +335,19 @@ export interface MarksRegister {
   section: number | null;
   created_by: string;
   updated_by: string;
+  // Display fields
+  class_name: string;
+  subject_name: string;
+  total_students: number;
+  students_appeared: number;
+  students_passed: number;
+  pass_percentage: number;
+  highest_marks: number;
+  lowest_marks: number;
+  average_marks: number;
+  is_verified: boolean;
+  verified_by: string | null;
+  remarks: string | null;
 }
 
 export const mockMarksRegisters: MarksRegister[] = [
@@ -350,6 +363,68 @@ export const mockMarksRegisters: MarksRegister[] = [
     section: 1,
     created_by: '1',
     updated_by: '1',
+    class_name: 'Class 10 - A',
+    subject_name: 'Mathematics',
+    total_students: 45,
+    students_appeared: 43,
+    students_passed: 38,
+    pass_percentage: 88.37,
+    highest_marks: 98,
+    lowest_marks: 28,
+    average_marks: 72.5,
+    is_verified: true,
+    verified_by: 'Prof. John Doe',
+    remarks: 'Excellent performance overall',
+  },
+  {
+    id: 2,
+    created_at: '2025-01-02T00:00:00Z',
+    updated_at: '2025-01-02T00:00:00Z',
+    is_active: true,
+    max_marks: 100,
+    pass_marks: 40,
+    exam: 1,
+    subject: 2,
+    section: 1,
+    created_by: '1',
+    updated_by: '1',
+    class_name: 'Class 10 - A',
+    subject_name: 'Physics',
+    total_students: 45,
+    students_appeared: 44,
+    students_passed: 35,
+    pass_percentage: 79.55,
+    highest_marks: 95,
+    lowest_marks: 22,
+    average_marks: 65.8,
+    is_verified: true,
+    verified_by: 'Dr. Jane Smith',
+    remarks: null,
+  },
+  {
+    id: 3,
+    created_at: '2025-01-03T00:00:00Z',
+    updated_at: '2025-01-03T00:00:00Z',
+    is_active: true,
+    max_marks: 100,
+    pass_marks: 40,
+    exam: 1,
+    subject: 3,
+    section: 2,
+    created_by: '1',
+    updated_by: '1',
+    class_name: 'Class 10 - B',
+    subject_name: 'Chemistry',
+    total_students: 42,
+    students_appeared: 40,
+    students_passed: 32,
+    pass_percentage: 80.0,
+    highest_marks: 92,
+    lowest_marks: 30,
+    average_marks: 68.3,
+    is_verified: false,
+    verified_by: null,
+    remarks: 'Pending verification',
   },
 ];
 
@@ -372,6 +447,10 @@ export interface StudentMarks {
   student: number;
   created_by: string;
   updated_by: string;
+  // Display fields
+  student_name: string;
+  student_roll_number: string;
+  remarks: string | null;
 }
 
 export const mockStudentMarks: StudentMarks[] = [
@@ -390,6 +469,66 @@ export const mockStudentMarks: StudentMarks[] = [
     student: 1,
     created_by: '1',
     updated_by: '1',
+    student_name: 'John Smith',
+    student_roll_number: '2024001',
+    remarks: null,
+  },
+  {
+    id: 2,
+    created_at: '2025-03-15T00:00:00Z',
+    updated_at: '2025-03-15T00:00:00Z',
+    is_active: true,
+    theory_marks: 65,
+    practical_marks: 18,
+    internal_marks: 9,
+    total_marks: 92,
+    grade: 'A',
+    is_absent: false,
+    register: 1,
+    student: 2,
+    created_by: '1',
+    updated_by: '1',
+    student_name: 'Emma Johnson',
+    student_roll_number: '2024002',
+    remarks: 'Excellent performance',
+  },
+  {
+    id: 3,
+    created_at: '2025-03-15T00:00:00Z',
+    updated_at: '2025-03-15T00:00:00Z',
+    is_active: true,
+    theory_marks: 45,
+    practical_marks: 15,
+    internal_marks: 8,
+    total_marks: 68,
+    grade: 'B',
+    is_absent: false,
+    register: 1,
+    student: 3,
+    created_by: '1',
+    updated_by: '1',
+    student_name: 'Michael Brown',
+    student_roll_number: '2024003',
+    remarks: null,
+  },
+  {
+    id: 4,
+    created_at: '2025-03-15T00:00:00Z',
+    updated_at: '2025-03-15T00:00:00Z',
+    is_active: true,
+    theory_marks: null,
+    practical_marks: null,
+    internal_marks: null,
+    total_marks: 0,
+    grade: null,
+    is_absent: true,
+    register: 1,
+    student: 4,
+    created_by: '1',
+    updated_by: '1',
+    student_name: 'Sarah Davis',
+    student_roll_number: '2024004',
+    remarks: 'Medical leave',
   },
 ];
 
