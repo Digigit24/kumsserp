@@ -147,6 +147,9 @@ const SavedReportsPage = lazy(() => import("../pages/reports/SavedReportsPage"))
 const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const ProfileSettingsPage = lazy(() => import("../pages/profile/ProfileSettingsPage"));
 
+// Communication Module
+const CommunicationPage = lazy(() => import("../pages/communication/CommunicationPage"));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -281,6 +284,9 @@ export default function AppRoutes() {
                     {/* Profile Module */}
                     <Route path="profile" element={<LazyRoute component={ProfilePage} />} />
                     <Route path="profile/settings" element={<LazyRoute component={ProfileSettingsPage} />} />
+
+                    {/* Communication Module */}
+                    <Route path="communication" element={<LazyRoute component={CommunicationPage} />} />
                 </Route>
             </Route>
 

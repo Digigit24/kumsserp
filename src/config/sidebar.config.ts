@@ -947,16 +947,16 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
     items: [
       {
-        name: "Notices",
-        href: "/communication/notices",
+        name: "Communication Center",
+        href: "/communication",
         icon: MessageSquare,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // All can view
+        roles: ["super_admin", "college_admin", "teacher"], // Admins and teachers can send
       },
       {
-        name: "Bulk Messages",
-        href: "/communication/bulk-messages",
-        icon: MessageSquare,
-        roles: ["super_admin", "college_admin", "teacher"],
+        name: "Notices",
+        href: "/communication/notices",
+        icon: Bell,
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // All can view
       },
       {
         name: "Message Logs",
