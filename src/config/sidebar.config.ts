@@ -309,6 +309,7 @@ import {
   Bug,
   Building2,
   Calendar,
+  CheckSquare,
   ClipboardList,
   CreditCard,
   FileText,
@@ -722,6 +723,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/exams/marks-entry",
         icon: PenTool,
         roles: ["teacher"], // Teacher-specific marks entry
+      },
+      {
+        name: "Marking",
+        href: "/exams/marking",
+        icon: CheckSquare,
+        roles: ["teacher"], // Teacher-specific marking
       },
       {
         name: "Grade Sheets",

@@ -107,6 +107,8 @@ const MarksRegistersPage = lazy(() => import("../pages/exams/MarksRegistersPage"
 const ProgressCardsPage = lazy(() => import("../pages/exams/ProgressCardsPage"));
 const TabulationSheetsPage = lazy(() => import("../pages/exams/TabulationSheetsPage"));
 const CreateTestPage = lazy(() => import("../pages/exams/CreateTestPage"));
+const MarkingPage = lazy(() => import("../pages/exams/MarkingPage"));
+const MarkingRegisterPage = lazy(() => import("../pages/exams/MarkingRegisterPage"));
 
 // Attendance Module
 const StudentAttendancePage = lazy(() => import("../pages/attendance/StudentAttendancePage"));
@@ -237,6 +239,8 @@ export default function AppRoutes() {
                     <Route path="exams/progress-cards" element={<LazyRoute component={ProgressCardsPage} />} />
                     <Route path="exams/tabulation-sheets" element={<LazyRoute component={TabulationSheetsPage} />} />
                     <Route path="exams/create-test" element={<LazyRoute component={CreateTestPage} />} />
+                    <Route path="exams/marking" element={<LazyRoute component={MarkingPage} />} />
+                    <Route path="exams/marking/:questionPaperId" element={<LazyRoute component={MarkingRegisterPage} />} />
 
                     {/* Attendance Module */}
                     <Route path="attendance/students" element={<LazyRoute component={StudentAttendancePage} />} />
