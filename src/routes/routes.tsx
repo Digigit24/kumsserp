@@ -87,6 +87,16 @@ const StudentCertificates = lazy(() => import("../pages/student").then(m => ({ d
 const Notices = lazy(() => import("../pages/student").then(m => ({ default: m.Notices })));
 const Support = lazy(() => import("../pages/student").then(m => ({ default: m.Support })));
 
+// Teacher Portal
+const TeacherAttendancePage = lazy(() => import("../pages/teacher").then(m => ({ default: m.TeacherAttendancePage })));
+const TeacherStudentsPage = lazy(() => import("../pages/teacher").then(m => ({ default: m.TeacherStudentsPage })));
+const TeacherSubjectsPage = lazy(() => import("../pages/teacher").then(m => ({ default: m.TeacherSubjectsPage })));
+
+// Assignments
+const CreateAssignmentPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.CreateAssignmentPage })));
+const AssignmentsListPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.AssignmentsListPage })));
+const SubmissionsPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.SubmissionsPage })));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -160,6 +170,16 @@ export default function AppRoutes() {
                     <Route path="student/certificates" element={<LazyRoute component={StudentCertificates} />} />
                     <Route path="student/notices" element={<LazyRoute component={Notices} />} />
                     <Route path="student/support" element={<LazyRoute component={Support} />} />
+
+                    {/* Teacher Portal */}
+                    <Route path="teacher/attendance" element={<LazyRoute component={TeacherAttendancePage} />} />
+                    <Route path="teacher/students" element={<LazyRoute component={TeacherStudentsPage} />} />
+                    <Route path="teacher/subjects" element={<LazyRoute component={TeacherSubjectsPage} />} />
+
+                    {/* Assignments */}
+                    <Route path="assignments/create" element={<LazyRoute component={CreateAssignmentPage} />} />
+                    <Route path="assignments/list" element={<LazyRoute component={AssignmentsListPage} />} />
+                    <Route path="assignments/submissions" element={<LazyRoute component={SubmissionsPage} />} />
                 </Route>
             </Route>
 

@@ -1,18 +1,47 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { SIDEBAR_GROUPS } from "@/config/sidebar.config"
+import { getFilteredSidebarGroups } from "@/config/sidebar.config"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
 
 export const Sidebar = () => {
   const location = useLocation()
   const [openGroup, setOpenGroup] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  // Get user type from auth store or localStorage
+  const userType = useMemo(() => {
+    if (user?.user_type) return user.user_type
+
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('kumss_user') || '{}')
+      return storedUser.user_type || storedUser.userType || 'student'
+    } catch {
+      return 'student'
+    }
+  }, [user])
+
+  // Filter sidebar groups based on user type
+  const filteredGroups = useMemo(() => {
+    return getFilteredSidebarGroups(userType)
+  }, [userType])
+
+  // Determine panel title based on user type
+  const panelTitle = useMemo(() => {
+    if (userType === 'teacher') return 'Teacher Portal'
+    if (userType === 'student') return 'Student Portal'
+    if (userType === 'college_admin') return 'College Admin'
+    if (userType === 'super_admin') return 'Super Admin'
+    if (userType === 'parent') return 'Parent Portal'
+    return 'Portal'
+  }, [userType])
 
   return (
     <aside className="w-64 h-screen border-r bg-background overflow-y-auto">
-      <div className="p-4 font-bold text-lg">Admin Panel</div>
+      <div className="p-4 font-bold text-lg">{panelTitle}</div>
 
-      {SIDEBAR_GROUPS.map((group) => {
+      {filteredGroups.map((group) => {
         const GroupIcon = group.icon
         const isOpen = openGroup === group.group
 
