@@ -207,7 +207,6 @@ SideDrawerClose.displayName = "SideDrawerClose"
  * Works with your existing SideDrawer and sidebar config
  */
 
-import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
