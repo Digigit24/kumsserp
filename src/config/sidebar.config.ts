@@ -6,10 +6,12 @@ import {
     Bug,
     Building2,
     Calendar,
+    CheckCircle2,
     ClipboardList,
     CreditCard,
     FileText,
     GraduationCap,
+    HelpCircle,
     Home,
     Library,
     MessageSquare,
@@ -18,6 +20,8 @@ import {
     Settings,
     Shield,
     Store,
+    Trophy,
+    User,
     Users,
 } from "lucide-react";
 
@@ -38,6 +42,49 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     group: "Dashboard",
     icon: Home,
     items: [{ name: "Dashboard", href: "/dashboard", icon: Home }],
+  },
+
+  // ================= STUDENT PORTAL =================
+  {
+    group: "Student Portal",
+    icon: GraduationCap,
+    items: [
+      { name: "Student Dashboard", href: "/student/dashboard", icon: Home },
+      { name: "My Profile", href: "/student/profile", icon: User },
+    ],
+  },
+
+  // ================= ACADEMICS (STUDENT) =================
+  {
+    group: "Academics",
+    icon: BookOpen,
+    items: [
+      { name: "Attendance", href: "/student/academics/attendance", icon: CheckCircle2 },
+      { name: "Subjects", href: "/student/academics/subjects", icon: BookOpen },
+      { name: "Assignments", href: "/student/academics/assignments", icon: FileText },
+    ],
+  },
+
+  // ================= EXAMINATIONS (STUDENT) =================
+  {
+    group: "Examinations",
+    icon: Trophy,
+    items: [
+      { name: "Exam Form", href: "/student/examinations/exam-form", icon: FileText },
+      { name: "Results", href: "/student/examinations/results", icon: Trophy },
+    ],
+  },
+
+  // ================= STUDENT SERVICES =================
+  {
+    group: "Student Services",
+    icon: FileText,
+    items: [
+      { name: "Fees", href: "/student/fees", icon: CreditCard },
+      { name: "Certificates / Requests", href: "/student/certificates", icon: FileText },
+      { name: "Notices", href: "/student/notices", icon: Bell },
+      { name: "Support / Helpdesk", href: "/student/support", icon: HelpCircle },
+    ],
   },
 
   // ================= CORE =================
