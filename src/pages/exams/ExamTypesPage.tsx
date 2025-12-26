@@ -1,12 +1,10 @@
 /**
  * Exam Types Page
- * Manage different types of examinations
  */
 
 import { useState } from 'react';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 
 interface ExamType {
   id: number;
@@ -18,7 +16,7 @@ interface ExamType {
 }
 
 const ExamTypesPage = () => {
-  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   const mockData = { count: 0, next: null, previous: null, results: [] as ExamType[] };
 
@@ -62,26 +60,21 @@ const ExamTypesPage = () => {
         <p className="text-muted-foreground">Manage different types of examinations</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Exam Types List</CardTitle>
-          <CardDescription>Configure exam types and their weightages</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={mockData.results}
-            totalCount={mockData.count}
-            currentPage={filters.page}
-            pageSize={filters.page_size}
-            onPageChange={(page, pageSize) => setFilters({ ...filters, page, page_size: pageSize })}
-            onFilterChange={(newFilters) => setFilters({ ...filters, ...newFilters })}
-            filterConfig={filterConfig}
-            searchPlaceholder="Search exam types..."
-            addNewLabel="Add Exam Type"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Exam Types List"
+        description="Configure exam types and their weightages"
+        columns={columns}
+        data={mockData}
+        isLoading={false}
+        error={null}
+        onRefresh={() => {}}
+        onAdd={() => {}}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search exam types..."
+        addButtonLabel="Add Exam Type"
+      />
     </div>
   );
 };

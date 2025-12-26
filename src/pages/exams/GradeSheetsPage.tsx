@@ -1,12 +1,10 @@
 /**
  * Grade Sheets Page
- * View grade sheets for students
  */
 
 import { useState } from 'react';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 interface GradeSheet {
   id: number;
@@ -19,8 +17,8 @@ interface GradeSheet {
 }
 
 const GradeSheetsPage = () => {
-  const [filters] = useState({ page: 1, page_size: 20 });
-  const mockData = { count: 0, results: [] as GradeSheet[] };
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const mockData = { count: 0, next: null, previous: null, results: [] as GradeSheet[] };
 
   const columns: Column<GradeSheet>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
@@ -54,21 +52,17 @@ const GradeSheetsPage = () => {
         <p className="text-muted-foreground">View student grade sheets</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Grade Sheets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={mockData.results}
-            totalCount={mockData.count}
-            currentPage={filters.page}
-            pageSize={filters.page_size}
-            searchPlaceholder="Search students..."
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Grade Sheets"
+        columns={columns}
+        data={mockData}
+        isLoading={false}
+        error={null}
+        onRefresh={() => {}}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search students..."
+      />
     </div>
   );
 };

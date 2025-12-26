@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 interface StaffAttendanceRecord {
   id: number;
@@ -19,8 +18,8 @@ interface StaffAttendanceRecord {
 }
 
 const StaffAttendancePage = () => {
-  const [filters] = useState({ page: 1, page_size: 20 });
-  const mockData = { count: 0, results: [] as StaffAttendanceRecord[] };
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const mockData = { count: 0, next: null, previous: null, results: [] as StaffAttendanceRecord[] };
 
   const columns: Column<StaffAttendanceRecord>[] = [
     { key: 'staff_name', label: 'Staff Name', sortable: true },
@@ -49,22 +48,19 @@ const StaffAttendancePage = () => {
         <p className="text-muted-foreground">Manage staff attendance records</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Staff Attendance Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={mockData.results}
-            totalCount={mockData.count}
-            currentPage={filters.page}
-            pageSize={filters.page_size}
-            searchPlaceholder="Search staff..."
-            addNewLabel="Mark Attendance"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Staff Attendance Records"
+        columns={columns}
+        data={mockData}
+        isLoading={false}
+        error={null}
+        onRefresh={() => {}}
+        onAdd={() => {}}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search staff..."
+        addButtonLabel="Mark Attendance"
+      />
     </div>
   );
 };

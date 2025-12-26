@@ -6,7 +6,6 @@
 import { useState } from 'react';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 
 interface ExamListItem {
   id: number;
@@ -21,10 +20,8 @@ interface ExamListItem {
 }
 
 const ExamsPage = () => {
-  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
-  const [isLoading] = useState(false);
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
-  // Mock data - replace with actual API call
   const mockData = {
     count: 0,
     next: null,
@@ -32,7 +29,6 @@ const ExamsPage = () => {
     results: [] as ExamListItem[],
   };
 
-  // Define table columns
   const columns: Column<ExamListItem>[] = [
     {
       key: 'code',
@@ -90,7 +86,6 @@ const ExamsPage = () => {
     },
   ];
 
-  // Define filter configuration
   const filterConfig: FilterConfig[] = [
     {
       name: 'is_published',
@@ -114,60 +109,28 @@ const ExamsPage = () => {
     },
   ];
 
-  const handleFilterChange = (newFilters: Record<string, string>) => {
-    setFilters({ ...filters, ...newFilters, page: 1 });
-  };
-
-  const handlePageChange = (page: number, pageSize: number) => {
-    setFilters({ ...filters, page, page_size: pageSize });
-  };
-
-  const handleRefresh = () => {
-    // Refetch data
-  };
-
-  const handleAddNew = () => {
-    // Open create form
-  };
-
-  const handleRowClick = (exam: ExamListItem) => {
-    // Open detail view
-    console.log('View exam:', exam);
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Examinations</h1>
-          <p className="text-muted-foreground">Manage examinations and exam schedules</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Examinations</h1>
+        <p className="text-muted-foreground">Manage examinations and exam schedules</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Exam List</CardTitle>
-          <CardDescription>View and manage all examinations</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={mockData.results}
-            totalCount={mockData.count}
-            currentPage={filters.page}
-            pageSize={filters.page_size}
-            onPageChange={handlePageChange}
-            onFilterChange={handleFilterChange}
-            filterConfig={filterConfig}
-            onRefresh={handleRefresh}
-            onAddNew={handleAddNew}
-            onRowClick={handleRowClick}
-            isLoading={isLoading}
-            searchPlaceholder="Search exams..."
-            addNewLabel="Add Exam"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Exam List"
+        description="View and manage all examinations"
+        columns={columns}
+        data={mockData}
+        isLoading={false}
+        error={null}
+        onRefresh={() => {}}
+        onAdd={() => {}}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search exams..."
+        addButtonLabel="Add Exam"
+      />
     </div>
   );
 };

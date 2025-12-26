@@ -6,7 +6,6 @@
 import { useState } from 'react';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 
 interface ExamSchedule {
   id: number;
@@ -22,8 +21,17 @@ interface ExamSchedule {
 }
 
 const ExamSchedulesPage = () => {
-  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
-  const mockData = { count: 0, next: null, previous: null, results: [] as ExamSchedule[] };
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [isLoading] = useState(false);
+  const [error] = useState<string | null>(null);
+
+  // Mock data - replace with actual API call
+  const mockData = {
+    count: 0,
+    next: null,
+    previous: null,
+    results: [] as ExamSchedule[]
+  };
 
   const columns: Column<ExamSchedule>[] = [
     { key: 'exam_name', label: 'Exam', sortable: true },
@@ -80,26 +88,21 @@ const ExamSchedulesPage = () => {
         <p className="text-muted-foreground">Manage exam schedules and timetables</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Exam Schedules List</CardTitle>
-          <CardDescription>View and manage all exam schedules</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={mockData.results}
-            totalCount={mockData.count}
-            currentPage={filters.page}
-            pageSize={filters.page_size}
-            onPageChange={(page, pageSize) => setFilters({ ...filters, page, page_size: pageSize })}
-            onFilterChange={(newFilters) => setFilters({ ...filters, ...newFilters })}
-            filterConfig={filterConfig}
-            searchPlaceholder="Search schedules..."
-            addNewLabel="Add Schedule"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Exam Schedules"
+        description="View and manage all exam schedules"
+        columns={columns}
+        data={mockData}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={() => {}}
+        onAdd={() => {}}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search schedules..."
+        addButtonLabel="Add Schedule"
+      />
     </div>
   );
 };
