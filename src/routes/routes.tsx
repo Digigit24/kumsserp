@@ -137,6 +137,7 @@ const LeaveApplicationsPage = lazy(() => import("../pages/hr/LeaveApplicationsPa
 const LeaveApprovalsPage = lazy(() => import("../pages/hr/LeaveApprovalsPage"));
 const SalaryStructuresPage = lazy(() => import("../pages/hr/SalaryStructuresPage"));
 const PayrollsPage = lazy(() => import("../pages/hr/PayrollsPage"));
+const TeachersPage = lazy(() => import("../pages/hr").then(m => ({ default: m.TeachersPage })));
 
 // Reports Module
 const ReportTemplatesPage = lazy(() => import("../pages/reports/ReportTemplatesPage"));
@@ -281,6 +282,7 @@ export default function AppRoutes() {
                     <Route path="library/student" element={<LazyRoute component={StudentLibraryPage} />} />
 
                     {/* HR Module */}
+                    <Route path="hr/teachers" element={<LazyRoute component={TeachersPage} />} />
                     <Route path="hr/leave-applications" element={<LazyRoute component={LeaveApplicationsPage} />} />
                     <Route path="hr/leave-approvals" element={<LazyRoute component={LeaveApprovalsPage} />} />
                     <Route path="hr/salary-structures" element={<LazyRoute component={SalaryStructuresPage} />} />

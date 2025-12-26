@@ -1,24 +1,29 @@
 /**
- * Students Page - Main students management page
+ * Teachers Page - Main teachers management page
  * Uses DataTable and DetailSidebar for CRUD operations
  */
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudents } from '../../hooks/useStudents';
+import { useUsers } from '../../hooks/useAccounts';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
-import { StudentForm } from './components/StudentForm';
-import type { StudentListItem, StudentFilters } from '../../types/students.types';
+import { TeacherForm } from './components/TeacherForm';
+import type { UserListItem, UserFilters } from '../../types/accounts.types';
 
-export const StudentsPage = () => {
+export const TeachersPage = () => {
     const navigate = useNavigate();
-    const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
-    const { data, isLoading, error, refetch } = useStudents(filters);
+    const [filters, setFilters] = useState<UserFilters>({
+        page: 1,
+        page_size: 20,
+        user_type: 'teacher' // Filter only teachers
+    });
+    const { data, isLoading, error, refetch } = useUsers(filters);
 
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+    const [selectedTeacher, setSelectedTeacher] = useState<UserListItem | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const getInitials = (name: string) => {
@@ -31,71 +36,67 @@ export const StudentsPage = () => {
     };
 
     // Define table columns
-    const columns: Column<StudentListItem>[] = [
+    const columns: Column<UserListItem>[] = [
         {
-            key: 'admission_number',
-            label: 'Admission No.',
+            key: 'username',
+            label: 'Username',
             sortable: true,
             className: 'font-medium',
         },
         {
             key: 'full_name',
-            label: 'Student Name',
+            label: 'Teacher Name',
             sortable: true,
-            render: (student) => (
+            render: (teacher) => (
                 <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8 border-2 border-background">
                         <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                            {getInitials(student.full_name)}
+                            {getInitials(teacher.full_name)}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                        <span className="font-medium">{student.full_name}</span>
-                        <span className="text-xs text-muted-foreground">{student.registration_number}</span>
+                        <span className="font-medium">{teacher.full_name}</span>
+                        <span className="text-xs text-muted-foreground">{teacher.email}</span>
                     </div>
                 </div>
             ),
         },
         {
-            key: 'program_name',
-            label: 'Program',
+            key: 'college_name',
+            label: 'College',
             sortable: true,
-            render: (student) => (
-                <Badge variant="secondary" className="transition-all hover:scale-105">{student.program_name}</Badge>
-            ),
-        },
-        {
-            key: 'current_class_name',
-            label: 'Class',
-            render: (student) => student.current_class_name || '-',
-        },
-        {
-            key: 'email',
-            label: 'Email',
-            render: (student) => (
-                <span className="text-sm">{student.email}</span>
-            ),
-        },
-        {
-            key: 'phone',
-            label: 'Phone',
-            render: (student) => student.phone || '-',
-        },
-        {
-            key: 'is_active',
-            label: 'Status',
-            render: (student) => (
-                <Badge variant={student.is_active ? 'success' : 'destructive'} className="transition-all">
-                    {student.is_active ? 'Active' : 'Inactive'}
+            render: (teacher) => (
+                <Badge variant="secondary" className="transition-all hover:scale-105">
+                    {teacher.college_name || 'N/A'}
                 </Badge>
             ),
         },
         {
-            key: 'is_alumni',
-            label: 'Alumni',
-            render: (student) => student.is_alumni ? (
-                <Badge variant="outline">Alumni</Badge>
-            ) : null,
+            key: 'date_joined',
+            label: 'Joined Date',
+            render: (teacher) => (
+                <span className="text-sm">
+                    {new Date(teacher.date_joined).toLocaleDateString()}
+                </span>
+            ),
+        },
+        {
+            key: 'is_verified',
+            label: 'Verified',
+            render: (teacher) => (
+                <Badge variant={teacher.is_verified ? 'default' : 'outline'} className="transition-all">
+                    {teacher.is_verified ? 'Verified' : 'Unverified'}
+                </Badge>
+            ),
+        },
+        {
+            key: 'is_active',
+            label: 'Status',
+            render: (teacher) => (
+                <Badge variant={teacher.is_active ? 'success' : 'destructive'} className="transition-all">
+                    {teacher.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+            ),
         },
     ];
 
@@ -112,46 +113,39 @@ export const StudentsPage = () => {
             ],
         },
         {
-            name: 'is_alumni',
-            label: 'Alumni Status',
+            name: 'is_verified',
+            label: 'Verification Status',
             type: 'select',
             options: [
                 { value: '', label: 'All' },
-                { value: 'true', label: 'Alumni' },
-                { value: 'false', label: 'Current Students' },
-            ],
-        },
-        {
-            name: 'gender',
-            label: 'Gender',
-            type: 'select',
-            options: [
-                { value: '', label: 'All' },
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
-                { value: 'other', label: 'Other' },
+                { value: 'true', label: 'Verified' },
+                { value: 'false', label: 'Unverified' },
             ],
         },
     ];
 
-    const handleRowClick = (student: StudentListItem) => {
-        navigate(`/students/${student.id}`);
+    const handleRowClick = (teacher: UserListItem) => {
+        setSelectedTeacher(teacher);
+        setSidebarMode('edit');
+        setIsSidebarOpen(true);
     };
 
     const handleAdd = () => {
+        setSelectedTeacher(null);
         setSidebarMode('create');
         setIsSidebarOpen(true);
     };
 
     const handleCloseSidebar = () => {
         setIsSidebarOpen(false);
+        setSelectedTeacher(null);
     };
 
     return (
         <div className="p-4 md:p-6 animate-fade-in">
             <DataTable
-                title="Students"
-                description="Manage all student records, admissions, and information"
+                title="Teachers"
+                description="Manage all teacher records, accounts, and information"
                 data={data}
                 columns={columns}
                 isLoading={isLoading}
@@ -162,20 +156,21 @@ export const StudentsPage = () => {
                 filters={filters}
                 onFiltersChange={setFilters}
                 filterConfig={filterConfig}
-                searchPlaceholder="Search by name, admission number, email..."
-                addButtonLabel="Add Student"
+                searchPlaceholder="Search by name, username, email..."
+                addButtonLabel="Add Teacher"
             />
 
-            {/* Create Sidebar */}
+            {/* Create/Edit Sidebar */}
             <DetailSidebar
                 isOpen={isSidebarOpen}
                 onClose={handleCloseSidebar}
-                title="Add New Student"
+                title={sidebarMode === 'create' ? 'Add New Teacher' : 'Edit Teacher'}
                 mode={sidebarMode}
                 width="2xl"
             >
-                <StudentForm
+                <TeacherForm
                     mode={sidebarMode}
+                    teacherId={selectedTeacher?.id}
                     onSuccess={() => {
                         handleCloseSidebar();
                         refetch();
