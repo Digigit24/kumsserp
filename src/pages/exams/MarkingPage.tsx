@@ -110,7 +110,7 @@ const MarkingPage = () => {
   ];
 
   // Calculate overall statistics
-  const totalPapers = mockQuestionPapers.length;
+  const totalPapers = mockQuestionPapersPaginated.count;
   const totalStudentsToMark = mockMarkingStatistics.reduce((sum, stat) => sum + stat.total_students, 0);
   const totalMarked = mockMarkingStatistics.reduce((sum, stat) => sum + stat.marked_students, 0);
   const overallProgress = totalStudentsToMark > 0 ? (totalMarked / totalStudentsToMark) * 100 : 0;
