@@ -4,91 +4,191 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { Save, CheckCircle } from 'lucide-react';
-
-interface StudentMark {
-  id: number;
-  student_name: string;
-  student_roll_number: string;
-  theory_marks: number | null;
-  practical_marks: number | null;
-  internal_marks: number | null;
-  obtained_marks: number;
-  is_absent: boolean;
-}
+import { Button } from '../../components/ui/button';
+import { StudentMarksForm } from './forms';
+import { StudentMarks, mockStudentMarksPaginated } from '../../data/examinationMockData';
 
 const MarksEntryPage = () => {
-  const [marks, setMarks] = useState<StudentMark[]>([]);
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedMarks, setSelectedMarks] = useState<StudentMarks | null>(null);
+
+  const columns: Column<StudentMarks>[] = [
+    { key: 'student_roll_number', label: 'Roll No', sortable: true },
+    { key: 'student_name', label: 'Student Name', sortable: true },
+    {
+      key: 'theory_marks',
+      label: 'Theory',
+      render: (marks) => marks.theory_marks ?? '-',
+    },
+    {
+      key: 'practical_marks',
+      label: 'Practical',
+      render: (marks) => marks.practical_marks ?? '-',
+    },
+    {
+      key: 'internal_marks',
+      label: 'Internal',
+      render: (marks) => marks.internal_marks ?? '-',
+    },
+    {
+      key: 'total_marks',
+      label: 'Total',
+      render: (marks) => <span className="font-semibold">{marks.total_marks}</span>,
+      sortable: true,
+    },
+    {
+      key: 'is_absent',
+      label: 'Status',
+      render: (marks) => (
+        <Badge variant={marks.is_absent ? 'destructive' : 'success'}>
+          {marks.is_absent ? 'Absent' : 'Present'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'grade',
+      label: 'Grade',
+      render: (marks) => marks.grade || '-',
+    },
+  ];
+
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'is_absent',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'false', label: 'Present' },
+        { value: 'true', label: 'Absent' },
+      ],
+    },
+  ];
+
+  const handleAddNew = () => {
+    setSelectedMarks(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleRowClick = (marks: StudentMarks) => {
+    setSelectedMarks(marks);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleFormSubmit = (data: Partial<StudentMarks>) => {
+    console.log('Form submitted:', data);
+    setIsSidebarOpen(false);
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedMarks(null);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Marks Entry</h1>
-          <p className="text-muted-foreground">Enter marks for students</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Save className="h-4 w-4 mr-2" />
-            Save as Draft
-          </Button>
-          <Button>
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Submit for Verification
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Marks Entry</h1>
+        <p className="text-muted-foreground">Enter and manage student marks</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Exam & Subject</CardTitle>
-          <CardDescription>Choose exam and subject to enter marks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Exam</label>
-              <select className="w-full p-2 border rounded">
-                <option>Select Exam</option>
-                <option>Mid-Term 2024</option>
-                <option>Final Exam 2024</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Class</label>
-              <select className="w-full p-2 border rounded">
-                <option>Select Class</option>
-                <option>Class 10 - A</option>
-                <option>Class 10 - B</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Subject</label>
-              <select className="w-full p-2 border rounded">
-                <option>Select Subject</option>
-                <option>Mathematics</option>
-                <option>Physics</option>
-              </select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Student Marks"
+        description="View and enter marks for students"
+        columns={columns}
+        data={mockStudentMarksPaginated}
+        isLoading={false}
+        error={null}
+        onRefresh={() => {}}
+        onAdd={handleAddNew}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search students..."
+        addButtonLabel="Add Marks"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Enter Marks</CardTitle>
-          <CardDescription>Enter marks for each student</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Select exam, class, and subject to start entering marks</p>
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={sidebarMode === 'create' ? 'Enter Student Marks' : `${selectedMarks?.student_name || 'Student'} Marks`}
+        mode={sidebarMode}
+        width="lg"
+      >
+        {sidebarMode === 'view' && selectedMarks ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Roll Number</h3>
+                <p className="mt-1 text-lg">{selectedMarks.student_roll_number}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Student Name</h3>
+                <p className="mt-1 text-lg">{selectedMarks.student_name}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Theory Marks</h3>
+                <p className="mt-1">{selectedMarks.theory_marks ?? '-'}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Practical Marks</h3>
+                <p className="mt-1">{selectedMarks.practical_marks ?? '-'}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Internal Marks</h3>
+                <p className="mt-1">{selectedMarks.internal_marks ?? '-'}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Total Marks</h3>
+              <p className="mt-1 text-lg font-semibold">{selectedMarks.total_marks}</p>
+            </div>
+            {selectedMarks.grade && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Grade</h3>
+                <p className="mt-1">{selectedMarks.grade}</p>
+              </div>
+            )}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <p className="mt-1">
+                <Badge variant={selectedMarks.is_absent ? 'destructive' : 'success'}>
+                  {selectedMarks.is_absent ? 'Absent' : 'Present'}
+                </Badge>
+              </p>
+            </div>
+            {selectedMarks.remarks && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Remarks</h3>
+                <p className="mt-1">{selectedMarks.remarks}</p>
+              </div>
+            )}
+            <div className="pt-4">
+              <Button onClick={handleEdit}>Edit</Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <StudentMarksForm
+            studentMarks={sidebarMode === 'edit' ? selectedMarks : null}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseSidebar}
+          />
+        )}
+      </DetailSidebar>
     </div>
   );
 };

@@ -5,66 +5,29 @@
 
 import { useState } from 'react';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-
-interface ExamListItem {
-  id: number;
-  name: string;
-  code: string;
-  exam_type_name: string;
-  session_name: string;
-  exam_date_start: string;
-  exam_date_end: string;
-  is_published: boolean;
-  is_active: boolean;
-}
+import { Button } from '../../components/ui/button';
+import { ExamForm } from './forms';
+import { Exam, mockExamsPaginated } from '../../data/examinationMockData';
 
 const ExamsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
-  const mockData = {
-    count: 0,
-    next: null,
-    previous: null,
-    results: [] as ExamListItem[],
-  };
-
-  const columns: Column<ExamListItem>[] = [
+  const columns: Column<Exam>[] = [
+    { key: 'name', label: 'Exam Name', sortable: true },
     {
-      key: 'code',
-      label: 'Code',
-      sortable: true,
-      render: (exam) => (
-        <code className="px-2 py-1 bg-muted rounded text-sm font-medium">
-          {exam.code}
-        </code>
-      ),
+      key: 'start_date',
+      label: 'Start Date',
+      render: (exam) => new Date(exam.start_date).toLocaleDateString(),
     },
     {
-      key: 'name',
-      label: 'Exam Name',
-      sortable: true,
-      render: (exam) => (
-        <div>
-          <p className="font-medium">{exam.name}</p>
-          <p className="text-sm text-muted-foreground">{exam.exam_type_name}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'session_name',
-      label: 'Session',
-      sortable: true,
-    },
-    {
-      key: 'exam_date_start',
-      label: 'Exam Period',
-      render: (exam) => (
-        <div className="text-sm">
-          <p>{new Date(exam.exam_date_start).toLocaleDateString()}</p>
-          <p className="text-muted-foreground">to {new Date(exam.exam_date_end).toLocaleDateString()}</p>
-        </div>
-      ),
+      key: 'end_date',
+      label: 'End Date',
+      render: (exam) => new Date(exam.end_date).toLocaleDateString(),
     },
     {
       key: 'is_published',
@@ -109,6 +72,32 @@ const ExamsPage = () => {
     },
   ];
 
+  const handleAddNew = () => {
+    setSelectedExam(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleRowClick = (exam: Exam) => {
+    setSelectedExam(exam);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleFormSubmit = (data: Partial<Exam>) => {
+    console.log('Form submitted:', data);
+    setIsSidebarOpen(false);
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedExam(null);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -120,17 +109,70 @@ const ExamsPage = () => {
         title="Exam List"
         description="View and manage all examinations"
         columns={columns}
-        data={mockData}
+        data={mockExamsPaginated}
         isLoading={false}
         error={null}
         onRefresh={() => {}}
-        onAdd={() => {}}
+        onAdd={handleAddNew}
+        onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
         searchPlaceholder="Search exams..."
         addButtonLabel="Add Exam"
       />
+
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={sidebarMode === 'create' ? 'Create Exam' : selectedExam?.name || 'Exam'}
+        mode={sidebarMode}
+        width="xl"
+      >
+        {sidebarMode === 'view' && selectedExam ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Exam Name</h3>
+              <p className="mt-1 text-lg">{selectedExam.name}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Start Date</h3>
+                <p className="mt-1">{new Date(selectedExam.start_date).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">End Date</h3>
+                <p className="mt-1">{new Date(selectedExam.end_date).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Published</h3>
+              <p className="mt-1">
+                <Badge variant={selectedExam.is_published ? 'success' : 'secondary'}>
+                  {selectedExam.is_published ? 'Published' : 'Draft'}
+                </Badge>
+              </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <p className="mt-1">
+                <Badge variant={selectedExam.is_active ? 'success' : 'destructive'}>
+                  {selectedExam.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </p>
+            </div>
+            <div className="pt-4">
+              <Button onClick={handleEdit}>Edit</Button>
+            </div>
+          </div>
+        ) : (
+          <ExamForm
+            exam={sidebarMode === 'edit' ? selectedExam : null}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseSidebar}
+          />
+        )}
+      </DetailSidebar>
     </div>
   );
 };

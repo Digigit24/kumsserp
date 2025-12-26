@@ -5,57 +5,34 @@
 
 import { useState } from 'react';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-
-interface ExamSchedule {
-  id: number;
-  exam_name: string;
-  subject_name: string;
-  class_name: string;
-  exam_date: string;
-  start_time: string;
-  end_time: string;
-  max_marks: number;
-  allowed_time: number;
-  is_active: boolean;
-}
+import { Button } from '../../components/ui/button';
+import { ExamScheduleForm } from './forms';
+import { ExamSchedule, mockExamSchedulesPaginated } from '../../data/examinationMockData';
 
 const ExamSchedulesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
-  const [isLoading] = useState(false);
-  const [error] = useState<string | null>(null);
-
-  // Mock data - replace with actual API call
-  const mockData = {
-    count: 0,
-    next: null,
-    previous: null,
-    results: [] as ExamSchedule[]
-  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedSchedule, setSelectedSchedule] = useState<ExamSchedule | null>(null);
 
   const columns: Column<ExamSchedule>[] = [
-    { key: 'exam_name', label: 'Exam', sortable: true },
-    { key: 'subject_name', label: 'Subject', sortable: true },
-    { key: 'class_name', label: 'Class', sortable: true },
     {
-      key: 'exam_date',
-      label: 'Date & Time',
-      render: (schedule) => (
-        <div className="text-sm">
-          <p>{new Date(schedule.exam_date).toLocaleDateString()}</p>
-          <p className="text-muted-foreground">{schedule.start_time} - {schedule.end_time}</p>
-        </div>
-      ),
+      key: 'date',
+      label: 'Date',
+      render: (schedule) => new Date(schedule.date).toLocaleDateString(),
+      sortable: true,
+    },
+    {
+      key: 'start_time',
+      label: 'Time',
+      render: (schedule) => `${schedule.start_time} - ${schedule.end_time}`,
     },
     {
       key: 'max_marks',
-      label: 'Marks',
+      label: 'Max Marks',
       render: (schedule) => <Badge variant="outline">{schedule.max_marks}</Badge>,
-    },
-    {
-      key: 'allowed_time',
-      label: 'Duration',
-      render: (schedule) => <span className="text-sm">{schedule.allowed_time} min</span>,
     },
     {
       key: 'is_active',
@@ -81,6 +58,32 @@ const ExamSchedulesPage = () => {
     },
   ];
 
+  const handleAddNew = () => {
+    setSelectedSchedule(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleRowClick = (schedule: ExamSchedule) => {
+    setSelectedSchedule(schedule);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleFormSubmit = (data: Partial<ExamSchedule>) => {
+    console.log('Form submitted:', data);
+    setIsSidebarOpen(false);
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedSchedule(null);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -92,17 +95,66 @@ const ExamSchedulesPage = () => {
         title="Exam Schedules"
         description="View and manage all exam schedules"
         columns={columns}
-        data={mockData}
-        isLoading={isLoading}
-        error={error}
+        data={mockExamSchedulesPaginated}
+        isLoading={false}
+        error={null}
         onRefresh={() => {}}
-        onAdd={() => {}}
+        onAdd={handleAddNew}
+        onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
         searchPlaceholder="Search schedules..."
         addButtonLabel="Add Schedule"
       />
+
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={sidebarMode === 'create' ? 'Create Exam Schedule' : 'Exam Schedule'}
+        mode={sidebarMode}
+        width="xl"
+      >
+        {sidebarMode === 'view' && selectedSchedule ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Date</h3>
+              <p className="mt-1 text-lg">{new Date(selectedSchedule.date).toLocaleDateString()}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Start Time</h3>
+                <p className="mt-1">{selectedSchedule.start_time}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">End Time</h3>
+                <p className="mt-1">{selectedSchedule.end_time}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Maximum Marks</h3>
+              <p className="mt-1">{selectedSchedule.max_marks}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <p className="mt-1">
+                <Badge variant={selectedSchedule.is_active ? 'success' : 'destructive'}>
+                  {selectedSchedule.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </p>
+            </div>
+            <div className="pt-4">
+              <Button onClick={handleEdit}>Edit</Button>
+            </div>
+          </div>
+        ) : (
+          <ExamScheduleForm
+            schedule={sidebarMode === 'edit' ? selectedSchedule : null}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseSidebar}
+          />
+        )}
+      </DetailSidebar>
     </div>
   );
 };
