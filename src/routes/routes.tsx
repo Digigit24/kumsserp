@@ -150,6 +150,10 @@ const ProfileSettingsPage = lazy(() => import("../pages/profile/ProfileSettingsP
 // Communication Module
 const CommunicationPage = lazy(() => import("../pages/communication/CommunicationPage"));
 
+// Store Module
+const StoreItemsPage = lazy(() => import("../pages/store/StoreItemsPage"));
+const PrintRequestsPage = lazy(() => import("../pages/store/PrintRequestsPage"));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -287,6 +291,10 @@ export default function AppRoutes() {
 
                     {/* Communication Module */}
                     <Route path="communication" element={<LazyRoute component={CommunicationPage} />} />
+
+                    {/* Store Module */}
+                    <Route path="store/items" element={<LazyRoute component={StoreItemsPage} />} />
+                    <Route path="store/print-requests" element={<LazyRoute component={PrintRequestsPage} />} />
                 </Route>
             </Route>
 

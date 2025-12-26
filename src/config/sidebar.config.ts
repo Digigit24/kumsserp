@@ -920,6 +920,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
+        name: "Print Requests",
+        href: "/store/print-requests",
+        icon: FileText,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Vendors",
         href: "/store/vendors",
         icon: Users,
