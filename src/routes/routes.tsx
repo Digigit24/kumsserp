@@ -74,6 +74,19 @@ const StudentPromotionsPage = lazy(() => import("../pages/students").then(m => (
 const CertificatesPage = lazy(() => import("../pages/students").then(m => ({ default: m.CertificatesPage })));
 const StudentIDCardsPage = lazy(() => import("../pages/students").then(m => ({ default: m.StudentIDCardsPage })));
 
+// Student Portal
+const StudentDashboard = lazy(() => import("../pages/student").then(m => ({ default: m.StudentDashboard })));
+const MyProfile = lazy(() => import("../pages/student").then(m => ({ default: m.MyProfile })));
+const Attendance = lazy(() => import("../pages/student").then(m => ({ default: m.Attendance })));
+const Subjects = lazy(() => import("../pages/student").then(m => ({ default: m.Subjects })));
+const Assignments = lazy(() => import("../pages/student").then(m => ({ default: m.Assignments })));
+const ExamForm = lazy(() => import("../pages/student").then(m => ({ default: m.ExamForm })));
+const Results = lazy(() => import("../pages/student").then(m => ({ default: m.Results })));
+const Fees = lazy(() => import("../pages/student").then(m => ({ default: m.Fees })));
+const StudentCertificates = lazy(() => import("../pages/student").then(m => ({ default: m.Certificates })));
+const Notices = lazy(() => import("../pages/student").then(m => ({ default: m.Notices })));
+const Support = lazy(() => import("../pages/student").then(m => ({ default: m.Support })));
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -134,6 +147,19 @@ export default function AppRoutes() {
                     <Route path="academic/timetables" element={<LazyRoute component={TimetablesPage} />} />
                     <Route path="academic/lab-schedules" element={<LazyRoute component={LabSchedulesPage} />} />
                     <Route path="academic/class-teachers" element={<LazyRoute component={ClassTeachersPage} />} />
+
+                    {/* Student Portal */}
+                    <Route path="student/dashboard" element={<LazyRoute component={StudentDashboard} />} />
+                    <Route path="student/profile" element={<LazyRoute component={MyProfile} />} />
+                    <Route path="student/academics/attendance" element={<LazyRoute component={Attendance} />} />
+                    <Route path="student/academics/subjects" element={<LazyRoute component={Subjects} />} />
+                    <Route path="student/academics/assignments" element={<LazyRoute component={Assignments} />} />
+                    <Route path="student/examinations/exam-form" element={<LazyRoute component={ExamForm} />} />
+                    <Route path="student/examinations/results" element={<LazyRoute component={Results} />} />
+                    <Route path="student/fees" element={<LazyRoute component={Fees} />} />
+                    <Route path="student/certificates" element={<LazyRoute component={StudentCertificates} />} />
+                    <Route path="student/notices" element={<LazyRoute component={Notices} />} />
+                    <Route path="student/support" element={<LazyRoute component={Support} />} />
                 </Route>
             </Route>
 
