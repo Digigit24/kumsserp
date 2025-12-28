@@ -1,5 +1,6 @@
 import { API_BASE_URL, getDefaultHeaders } from "@/config/api.config";
 import axios from "axios";
+import { useAuthStore } from "@/store/auth";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -7,6 +8,30 @@ const apiClient = axios.create({
     ...getDefaultHeaders(),
   },
 });
+
+/**
+ * Logout user and clear all auth data
+ * Called when token expires or auth fails
+ */
+function handleAuthFailure(errorMessage?: string) {
+  console.error('[apiClient] Auth failure:', errorMessage || 'Token expired or invalid');
+
+  // Get the auth store and reset it
+  const authStore = useAuthStore.getState();
+  authStore.reset();
+
+  // Clear all auth-related data from localStorage
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('kumss_user');
+  localStorage.removeItem('kumss_auth_token');
+  localStorage.removeItem('auth-storage'); // Zustand persisted state
+
+  console.log('[apiClient] All auth data cleared. Redirecting to login...');
+
+  // Redirect to login page
+  window.location.href = '/login';
+}
 
 // Add request interceptor to include auth token in every request
 apiClient.interceptors.request.use(
@@ -37,17 +62,19 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle authentication errors (401 Unauthorized, 403 Forbidden)
     if (error.response?.status === 401) {
-      console.error('[apiClient] 401 Unauthorized - Token expired or invalid');
-
-      // Clear auth data from localStorage
-      localStorage.removeItem('access');
-      localStorage.removeItem('refresh');
-      localStorage.removeItem('kumss_user');
-
-      // Redirect to login page
-      window.location.href = '/login';
+      handleAuthFailure('401 Unauthorized - Token expired or invalid');
+    } else if (error.response?.status === 403) {
+      // 403 might indicate an expired or revoked token in some APIs
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message;
+      if (errorMessage?.toLowerCase().includes('token') ||
+          errorMessage?.toLowerCase().includes('credential') ||
+          errorMessage?.toLowerCase().includes('authentication')) {
+        handleAuthFailure('403 Forbidden - Authentication required');
+      }
     }
+
     return Promise.reject(error);
   }
 );
