@@ -74,8 +74,7 @@ const StudentPromotionsPage = lazy(() => import("../pages/students").then(m => (
 const CertificatesPage = lazy(() => import("../pages/students").then(m => ({ default: m.CertificatesPage })));
 const StudentIDCardsPage = lazy(() => import("../pages/students").then(m => ({ default: m.StudentIDCardsPage })));
 
-// Student Portal
-const StudentDashboard = lazy(() => import("../pages/student").then(m => ({ default: m.StudentDashboard })));
+// Student Portal (removed StudentDashboard - using unified /dashboard instead)
 const MyProfile = lazy(() => import("../pages/student").then(m => ({ default: m.MyProfile })));
 const Attendance = lazy(() => import("../pages/student").then(m => ({ default: m.Attendance })));
 const Subjects = lazy(() => import("../pages/student").then(m => ({ default: m.Subjects })));
@@ -221,7 +220,6 @@ export default function AppRoutes() {
                     <Route path="academic/class-teachers" element={<LazyRoute component={ClassTeachersPage} />} />
 
                     {/* Student Portal */}
-                    <Route path="student/dashboard" element={<LazyRoute component={StudentDashboard} />} />
                     <Route path="student/profile" element={<LazyRoute component={MyProfile} />} />
                     <Route path="student/academics/attendance" element={<LazyRoute component={Attendance} />} />
                     <Route path="student/academics/subjects" element={<LazyRoute component={Subjects} />} />
