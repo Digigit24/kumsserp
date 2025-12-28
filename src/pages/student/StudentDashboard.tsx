@@ -1,26 +1,24 @@
-import React from 'react';
-import {
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  FileText,
-  Clock,
-  BookOpen,
-  CreditCard,
-  Trophy,
-  Bell,
-  ClipboardList,
-  GraduationCap,
-  BarChart3,
-  UserCircle,
-  FileCheck,
-  MessageSquare,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { AttendanceCalendar } from '@/components/attendance/AttendanceCalendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertCircle,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  CreditCard,
+  FileCheck,
+  FileText,
+  GraduationCap,
+  Trophy,
+  UserCircle
+} from 'lucide-react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AttendanceCalendar } from '@/components/attendance/AttendanceCalendar';
 
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();

@@ -1,8 +1,7 @@
-/**
+/*
  * Marks Registers Page
  * View consolidated marks registers
  */
-
 import { useState } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
