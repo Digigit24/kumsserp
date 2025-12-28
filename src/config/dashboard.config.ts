@@ -1,3 +1,15 @@
+/**
+ * Dashboard Configuration
+ *
+ * This file controls which dashboard sections are rendered for different roles/permissions.
+ * Each section can specify which roles can see it, making it easy to customize
+ * dashboards for different user types (including custom roles like HOD, etc.)
+ *
+ * To add a new dashboard section:
+ * 1. Create the component in src/components/dashboard/sections/
+ * 2. Add it to the DASHBOARD_SECTIONS array below
+ * 3. Specify which roles should see it in the 'allowedRoles' array
+ */
 
 export interface DashboardSection {
   id: string;
@@ -6,6 +18,12 @@ export interface DashboardSection {
   order: number; // Display order (lower = earlier)
 }
 
+/**
+ * Dashboard Sections Configuration
+ *
+ * Add or remove sections here to control what appears on the dashboard.
+ * Each section will only render if the user has one of the allowedRoles.
+ */
 export const DASHBOARD_SECTIONS: DashboardSection[] = [
   // ============== ADMIN SECTIONS ==============
   {

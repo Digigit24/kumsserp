@@ -15,7 +15,7 @@ export const getCurrentUser = (): { user_type?: UserType; userType?: UserType; r
   } catch {
     return null;
   }
-}; 
+};
 
 /**
  * Get the current user's user_type

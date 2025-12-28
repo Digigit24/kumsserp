@@ -22,10 +22,32 @@ export const Sidebar = () => {
     }
   }, [user])
 
-  // Filter sidebar groups based on user type
+  // Get user permissions from auth store or localStorage
+  const userPermissions = useMemo(() => {
+    // First check if user object has permissions from backend
+    if (user?.permissions && Array.isArray(user.permissions)) {
+      return user.permissions
+    }
+
+    // Try to get from localStorage
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('kumss_user') || '{}')
+      if (storedUser.permissions && Array.isArray(storedUser.permissions)) {
+        return storedUser.permissions
+      }
+    } catch {
+      // Ignore parse errors
+    }
+
+    // No permissions found - return empty array
+    // The sidebar will fallback to role-based filtering
+    return []
+  }, [user])
+
+  // Filter sidebar groups based on user type AND permissions
   const filteredGroups = useMemo(() => {
-    return getFilteredSidebarGroups(userType)
-  }, [userType])
+    return getFilteredSidebarGroups(userType, userPermissions)
+  }, [userType, userPermissions])
 
   // Determine panel title based on user type
   const panelTitle = useMemo(() => {

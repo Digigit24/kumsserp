@@ -26,14 +26,18 @@ export interface SidebarItem {
   name: string;
   href: string;
   icon: any;
-  roles?: string[]; // NEW: Which roles can see this item
+  roles?: string[]; // Which roles can see this item (simple role-based)
+  permissions?: string[]; // Which permissions needed (flexible permission-based)
+  requireAllPermissions?: boolean; // If true, user needs ALL permissions. If false, needs ANY. Default: false
 }
 
 export interface SidebarGroup {
   group: string;
   icon: any;
   items: SidebarItem[];
-  roles?: string[]; // NEW: Which roles can see this group
+  roles?: string[]; // Which roles can see this group (simple role-based)
+  permissions?: string[]; // Which permissions needed (flexible permission-based)
+  requireAllPermissions?: boolean; // If true, user needs ALL permissions. If false, needs ANY. Default: false
 }
 
 export const SIDEBAR_GROUPS: SidebarGroup[] = [
@@ -732,20 +736,54 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 ];
 
 /**
- * Filter sidebar groups and items based on user role
+ * Check if user has access based on roles or permissions
  */
-export function getFilteredSidebarGroups(userType: string): SidebarGroup[] {
+function hasAccess(
+  userType: string,
+  userPermissions: string[] = [],
+  item: { roles?: string[]; permissions?: string[]; requireAllPermissions?: boolean }
+): boolean {
+  // If no roles and no permissions specified, visible to all
+  if (!item.roles && !item.permissions) return true;
+
+  // Check role-based access (backward compatibility)
+  if (item.roles && item.roles.includes(userType)) {
+    return true;
+  }
+
+  // Check permission-based access
+  if (item.permissions && item.permissions.length > 0) {
+    if (item.requireAllPermissions) {
+      // User must have ALL permissions
+      return item.permissions.every(perm => userPermissions.includes(perm));
+    } else {
+      // User must have ANY permission
+      return item.permissions.some(perm => userPermissions.includes(perm));
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Filter sidebar groups and items based on user role and permissions
+ *
+ * @param userType - User's role (e.g., 'super_admin', 'teacher', 'hod')
+ * @param userPermissions - Array of permission strings (e.g., ['view_students', 'manage_department'])
+ */
+export function getFilteredSidebarGroups(
+  userType: string,
+  userPermissions: string[] = []
+): SidebarGroup[] {
   return SIDEBAR_GROUPS.filter((group) => {
-    // Filter groups by role
-    if (!group.roles) return true; // No roles = visible to all
-    return group.roles.includes(userType);
+    // Filter groups by role or permissions
+    return hasAccess(userType, userPermissions, group);
   })
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => {
-        // Filter items by role
-        if (!item.roles) return true; // No roles = visible to all
-        return item.roles.includes(userType);
+        // Filter items by role or permissions
+        return hasAccess(userType, userPermissions, item);
       }),
     }))
     .filter((group) => group.items.length > 0); // Remove empty groups
