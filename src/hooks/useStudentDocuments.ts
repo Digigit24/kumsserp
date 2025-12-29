@@ -31,7 +31,7 @@ export const useStudentDocument = (id: number | null) => {
 export const useCreateStudentDocument = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<StudentDocument, Error, StudentDocumentCreateInput>({
+    return useMutation<StudentDocument, Error, StudentDocumentCreateInput | FormData>({
         mutationFn: (data) => studentDocumentApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['student-documents'] });

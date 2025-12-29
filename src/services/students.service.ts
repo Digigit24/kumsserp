@@ -88,20 +88,37 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
 
   const headers = new Headers();
 
+  // Check if body is FormData - if so, don't set Content-Type (browser will set it with boundary)
+  const isFormData = options?.body instanceof FormData;
+
   const defaultHeaders = getDefaultHeaders();
   Object.entries(defaultHeaders).forEach(([key, value]) => {
+    // Skip Content-Type header for FormData
+    if (isFormData && key.toLowerCase() === 'content-type') {
+      return;
+    }
     headers.set(key, value);
   });
 
   if (options?.headers) {
     const customHeaders = options.headers;
     if (customHeaders instanceof Headers) {
-      customHeaders.forEach((value, key) => headers.set(key, value));
+      customHeaders.forEach((value, key) => {
+        if (!(isFormData && key.toLowerCase() === 'content-type')) {
+          headers.set(key, value);
+        }
+      });
     } else if (Array.isArray(customHeaders)) {
-      customHeaders.forEach(([key, value]) => headers.set(key, value));
+      customHeaders.forEach(([key, value]) => {
+        if (!(isFormData && key.toLowerCase() === 'content-type')) {
+          headers.set(key, value);
+        }
+      });
     } else {
       Object.entries(customHeaders as Record<string, string>).forEach(([key, value]) => {
-        headers.set(key, value);
+        if (!(isFormData && key.toLowerCase() === 'content-type')) {
+          headers.set(key, value);
+        }
       });
     }
   }
@@ -412,10 +429,15 @@ export const studentDocumentApi = {
     return fetchApi<StudentDocument>(buildApiUrl(API_ENDPOINTS.studentDocuments.detail(id)));
   },
 
-  create: async (data: StudentDocumentCreateInput): Promise<StudentDocument> => {
+  create: async (data: StudentDocumentCreateInput | FormData): Promise<StudentDocument> => {
+    // If data is FormData, send it directly without JSON.stringify
+    const isFormData = data instanceof FormData;
+
     return fetchApi<StudentDocument>(buildApiUrl(API_ENDPOINTS.studentDocuments.create), {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      // Don't set Content-Type header for FormData - browser will set it automatically with boundary
+      ...(isFormData ? {} : {}),
     });
   },
 
