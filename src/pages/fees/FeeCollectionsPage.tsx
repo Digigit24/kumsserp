@@ -7,16 +7,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeCollection, mockFeeCollectionsPaginated } from '../../data/feesMockData';
+import { useFeeCollections } from '../../hooks/useFees';
 import { FeeCollectionForm } from './forms';
 
 const FeeCollectionsPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedCollection, setSelectedCollection] = useState<FeeCollection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<any | null>(null);
 
-  const columns: Column<FeeCollection>[] = [
+  // Fetch fee collections using real API
+  const { data, isLoading, error, refetch } = useFeeCollections(filters);
+
+  const columns: Column<any>[] = [
     { key: 'receipt_number', label: 'Receipt No', sortable: true },
     { key: 'student_name', label: 'Student Name', sortable: true },
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
@@ -111,10 +114,10 @@ const FeeCollectionsPage = () => {
         title="Fee Collections"
         description="View and manage fee collections"
         columns={columns}
-        data={mockFeeCollectionsPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

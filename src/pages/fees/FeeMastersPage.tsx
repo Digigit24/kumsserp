@@ -7,14 +7,17 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeMaster, mockFeeMastersPaginated } from '../../data/feesMockData';
+import { useFeeMasters } from '../../hooks/useFees';
 import { FeeMasterForm } from './forms';
 
 const FeeMastersPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedFeeMaster, setSelectedFeeMaster] = useState<FeeMaster | null>(null);
+  const [selectedFeeMaster, setSelectedFeeMaster] = useState<any | null>(null);
+
+  // Fetch fee masters using real API
+  const { data, isLoading, error, refetch } = useFeeMasters(filters);
 
   const columns: Column<FeeMaster>[] = [
     { key: 'code', label: 'Code', sortable: true },
@@ -97,10 +100,10 @@ const FeeMastersPage = () => {
         title="Fee Masters List"
         description="View and manage all fee masters"
         columns={columns}
-        data={mockFeeMastersPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

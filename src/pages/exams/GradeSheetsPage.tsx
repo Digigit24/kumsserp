@@ -5,22 +5,15 @@
 import { useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-
-interface GradeSheet {
-  id: number;
-  student_name: string;
-  student_roll_number: string;
-  total_marks: number;
-  percentage: number;
-  grade: string;
-  status: string;
-}
+import { useMarkSheets } from '../../hooks/useExamination';
 
 const GradeSheetsPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
-  const mockData = { count: 0, next: null, previous: null, results: [] as GradeSheet[] };
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
 
-  const columns: Column<GradeSheet>[] = [
+  // Fetch mark sheets using real API
+  const { data, isLoading, error, refetch } = useMarkSheets(filters);
+
+  const columns: Column<any>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
     { key: 'student_name', label: 'Student Name', sortable: true },
     { key: 'total_marks', label: 'Total Marks', sortable: true },
@@ -55,10 +48,10 @@ const GradeSheetsPage = () => {
       <DataTable
         title="Grade Sheets"
         columns={columns}
-        data={mockData}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search students..."
