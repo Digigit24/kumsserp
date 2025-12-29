@@ -63,9 +63,12 @@ export interface StudentAttendanceCreateInput {
   section: number;
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
+  check_in_time?: string | null;
+  check_out_time?: string | null;
   subject?: number | null;
   period?: number | null;
   remarks?: string | null;
+  marked_by?: string | null;
   is_verified?: boolean;
 }
 
@@ -92,41 +95,36 @@ export interface BulkAttendanceCreateInput {
 
 export interface StaffAttendance extends AuditFields {
   id: number;
-  staff: string;
-  staff_details: UserBasic;
+  teacher: number;
+  teacher_name: string;
   date: string;
+  status: string;
   check_in_time: string | null;
   check_out_time: string | null;
-  status: 'present' | 'absent' | 'late' | 'on_leave' | 'half_day' | 'work_from_home';
-  leave_type: string | null;
-  working_hours: number | null;
   remarks: string | null;
-  marked_by: UserBasic | null;
-  is_verified: boolean;
+  marked_by: string | null;
+  marked_by_details: UserBasic | null;
 }
 
 export interface StaffAttendanceListItem {
   id: number;
-  staff: string;
-  staff_name: string;
+  teacher: number;
+  teacher_name: string;
   date: string;
+  status: string;
   check_in_time: string | null;
   check_out_time: string | null;
-  status: string;
-  working_hours: number | null;
-  is_verified: boolean;
+  remarks: string | null;
 }
 
 export interface StaffAttendanceCreateInput {
-  staff: string;
+  teacher: number;
   date: string;
+  status: string;
   check_in_time?: string | null;
   check_out_time?: string | null;
-  status: 'present' | 'absent' | 'late' | 'on_leave' | 'half_day' | 'work_from_home';
-  leave_type?: string | null;
-  working_hours?: number | null;
   remarks?: string | null;
-  is_verified?: boolean;
+  marked_by?: string | null;
 }
 
 export interface StaffAttendanceUpdateInput extends Partial<StaffAttendanceCreateInput> {}
@@ -196,43 +194,39 @@ export interface SubjectAttendanceUpdateInput extends Partial<SubjectAttendanceC
 
 export interface AttendanceNotification extends AuditFields {
   id: number;
-  student: number;
+  attendance: number;
   student_name: string;
-  parent_email: string | null;
-  parent_phone: string | null;
-  date: string;
-  absence_count: number;
-  total_days: number;
-  attendance_percentage: number;
-  notification_type: 'low_attendance' | 'consecutive_absence' | 'monthly_report' | 'custom';
+  recipient_type: string;
+  recipient: string;
+  recipient_details: UserBasic | null;
+  notification_type: string;
+  status: string;
   message: string;
-  is_sent: boolean;
   sent_at: string | null;
-  sent_via: string | null; // email, sms, both
-  remarks: string | null;
+  delivered_at: string | null;
+  error_message: string | null;
 }
 
 export interface AttendanceNotificationListItem {
   id: number;
-  student: number;
+  attendance: number;
   student_name: string;
-  date: string;
-  absence_count: number;
-  attendance_percentage: number;
+  recipient_type: string;
   notification_type: string;
-  is_sent: boolean;
+  status: string;
   sent_at: string | null;
 }
 
 export interface AttendanceNotificationCreateInput {
-  student: number;
-  date: string;
-  absence_count: number;
-  total_days: number;
-  notification_type: 'low_attendance' | 'consecutive_absence' | 'monthly_report' | 'custom';
+  attendance: number;
+  recipient_type: string;
+  recipient: string;
+  notification_type: string;
+  status: string;
   message: string;
-  sent_via?: string | null;
-  remarks?: string | null;
+  sent_at?: string | null;
+  delivered_at?: string | null;
+  error_message?: string | null;
 }
 
 export interface AttendanceNotificationUpdateInput extends Partial<AttendanceNotificationCreateInput> {}
@@ -303,12 +297,11 @@ export interface StudentAttendanceFilters {
 export interface StaffAttendanceFilters {
   page?: number;
   page_size?: number;
-  staff?: string;
+  teacher?: number;
   date?: string;
   date_from?: string;
   date_to?: string;
   status?: string;
-  is_verified?: boolean;
   search?: string;
   ordering?: string;
 }

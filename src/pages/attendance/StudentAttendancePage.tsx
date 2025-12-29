@@ -2,29 +2,43 @@
  * Student Attendance Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useStudentAttendance } from '../../hooks/useAttendance';
+import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
+import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar } from 'lucide-react';
-
-interface StudentAttendanceRecord {
-  id: number;
-  student_name: string;
-  student_roll_number: string;
-  class_name: string;
-  section_name: string;
-  date: string;
-  status: string;
-  subject_name: string | null;
-  is_verified: boolean;
-}
+import { Calendar, Edit, Users } from 'lucide-react';
+import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 
 const StudentAttendancePage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
-  const mockData = { count: 0, next: null, previous: null, results: [] as StudentAttendanceRecord[] };
+  const [filters, setFilters] = useState<StudentAttendanceFilters>({
+    page: 1,
+    page_size: 10,
+  });
+  const [formOpen, setFormOpen] = useState(false);
+  const [bulkFormOpen, setBulkFormOpen] = useState(false);
+  const [selectedAttendance, setSelectedAttendance] = useState<StudentAttendance | null>(null);
 
-  const columns: Column<StudentAttendanceRecord>[] = [
+  // Fetch attendance data using the hook
+  const { data, isLoading, error, refetch } = useStudentAttendance(filters);
+
+  const handleEdit = (attendance: any) => {
+    setSelectedAttendance(attendance);
+    setFormOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedAttendance(null);
+    setFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    refetch();
+  };
+
+  const columns: Column<any>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
     { key: 'student_name', label: 'Student Name', sortable: true },
     { key: 'class_name', label: 'Class', sortable: true },
@@ -46,6 +60,19 @@ const StudentAttendancePage = () => {
         <Badge variant={record.is_verified ? 'success' : 'outline'}>
           {record.is_verified ? 'Yes' : 'No'}
         </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (record) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleEdit(record)}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
       ),
     },
   ];
@@ -72,20 +99,39 @@ const StudentAttendancePage = () => {
           <h1 className="text-3xl font-bold">Student Attendance</h1>
           <p className="text-muted-foreground">Mark and manage student attendance</p>
         </div>
-        <Button>
-          <Calendar className="h-4 w-4 mr-2" />
-          Mark Today's Attendance
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setBulkFormOpen(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            Bulk Mark
+          </Button>
+          <Button onClick={handleAdd}>
+            <Calendar className="h-4 w-4 mr-2" />
+            Mark Single
+          </Button>
+        </div>
       </div>
+
+      <StudentAttendanceForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        attendance={selectedAttendance}
+        onSuccess={handleFormSuccess}
+      />
+
+      <BulkAttendanceForm
+        open={bulkFormOpen}
+        onOpenChange={setBulkFormOpen}
+        onSuccess={handleFormSuccess}
+      />
 
       <DataTable
         title="Attendance Records"
         columns={columns}
-        data={mockData}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
-        onAdd={() => {}}
+        data={data || { count: 0, next: null, previous: null, results: [] }}
+        isLoading={isLoading}
+        error={error?.message || null}
+        onRefresh={() => refetch()}
+        onAdd={handleAdd}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}

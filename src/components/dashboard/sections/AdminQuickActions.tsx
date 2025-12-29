@@ -1,16 +1,16 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Award,
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  DollarSign,
+  GraduationCap,
+  Users,
+} from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Users,
-  GraduationCap,
-  DollarSign,
-  ClipboardList,
-  Award,
-  BookOpen,
-  BarChart3,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 export const AdminQuickActions: React.FC = () => {
   const navigate = useNavigate();
