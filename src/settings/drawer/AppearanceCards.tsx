@@ -5,17 +5,25 @@ import FormatTextdirectionRToLIcon from "@mui/icons-material/FormatTextdirection
 import { ToggleCard } from "./ui/ToggleCard";
 
 import { useSettings } from "@/settings/context/useSettings";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export const AppearanceCards = () => {
     const { settings, updateSetting } = useSettings();
+    const { theme, setTheme } = useTheme();
+
+    const handleThemeChange = (isDark: boolean) => {
+        const newTheme = isDark ? "dark" : "light";
+        setTheme(newTheme);
+        updateSetting("theme", newTheme);
+    };
 
     return (
         <div className="grid grid-cols-2 gap-4">
             <ToggleCard
                 icon={<DarkModeIcon className="icon-theme" />}
                 label="Mode"
-                checked={settings.theme === "dark"}
-                onChange={(v) => updateSetting("theme", v ? "dark" : "light")}
+                checked={theme === "dark"}
+                onChange={handleThemeChange}
             />
 
             <ToggleCard
