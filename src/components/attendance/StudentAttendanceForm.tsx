@@ -6,6 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMarkStudentAttendance, useUpdateStudentAttendance } from '../../hooks/useAttendance';
+import { useStudents } from '../../hooks/useStudents';
+import { useAcademicClasses, useSections } from '../../hooks/useAcademic';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -52,7 +54,17 @@ export const StudentAttendanceForm: React.FC<StudentAttendanceFormProps> = ({
   onSuccess,
 }) => {
   const [date, setDate] = useState<Date>(new Date());
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const isEdit = !!attendance;
+
+  // Fetch students, classes, and sections for dropdowns
+  const { data: studentsData } = useStudents({ page_size: 1000 });
+  const { data: classesData } = useAcademicClasses({ page_size: 100 });
+  const { data: sectionsData } = useSections({
+    page_size: 100,
+    class_obj: selectedClass ? Number(selectedClass) : undefined
+  });
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<StudentAttendanceCreateInput>({
     defaultValues: {
@@ -68,6 +80,9 @@ export const StudentAttendanceForm: React.FC<StudentAttendanceFormProps> = ({
   const updateMutation = useUpdateStudentAttendance();
 
   const status = watch('status');
+  const studentValue = watch('student');
+  const classValue = watch('class_obj');
+  const sectionValue = watch('section');
 
   useEffect(() => {
     if (attendance) {
@@ -80,6 +95,7 @@ export const StudentAttendanceForm: React.FC<StudentAttendanceFormProps> = ({
       setValue('check_out_time', attendance.check_out_time || '');
       setValue('remarks', attendance.remarks || '');
       setDate(new Date(attendance.date));
+      setSelectedClass(String(attendance.class_obj));
     }
   }, [attendance, setValue]);
 
@@ -112,41 +128,73 @@ export const StudentAttendanceForm: React.FC<StudentAttendanceFormProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Student ID */}
+          {/* Class */}
           <div className="space-y-2">
-            <Label htmlFor="student">Student ID *</Label>
-            <Input
-              id="student"
-              type="number"
-              {...register('student', { required: true, valueAsNumber: true })}
-              placeholder="Enter student ID"
-            />
-            {errors.student && <p className="text-sm text-red-500">Student ID is required</p>}
+            <Label htmlFor="class_obj">Class *</Label>
+            <Select
+              value={classValue ? String(classValue) : ''}
+              onValueChange={(value) => {
+                const numValue = Number(value);
+                setValue('class_obj', numValue);
+                setSelectedClass(value);
+                setValue('section', 0); // Reset section when class changes
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select class" />
+              </SelectTrigger>
+              <SelectContent>
+                {classesData?.results?.map((classItem) => (
+                  <SelectItem key={classItem.id} value={String(classItem.id)}>
+                    {classItem.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.class_obj && <p className="text-sm text-red-500">Class is required</p>}
           </div>
 
-          {/* Class */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="class_obj">Class *</Label>
-              <Input
-                id="class_obj"
-                type="number"
-                {...register('class_obj', { required: true, valueAsNumber: true })}
-                placeholder="Class ID"
-              />
-              {errors.class_obj && <p className="text-sm text-red-500">Required</p>}
-            </div>
+          {/* Section */}
+          <div className="space-y-2">
+            <Label htmlFor="section">Section *</Label>
+            <Select
+              value={sectionValue ? String(sectionValue) : ''}
+              onValueChange={(value) => setValue('section', Number(value))}
+              disabled={!selectedClass}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={selectedClass ? "Select section" : "Select class first"} />
+              </SelectTrigger>
+              <SelectContent>
+                {sectionsData?.results?.map((section) => (
+                  <SelectItem key={section.id} value={String(section.id)}>
+                    {section.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.section && <p className="text-sm text-red-500">Section is required</p>}
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="section">Section *</Label>
-              <Input
-                id="section"
-                type="number"
-                {...register('section', { required: true, valueAsNumber: true })}
-                placeholder="Section ID"
-              />
-              {errors.section && <p className="text-sm text-red-500">Required</p>}
-            </div>
+          {/* Student */}
+          <div className="space-y-2">
+            <Label htmlFor="student">Student *</Label>
+            <Select
+              value={studentValue ? String(studentValue) : ''}
+              onValueChange={(value) => setValue('student', Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select student" />
+              </SelectTrigger>
+              <SelectContent>
+                {studentsData?.results?.map((student) => (
+                  <SelectItem key={student.id} value={String(student.id)}>
+                    {student.full_name} ({student.admission_number})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.student && <p className="text-sm text-red-500">Student is required</p>}
           </div>
 
           {/* Date */}

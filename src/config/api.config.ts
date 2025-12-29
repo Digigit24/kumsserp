@@ -494,12 +494,12 @@ export const API_ENDPOINTS = {
 
   // Attendance Module - Subject Attendance
   subjectAttendance: {
-    list: "/api/v1/attendance/subjects/",
-    create: "/api/v1/attendance/subjects/",
-    detail: (id: number) => `/api/v1/attendance/subjects/${id}/`,
-    update: (id: number) => `/api/v1/attendance/subjects/${id}/`,
-    patch: (id: number) => `/api/v1/attendance/subjects/${id}/`,
-    delete: (id: number) => `/api/v1/attendance/subjects/${id}/`,
+    list: "/api/v1/attendance/subject-attendance/",
+    create: "/api/v1/attendance/subject-attendance/",
+    detail: (id: number) => `/api/v1/attendance/subject-attendance/${id}/`,
+    update: (id: number) => `/api/v1/attendance/subject-attendance/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/subject-attendance/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/subject-attendance/${id}/`,
   },
 
   // Attendance Module - Notifications

@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMarkStaffAttendance, useUpdateStaffAttendance } from '../../hooks/useAttendance';
+import { useUsers } from '../../hooks/useAccounts';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -50,6 +51,9 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
   const [date, setDate] = useState<Date>(new Date());
   const isEdit = !!attendance;
 
+  // Fetch teachers for dropdown
+  const { data: teachersData } = useUsers({ user_type: 'teacher', page_size: 1000 });
+
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<StaffAttendanceCreateInput>({
     defaultValues: {
       teacher: teacherId || 0,
@@ -62,6 +66,7 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
   const updateMutation = useUpdateStaffAttendance();
 
   const status = watch('status');
+  const teacherValue = watch('teacher');
 
   useEffect(() => {
     if (attendance) {
@@ -104,16 +109,25 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Teacher ID */}
+          {/* Teacher */}
           <div className="space-y-2">
-            <Label htmlFor="teacher">Teacher ID *</Label>
-            <Input
-              id="teacher"
-              type="number"
-              {...register('teacher', { required: true, valueAsNumber: true })}
-              placeholder="Enter teacher ID"
-            />
-            {errors.teacher && <p className="text-sm text-red-500">Teacher ID is required</p>}
+            <Label htmlFor="teacher">Teacher *</Label>
+            <Select
+              value={teacherValue ? String(teacherValue) : ''}
+              onValueChange={(value) => setValue('teacher', Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select teacher" />
+              </SelectTrigger>
+              <SelectContent>
+                {teachersData?.results?.map((teacher) => (
+                  <SelectItem key={teacher.id} value={String(teacher.id)}>
+                    {teacher.full_name} ({teacher.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.teacher && <p className="text-sm text-red-500">Teacher is required</p>}
           </div>
 
           {/* Date */}

@@ -5,10 +5,11 @@
 import { useState, useMemo } from 'react';
 import { useStudentAttendance } from '../../hooks/useAttendance';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
+import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, Edit } from 'lucide-react';
+import { Calendar, Edit, Users } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 
 const StudentAttendancePage = () => {
@@ -17,6 +18,7 @@ const StudentAttendancePage = () => {
     page_size: 10,
   });
   const [formOpen, setFormOpen] = useState(false);
+  const [bulkFormOpen, setBulkFormOpen] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState<StudentAttendance | null>(null);
 
   // Fetch attendance data using the hook
@@ -97,16 +99,28 @@ const StudentAttendancePage = () => {
           <h1 className="text-3xl font-bold">Student Attendance</h1>
           <p className="text-muted-foreground">Mark and manage student attendance</p>
         </div>
-        <Button onClick={handleAdd}>
-          <Calendar className="h-4 w-4 mr-2" />
-          Mark Attendance
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setBulkFormOpen(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            Bulk Mark
+          </Button>
+          <Button onClick={handleAdd}>
+            <Calendar className="h-4 w-4 mr-2" />
+            Mark Single
+          </Button>
+        </div>
       </div>
 
       <StudentAttendanceForm
         open={formOpen}
         onOpenChange={setFormOpen}
         attendance={selectedAttendance}
+        onSuccess={handleFormSuccess}
+      />
+
+      <BulkAttendanceForm
+        open={bulkFormOpen}
+        onOpenChange={setBulkFormOpen}
         onSuccess={handleFormSuccess}
       />
 
