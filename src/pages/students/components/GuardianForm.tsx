@@ -6,7 +6,9 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { guardianApi } from '../../../services/students.service';
+import { userApi } from '../../../services/accounts.service';
 import type { Guardian, GuardianCreateInput, GuardianUpdateInput } from '../../../types/students.types';
+import type { UserListItem } from '../../../types/accounts.types';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
@@ -23,6 +25,8 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<UserListItem[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [formData, setFormData] = useState<GuardianCreateInput>({
     user: '',
@@ -40,6 +44,24 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const data = await userApi.list({ page_size: 500, is_active: true });
+      setUsers(data.results);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   // Initialize form data for edit mode
   useEffect(() => {
@@ -184,21 +206,30 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
             Basic Information
           </h3>
 
-          {/* User UUID */}
+          {/* User Selection */}
           <div>
             <label htmlFor="user" className="block text-sm font-medium mb-2">
-              User UUID
+              Link to User Account <span className="text-muted-foreground text-xs">(Optional)</span>
             </label>
-            <Input
-              id="user"
-              type="text"
-              value={formData.user || ''}
-              onChange={(e) => handleChange('user', e.target.value)}
-              placeholder="Enter user UUID (optional)"
-              disabled={isSubmitting}
-            />
+            <Select
+              value={formData.user || undefined}
+              onValueChange={(v) => handleChange('user', v || '')}
+              disabled={isSubmitting || loadingUsers}
+            >
+              <SelectTrigger id="user">
+                <SelectValue placeholder={loadingUsers ? "Loading users..." : "Select user (optional)"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">None</SelectItem>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.full_name || user.username} {user.email && `(${user.email})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground mt-1">
-              Optional: Link to existing user account
+              Link this guardian to an existing user account for portal access
             </p>
           </div>
 
