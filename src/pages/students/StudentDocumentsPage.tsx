@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudentDocuments, useDeleteStudentDocument } from '../../hooks/useStudentDocuments';
+import { useStudentDocuments, useDeleteStudentDocument } from '../../hooks/useStudents';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';

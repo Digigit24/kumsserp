@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGuardians, useDeleteStudentGuardian } from '../../hooks/useStudentGuardians';
+import { useGuardians, useDeleteGuardian } from '../../hooks/useStudents';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
@@ -17,7 +17,7 @@ export const GuardiansPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useGuardians(filters);
-  const deleteMutation = useDeleteStudentGuardian();
+  const deleteMutation = useDeleteGuardian();
 
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('create');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
