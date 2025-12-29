@@ -21,8 +21,12 @@ export default function ClassTeachersPage() {
     const columns: Column<ClassTeacher>[] = [
         { key: 'class_name', label: 'Class', sortable: true, className: 'font-semibold' },
         { key: 'section_name', label: 'Section', sortable: true },
-        { key: 'teacher_name', label: 'Teacher', sortable: true },
-        { key: 'academic_session_name', label: 'Session', sortable: true },
+        {
+            key: 'teacher',
+            label: 'Teacher',
+            sortable: true,
+            render: (ct) => ct.teacher_details?.full_name || ct.teacher_details?.username || '-'
+        },
         {
             key: 'is_active',
             label: 'Status',

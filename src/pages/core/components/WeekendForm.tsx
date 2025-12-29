@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '../../../components/ui/select';
 import { collegeApi } from '../../../services/core.service';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface WeekendFormProps {
   mode: 'create' | 'edit';
@@ -34,9 +35,13 @@ export const WeekendForm = ({
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { user } = useAuth();
+  const userCollegeId = user?.college;
+  const hasOnlyOneCollege = !!userCollegeId;
+
   /* ---------------- FORM STATE ---------------- */
   const [formData, setFormData] = useState({
-    college: null as number | null,
+    college: hasOnlyOneCollege ? userCollegeId : null as number | null,
     day: null as number | null,
     is_active: true,
   });
@@ -115,38 +120,39 @@ export const WeekendForm = ({
       )}
 
       {/* -------- College -------- */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Select College <span className="text-destructive">*</span>
-        </label>
+      {!hasOnlyOneCollege && (
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Select College <span className="text-destructive">*</span>
+          </label>
 
-        <Select
-          value={formData.college ? String(formData.college) : ''}
-          onValueChange={(value) =>
-            setFormData({ ...formData, college: Number(value) })
-          }
-        >
-          <SelectTrigger
-            className={`bg-background text-foreground border ${errors.college ? 'border-destructive' : ''
-              }`}
+          <Select
+            value={formData.college ? String(formData.college) : ''}
+            onValueChange={(value) =>
+              setFormData({ ...formData, college: Number(value) })
+            }
           >
-            <SelectValue placeholder="Select college" />
-          </SelectTrigger>
+            <SelectTrigger
+              className={`bg-background text-foreground border ${errors.college ? 'border-destructive' : ''
+                }`}
+            >
+              <SelectValue placeholder="Select college" />
+            </SelectTrigger>
 
-          <SelectContent className="bg-background text-foreground">
-            {colleges.map((college: any) => (
-              <SelectItem key={college.id} value={String(college.id)}>
-                {college.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectContent className="bg-background text-foreground">
+              {colleges.map((college: any) => (
+                <SelectItem key={college.id} value={String(college.id)}>
+                  {college.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {errors.college && (
-          <p className="text-sm text-destructive mt-1">{errors.college}</p>
-        )}
-      </div>
-
+          {errors.college && (
+            <p className="text-sm text-destructive mt-1">{errors.college}</p>
+          )}
+        </div>
+      )}
 
       {/* -------- Day -------- */}
       <div>

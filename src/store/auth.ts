@@ -44,9 +44,10 @@ export const useAuthStore = create<AuthState>()(
           }));
         },
         reset: () => {
-          // Clear token from localStorage
+          // Clear all auth-related data from localStorage
           localStorage.removeItem('kumss_auth_token');
-          console.log('[AuthStore] Reset - cleared token from localStorage');
+          localStorage.removeItem('auth-storage');
+          console.log('[AuthStore] Reset - cleared all auth data from localStorage');
           return set(() => ({ ...initialState }));
         },
       }),

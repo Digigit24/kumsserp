@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { sectionApi, classApi } from '../../../services/academic.service';
 import { useColleges } from '../../../hooks/useCore';
+import { useAuth } from '../../../hooks/useAuth';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -24,10 +25,14 @@ export function SectionForm({ mode, sectionId, onSuccess, onCancel }: SectionFor
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const { user } = useAuth();
+    const userCollegeId = user?.college;
+    const hasOnlyOneCollege = !!userCollegeId;
+
     // Fetch colleges
     const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
-    const [selectedCollege, setSelectedCollege] = useState<number>(0);
+    const [selectedCollege, setSelectedCollege] = useState<number>(hasOnlyOneCollege ? userCollegeId : 0);
     const [classes, setClasses] = useState<any[]>([]);
     const [allClasses, setAllClasses] = useState<any[]>([]);
 
@@ -178,43 +183,45 @@ export function SectionForm({ mode, sectionId, onSuccess, onCancel }: SectionFor
             )}
 
             {/* STEP 1: Select College */}
-            <div className="space-y-2 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
-                <Label className="text-base font-semibold">
-                    Step 1: Select College <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                    value={selectedCollege?.toString()}
-                    onValueChange={handleCollegeChange}
-                    disabled={isViewMode || mode === 'edit'}
-                >
-                    <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Choose a college first" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {collegesData?.results.length === 0 ? (
-                            <div className="p-2 text-sm text-muted-foreground">
-                                No colleges available
-                            </div>
-                        ) : (
-                            collegesData?.results.map((college) => (
-                                <SelectItem key={college.id} value={college.id.toString()}>
-                                    {college.name}
-                                </SelectItem>
-                            ))
-                        )}
-                    </SelectContent>
-                </Select>
-                {!selectedCollege && mode === 'create' && (
-                    <p className="text-xs text-amber-600">
-                        ⚠️ Select a college to see available classes
-                    </p>
-                )}
-                {selectedCollege && (
-                    <p className="text-xs text-green-600">
-                        ✓ College selected - {classes.length} classes available
-                    </p>
-                )}
-            </div>
+            {!hasOnlyOneCollege && (
+                <div className="space-y-2 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+                    <Label className="text-base font-semibold">
+                        Step 1: Select College <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                        value={selectedCollege?.toString()}
+                        onValueChange={handleCollegeChange}
+                        disabled={isViewMode || mode === 'edit'}
+                    >
+                        <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Choose a college first" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {collegesData?.results.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground">
+                                    No colleges available
+                                </div>
+                            ) : (
+                                collegesData?.results.map((college) => (
+                                    <SelectItem key={college.id} value={college.id.toString()}>
+                                        {college.name}
+                                    </SelectItem>
+                                ))
+                            )}
+                        </SelectContent>
+                    </Select>
+                    {!selectedCollege && mode === 'create' && (
+                        <p className="text-xs text-amber-600">
+                            ⚠️ Select a college to see available classes
+                        </p>
+                    )}
+                    {selectedCollege && (
+                        <p className="text-xs text-green-600">
+                            ✓ College selected - {classes.length} classes available
+                        </p>
+                    )}
+                </div>
+            )}
 
             {/* STEP 2: Select Class */}
             <div className="space-y-2">
