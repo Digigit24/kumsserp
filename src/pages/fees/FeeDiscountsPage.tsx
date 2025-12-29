@@ -7,16 +7,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeDiscount, mockFeeDiscountsPaginated } from '../../data/feesMockData';
+import { useFeeDiscounts } from '../../hooks/useFees';
 import { FeeDiscountForm } from './forms';
 
 const FeeDiscountsPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedDiscount, setSelectedDiscount] = useState<FeeDiscount | null>(null);
+  const [selectedDiscount, setSelectedDiscount] = useState<any | null>(null);
 
-  const columns: Column<FeeDiscount>[] = [
+  // Fetch fee discounts using real API
+  const { data, isLoading, error, refetch } = useFeeDiscounts(filters);
+
+  const columns: Column<any>[] = [
     { key: 'code', label: 'Code', sortable: true },
     { key: 'name', label: 'Discount Name', sortable: true },
     {
@@ -109,10 +112,10 @@ const FeeDiscountsPage = () => {
         title="Fee Discounts"
         description="View and manage fee discounts"
         columns={columns}
-        data={mockFeeDiscountsPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
