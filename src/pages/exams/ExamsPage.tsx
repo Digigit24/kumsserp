@@ -8,29 +8,39 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useExams } from '../../hooks/useExamination';
+import { useExams, useCreateExam, useUpdateExam, useDeleteExam } from '../../hooks/useExamination';
+import { Exam, ExamListItem } from '../../types/examination.types';
 import { ExamForm } from './forms';
+import { toast } from 'sonner';
 
 const ExamsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
   // Fetch exams using real API
   const { data, isLoading, error, refetch } = useExams(filters);
+  const createMutation = useCreateExam();
+  const updateMutation = useUpdateExam();
+  const deleteMutation = useDeleteExam();
 
-  const columns: Column<Exam>[] = [
+  const columns: Column<ExamListItem>[] = [
     { key: 'name', label: 'Exam Name', sortable: true },
     {
-      key: 'start_date',
-      label: 'Start Date',
-      render: (exam) => new Date(exam.start_date).toLocaleDateString(),
+      key: 'exam_type_name',
+      label: 'Exam Type',
+      render: (exam) => exam.exam_type_name,
     },
     {
-      key: 'end_date',
+      key: 'exam_date_start',
+      label: 'Start Date',
+      render: (exam) => new Date(exam.exam_date_start).toLocaleDateString(),
+    },
+    {
+      key: 'exam_date_end',
       label: 'End Date',
-      render: (exam) => new Date(exam.end_date).toLocaleDateString(),
+      render: (exam) => new Date(exam.exam_date_end).toLocaleDateString(),
     },
     {
       key: 'is_published',
@@ -81,8 +91,9 @@ const ExamsPage = () => {
     setIsSidebarOpen(true);
   };
 
-  const handleRowClick = (exam: Exam) => {
-    setSelectedExam(exam);
+  const handleRowClick = (exam: ExamListItem) => {
+    // Fetch full exam details when clicking a row
+    setSelectedExam(exam as any);
     setSidebarMode('view');
     setIsSidebarOpen(true);
   };
@@ -91,9 +102,44 @@ const ExamsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<Exam>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: Partial<Exam>) => {
+    try {
+      if (sidebarMode === 'edit' && selectedExam?.id) {
+        // Update existing exam
+        await updateMutation.mutateAsync({
+          id: selectedExam.id,
+          data: data as any,
+        });
+        toast.success('Exam updated successfully');
+      } else {
+        // Create new exam
+        await createMutation.mutateAsync(data as any);
+        toast.success('Exam created successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedExam(null);
+      refetch();
+    } catch (error: any) {
+      console.error('Failed to save exam:', error);
+      toast.error(error?.message || 'Failed to save exam');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedExam?.id) return;
+
+    if (confirm('Are you sure you want to delete this exam?')) {
+      try {
+        await deleteMutation.mutateAsync(selectedExam.id);
+        toast.success('Exam deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedExam(null);
+        refetch();
+      } catch (error: any) {
+        console.error('Failed to delete exam:', error);
+        toast.error(error?.message || 'Failed to delete exam');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -138,14 +184,18 @@ const ExamsPage = () => {
               <h3 className="text-sm font-medium text-muted-foreground">Exam Name</h3>
               <p className="mt-1 text-lg">{selectedExam.name}</p>
             </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Exam Code</h3>
+              <p className="mt-1">{(selectedExam as any).code || 'N/A'}</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Start Date</h3>
-                <p className="mt-1">{new Date(selectedExam.start_date).toLocaleDateString()}</p>
+                <p className="mt-1">{new Date((selectedExam as any).exam_date_start || '').toLocaleDateString()}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">End Date</h3>
-                <p className="mt-1">{new Date(selectedExam.end_date).toLocaleDateString()}</p>
+                <p className="mt-1">{new Date((selectedExam as any).exam_date_end || '').toLocaleDateString()}</p>
               </div>
             </div>
             <div>
@@ -164,8 +214,9 @@ const ExamsPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4">
+            <div className="pt-4 flex gap-2">
               <Button onClick={handleEdit}>Edit</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
           </div>
         ) : (
