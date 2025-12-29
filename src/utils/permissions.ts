@@ -4,6 +4,7 @@
  */
 
 import { UserType } from '@/types/accounts.types';
+import type { UserPermissions, ModulePermissions } from '@/types/auth.types';
 
 /**
  * Get the current user from localStorage
@@ -173,3 +174,74 @@ export const getDashboardWelcome = (): string => {
       return "Welcome back!";
   }
 };
+
+/**
+ * Extract flat list of enabled permissions from nested structure
+ * Converts { library: { read: { enabled: true }, create: { enabled: true } } }
+ * to ['library.read', 'library.create']
+ */
+export function extractEnabledPermissions(userPermissions: UserPermissions | undefined): string[] {
+  if (!userPermissions) return [];
+
+  const permissions: string[] = [];
+
+  Object.entries(userPermissions).forEach(([module, modulePerms]) => {
+    Object.entries(modulePerms as ModulePermissions).forEach(([action, details]) => {
+      if (details.enabled) {
+        permissions.push(`${module}.${action}`);
+      }
+    });
+  });
+
+  return permissions;
+}
+
+/**
+ * Check if user has ANY of the specified permissions
+ */
+export function hasAnyPermission(
+  userPermissions: string[] | undefined,
+  permissions: string[]
+): boolean {
+  if (!userPermissions || userPermissions.length === 0) return false;
+  if (!permissions || permissions.length === 0) return true;
+  return permissions.some(perm => userPermissions.includes(perm));
+}
+
+/**
+ * Check if user has ALL of the specified permissions
+ */
+export function hasAllPermissions(
+  userPermissions: string[] | undefined,
+  permissions: string[]
+): boolean {
+  if (!userPermissions || userPermissions.length === 0) return false;
+  if (!permissions || permissions.length === 0) return true;
+  return permissions.every(perm => userPermissions.includes(perm));
+}
+
+/**
+ * Check if user has permission for a specific module
+ */
+export function hasModuleAccess(
+  userPermissions: string[] | undefined,
+  module: string
+): boolean {
+  if (!userPermissions || userPermissions.length === 0) return false;
+  return userPermissions.some(perm => perm.startsWith(`${module}.`));
+}
+
+/**
+ * Get all modules user has access to
+ */
+export function getAccessibleModules(userPermissions: string[] | undefined): string[] {
+  if (!userPermissions || userPermissions.length === 0) return [];
+
+  const modules = new Set<string>();
+  userPermissions.forEach(perm => {
+    const [module] = perm.split('.');
+    if (module) modules.add(module);
+  });
+
+  return Array.from(modules);
+}
