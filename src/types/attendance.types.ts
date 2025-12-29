@@ -63,9 +63,12 @@ export interface StudentAttendanceCreateInput {
   section: number;
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
+  check_in_time?: string | null;
+  check_out_time?: string | null;
   subject?: number | null;
   period?: number | null;
   remarks?: string | null;
+  marked_by?: string | null;
   is_verified?: boolean;
 }
 

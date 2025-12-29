@@ -472,14 +472,14 @@ export const API_ENDPOINTS = {
 
   // Attendance Module - Student Attendance
   studentAttendance: {
-    list: "/api/v1/attendance/students/",
-    create: "/api/v1/attendance/students/",
-    detail: (id: number) => `/api/v1/attendance/students/${id}/`,
-    update: (id: number) => `/api/v1/attendance/students/${id}/`,
-    patch: (id: number) => `/api/v1/attendance/students/${id}/`,
-    delete: (id: number) => `/api/v1/attendance/students/${id}/`,
-    bulkCreate: "/api/v1/attendance/students/bulk_create/",
-    summary: (studentId: number) => `/api/v1/attendance/students/summary/${studentId}/`,
+    list: "/api/v1/attendance/student-attendance/",
+    create: "/api/v1/attendance/student-attendance/",
+    detail: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
+    update: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
+    bulkMark: "/api/v1/attendance/student-attendance/bulk_mark/",
+    summary: (studentId: number) => `/api/v1/attendance/student-attendance/summary/${studentId}/`,
   },
 
   // Attendance Module - Staff Attendance
