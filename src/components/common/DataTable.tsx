@@ -3,8 +3,8 @@
  * Modern, sleek table with search, filters, sorting, and pagination
  */
 
-import React, { useState } from 'react';
-import { Search, ChevronUp, ChevronDown, Plus, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -13,10 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { PaginatedResponse } from '@/types/core.types';
+import { ChevronDown, ChevronUp, Plus, RefreshCw, Search } from 'lucide-react';
+import React, { useState } from 'react';
 
 export interface Column<T> {
   key: string;

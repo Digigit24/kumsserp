@@ -2,17 +2,16 @@
  * Student Form Component - Matches backend API structure
  */
 
-import { useState, useEffect } from 'react';
-import { studentApi } from '../../../services/students.service';
-import { usePrograms, useClasses, useSections } from '../../../hooks/useAcademic';
-import { useAcademicYears } from '../../../hooks/useCore';
-import { useUsers } from '../../../hooks/useAccounts';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import type { Student } from '../../../types/students.types';
+import { useClasses, usePrograms, useSections } from '../../../hooks/useAcademic';
+import { useUsers } from '../../../hooks/useAccounts';
+import { useAcademicYears } from '../../../hooks/useCore';
+import { studentApi } from '../../../services/students.service';
 
 interface StudentFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -80,12 +79,6 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("basic");
 
-    const { data: programsData } = usePrograms({ page_size: 100, is_active: true });
-    const { data: classesData } = useClasses({ page_size: 100, is_active: true });
-    const { data: sectionsData } = useSections({ page_size: 100, is_active: true });
-    const { data: yearsData } = useAcademicYears({ page_size: 100 });
-    const { data: studentUsersData, isLoading: isUsersLoading, error: usersError } = useUsers({ user_type: 'student', page_size: 1000, college: formData.college });
-
     const [formData, setFormData] = useState<StudentFormData>({
         user: '', // Will be auto-generated or manually entered
         college: 1,
@@ -123,6 +116,14 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         optional_subjects: [],
         custom_fields: {},
     });
+
+    const { data: programsData } = usePrograms({ page_size: 100, is_active: true });
+    const { data: classesData } = useClasses({ page_size: 100, is_active: true });
+    const { data: sectionsData } = useSections({ page_size: 100, is_active: true });
+    const { data: yearsData } = useAcademicYears({ page_size: 100 });
+    // Fetch all student-type users so we can show names/emails instead of raw UUIDs
+    const { data: studentUsersData, isLoading: isUsersLoading, error: usersError } = useUsers({ user_type: 'student', page_size: 1000 });
+    const hasStudentUsers = (studentUsersData?.results?.length || 0) > 0;
 
     useEffect(() => {
         if ((mode === 'edit' || mode === 'view') && studentId) {
@@ -287,22 +288,37 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                 <TabsContent value="basic" className="space-y-4 mt-4">
                     <div className="space-y-2">
                         <Label>User (accounts) <span className="text-destructive">*</span></Label>
-                        <Select
-                            value={formData.user || undefined}
-                            onValueChange={(v) => setFormData({ ...formData, user: v })}
-                            disabled={isViewMode || isUsersLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder={isUsersLoading ? 'Loading users...' : 'Select linked user'} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {studentUsersData?.results.map((u) => (
-                                    <SelectItem key={u.id} value={u.id}>
-                                        {u.full_name || u.username} ({u.email})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {hasStudentUsers ? (
+                            <Select
+                                value={formData.user || undefined}
+                                onValueChange={(v) => setFormData({ ...formData, user: v })}
+                                disabled={isViewMode || isUsersLoading}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={isUsersLoading ? 'Loading users...' : 'Select linked user'} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {studentUsersData?.results.map((u) => (
+                                        <SelectItem key={u.id} value={u.id}>
+                                            {u.full_name || u.username} ({u.email})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                value={formData.user}
+                                onChange={(e) => setFormData({ ...formData, user: e.target.value })}
+                                placeholder={isUsersLoading ? 'Loading users...' : 'Enter linked user ID/UUID'}
+                                disabled={isViewMode || isUsersLoading}
+                                required
+                            />
+                        )}
+                        {!hasStudentUsers && !isUsersLoading && (
+                            <p className="text-xs text-muted-foreground">
+                                No student users found for this college. Create a student user in Accounts, then paste its ID/UUID here.
+                            </p>
+                        )}
                         {usersError && <p className="text-xs text-destructive">Failed to load student users: {usersError}</p>}
                     </div>
 

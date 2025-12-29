@@ -74,19 +74,15 @@ export interface StudentAttendanceCreateInput {
 
 export interface StudentAttendanceUpdateInput extends Partial<StudentAttendanceCreateInput> {}
 
-export interface BulkAttendanceEntry {
-  student: number;
-  status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
-  remarks?: string | null;
-}
-
 export interface BulkAttendanceCreateInput {
+  student_ids: number[];
   class_obj: number;
   section: number;
   date: string;
   subject?: number | null;
   period?: number | null;
-  attendance_records: BulkAttendanceEntry[];
+  status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
+  remarks?: string | null;
 }
 
 // ============================================================================

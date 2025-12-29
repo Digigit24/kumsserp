@@ -4,6 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useStudentAttendance } from '../../hooks/useAttendance';
+import { useStudents } from '../../hooks/useStudents';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
 import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
@@ -23,6 +24,8 @@ const StudentAttendancePage = () => {
 
   // Fetch attendance data using the hook
   const { data, isLoading, error, refetch } = useStudentAttendance(filters);
+  // Lightweight students fetch to show availability count
+  const { data: studentsData, isLoading: studentsLoading, error: studentsError } = useStudents({ page: 1, page_size: 1 });
 
   const handleEdit = (attendance: any) => {
     setSelectedAttendance(attendance);
@@ -98,6 +101,9 @@ const StudentAttendancePage = () => {
         <div>
           <h1 className="text-3xl font-bold">Student Attendance</h1>
           <p className="text-muted-foreground">Mark and manage student attendance</p>
+          <p className="text-sm text-muted-foreground">
+            Available students: {studentsLoading ? '...' : studentsError ? 'Error' : studentsData?.count ?? 0}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setBulkFormOpen(true)}>

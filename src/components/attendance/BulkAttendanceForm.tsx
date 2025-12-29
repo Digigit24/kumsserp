@@ -13,7 +13,6 @@ import { cn } from '../../lib/utils';
 import type { BulkAttendanceCreateInput } from '../../types/attendance.types';
 import { Button } from '../ui/button';
 import { Calendar } from '../ui/calendar';
-import { Checkbox } from '../ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +24,7 @@ import {
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Textarea } from '../ui/textarea';
 import {
   Select,
   SelectContent,
@@ -39,12 +39,6 @@ interface BulkAttendanceFormProps {
   onSuccess?: () => void;
 }
 
-interface StudentSelection {
-  student: number;
-  status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
-  remarks: string;
-}
-
 export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
   open,
   onOpenChange,
@@ -53,8 +47,9 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
   const [date, setDate] = useState<Date>(new Date());
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
-  const [defaultStatus, setDefaultStatus] = useState<'present' | 'absent' | 'late' | 'excused' | 'half_day'>('present');
-  const [selectedStudents, setSelectedStudents] = useState<Map<number, StudentSelection>>(new Map());
+  const [selectedStudents, setSelectedStudents] = useState<Set<number>>(new Set());
+  const [status, setStatus] = useState<'present' | 'absent' | 'late' | 'excused' | 'half_day'>('present');
+  const [remarks, setRemarks] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch classes, sections, and students
@@ -65,7 +60,8 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
   });
   const { data: studentsData } = useStudents({
     page_size: 1000,
-    current_class: selectedClass ? Number(selectedClass) : undefined
+    current_class: selectedClass ? Number(selectedClass) : undefined,
+    current_section: selectedSection ? Number(selectedSection) : undefined,
   });
 
   const bulkMutation = useBulkMarkAttendance();
@@ -76,43 +72,24 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
     student.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
-  const handleStudentToggle = (studentId: number, checked: boolean) => {
-    const newSelections = new Map(selectedStudents);
-    if (checked) {
-      newSelections.set(studentId, {
-        student: studentId,
-        status: defaultStatus,
-        remarks: '',
-      });
-    } else {
-      newSelections.delete(studentId);
-    }
-    setSelectedStudents(newSelections);
-  };
-
   const handleSelectAll = () => {
-    const newSelections = new Map<number, StudentSelection>();
-    filteredStudents.forEach(student => {
-      newSelections.set(student.id, {
-        student: student.id,
-        status: defaultStatus,
-        remarks: '',
-      });
-    });
-    setSelectedStudents(newSelections);
+    setSelectedStudents(new Set(filteredStudents.map((s) => s.id)));
   };
 
   const handleDeselectAll = () => {
-    setSelectedStudents(new Map());
+    setSelectedStudents(new Set());
   };
 
-  const handleStatusChange = (studentId: number, status: 'present' | 'absent' | 'late' | 'excused' | 'half_day') => {
-    const newSelections = new Map(selectedStudents);
-    const existing = newSelections.get(studentId);
-    if (existing) {
-      newSelections.set(studentId, { ...existing, status });
-      setSelectedStudents(newSelections);
-    }
+  const toggleStudent = (id: number, checked: boolean) => {
+    setSelectedStudents((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
   };
 
   const onSubmit = async () => {
@@ -125,7 +102,9 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
         class_obj: Number(selectedClass),
         section: Number(selectedSection),
         date: format(date, 'yyyy-MM-dd'),
-        attendance_records: Array.from(selectedStudents.values()),
+        student_ids: Array.from(selectedStudents.values()),
+        status,
+        remarks: remarks?.trim() || undefined,
       };
 
       await bulkMutation.mutateAsync(data);
@@ -134,8 +113,10 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
       // Reset form
       setSelectedClass('');
       setSelectedSection('');
-      setSelectedStudents(new Map());
+      setSelectedStudents(new Set());
       setSearchQuery('');
+      setRemarks('');
+      setStatus('present');
     } catch (error) {
       console.error('Failed to mark bulk attendance:', error);
     }
@@ -146,8 +127,10 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
       // Reset when dialog closes
       setSelectedClass('');
       setSelectedSection('');
-      setSelectedStudents(new Map());
+      setSelectedStudents(new Set());
       setSearchQuery('');
+      setRemarks('');
+      setStatus('present');
     }
   }, [open]);
 
@@ -200,7 +183,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
                 onValueChange={(value) => {
                   setSelectedClass(value);
                   setSelectedSection('');
-                  setSelectedStudents(new Map());
+                  setSelectedStudents(new Set());
                 }}
               >
                 <SelectTrigger>
@@ -220,7 +203,10 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
               <Label>Section *</Label>
               <Select
                 value={selectedSection}
-                onValueChange={setSelectedSection}
+                onValueChange={(value) => {
+                  setSelectedSection(value);
+                  setSelectedStudents(new Set());
+                }}
                 disabled={!selectedClass}
               >
                 <SelectTrigger>
@@ -239,8 +225,8 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
 
           {/* Default Status */}
           <div className="space-y-2">
-            <Label>Default Status</Label>
-            <Select value={defaultStatus} onValueChange={(value: any) => setDefaultStatus(value)}>
+            <Label>Status for selected students</Label>
+            <Select value={status} onValueChange={(value: any) => setStatus(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -258,13 +244,13 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
           {selectedClass && selectedSection && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Select Students ({selectedStudents.size} selected)</Label>
+                <Label>Students ({filteredStudents.length})</Label>
                 <div className="space-x-2">
                   <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
                     Select All
                   </Button>
                   <Button type="button" variant="outline" size="sm" onClick={handleDeselectAll}>
-                    Deselect All
+                    Clear
                   </Button>
                 </div>
               </div>
@@ -281,56 +267,58 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
               </div>
 
               {/* Student List */}
-              <div className="border rounded-md max-h-[300px] overflow-y-auto">
+              <div className="border rounded-md max-h-[340px] overflow-y-auto">
                 {filteredStudents.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
                     No students found
                   </div>
                 ) : (
                   <div className="divide-y">
-                    {filteredStudents.map((student) => (
-                      <div
-                        key={student.id}
-                        className="flex items-center justify-between p-3 hover:bg-accent"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            checked={selectedStudents.has(student.id)}
-                            onCheckedChange={(checked) =>
-                              handleStudentToggle(student.id, checked as boolean)
-                            }
-                          />
-                          <div>
+                    {filteredStudents.map((student) => {
+                      const isSelected = selectedStudents.has(student.id);
+                      return (
+                        <div
+                          key={student.id}
+                          className="grid grid-cols-3 items-center gap-3 p-3 hover:bg-accent"
+                        >
+                          <div className="space-y-1">
                             <div className="font-medium">{student.full_name}</div>
                             <div className="text-sm text-muted-foreground">
                               {student.admission_number}
                             </div>
                           </div>
+                          <div className="text-sm text-muted-foreground">
+                            {student.current_class_name || '—'}
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={isSelected ? 'default' : 'outline'}
+                              onClick={() => toggleStudent(student.id, !isSelected)}
+                            >
+                              {isSelected ? 'Selected' : 'Select'}
+                            </Button>
+                          </div>
                         </div>
-                        {selectedStudents.has(student.id) && (
-                          <Select
-                            value={selectedStudents.get(student.id)?.status}
-                            onValueChange={(value: any) => handleStatusChange(student.id, value)}
-                          >
-                            <SelectTrigger className="w-[130px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="present">Present</SelectItem>
-                              <SelectItem value="absent">Absent</SelectItem>
-                              <SelectItem value="late">Late</SelectItem>
-                              <SelectItem value="excused">Excused</SelectItem>
-                              <SelectItem value="half_day">Half Day</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </div>
           )}
+
+          {/* Remarks */}
+          <div className="space-y-2">
+            <Label>Remarks (optional)</Label>
+            <Textarea
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Add a note for this batch update"
+              rows={3}
+            />
+          </div>
         </div>
 
         <DialogFooter>
@@ -347,7 +335,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
               bulkMutation.isPending
             }
           >
-            {bulkMutation.isPending ? 'Marking...' : `Mark Attendance (${selectedStudents.size})`}
+            {bulkMutation.isPending ? 'Marking...' : `Mark ${status} (${selectedStudents.size})`}
           </Button>
         </DialogFooter>
       </DialogContent>

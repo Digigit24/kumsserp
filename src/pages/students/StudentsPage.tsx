@@ -157,10 +157,10 @@ export const StudentsPage = () => {
             <DataTable
                 title="Students"
                 description="Manage all student records, admissions, and information"
-                data={data}
+                data={data || { count: 0, next: null, previous: null, results: [] }}
                 columns={columns}
                 isLoading={isLoading}
-                error={error}
+                error={error || null}
                 onRefresh={refetch}
                 onAdd={handleAdd}
                 onRowClick={handleRowClick}
