@@ -1,54 +1,141 @@
 /**
  * Guardians Page
- * Displays all guardians from API
+ * Displays all guardians with CRUD operations
  */
 
 import { useState } from 'react';
-import { useGuardians } from '../../hooks/useStudents';
-import type { GuardianFilters } from '../../types/students.types';
+import { useNavigate } from 'react-router-dom';
+import { useGuardians, useDeleteStudentGuardian } from '../../hooks/useStudentGuardians';
+import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { GuardianForm } from './components/GuardianForm';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import type { StudentGuardian } from '../../types/students.types';
 
 export const GuardiansPage = () => {
-  const [filters, setFilters] = useState<GuardianFilters>({ page: 1, page_size: 20 });
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useGuardians(filters);
+  const deleteMutation = useDeleteStudentGuardian();
+
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('create');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedGuardian, setSelectedGuardian] = useState<StudentGuardian | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Define table columns
+  const columns: Column<StudentGuardian>[] = [
+    {
+      key: 'full_name',
+      label: 'Guardian Name',
+      sortable: true,
+      render: (guardian) => (
+        <div className="flex flex-col">
+          <span className="font-medium">{guardian.first_name} {guardian.last_name}</span>
+          <span className="text-xs text-muted-foreground capitalize">{guardian.relation}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (guardian) => guardian.email || '-',
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      render: (guardian) => guardian.phone || '-',
+    },
+    {
+      key: 'occupation',
+      label: 'Occupation',
+      render: (guardian) => guardian.occupation || '-',
+    },
+  ];
+
+  const handleAdd = () => {
+    setSelectedGuardian(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = (guardian: StudentGuardian) => {
+    setSelectedGuardian(guardian);
+    setSidebarMode('edit');
+    setIsSidebarOpen(true);
+  };
+
+  const handleDelete = (guardian: StudentGuardian) => {
+    setSelectedGuardian(guardian);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedGuardian) {
+      await deleteMutation.mutateAsync(selectedGuardian.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setSelectedGuardian(null);
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedGuardian(null);
+  };
+
+  const handleFormSuccess = () => {
+    setIsSidebarOpen(false);
+    setSelectedGuardian(null);
+    refetch();
+  };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Guardians</h1>
-        <p className="text-gray-600">List of all guardians (parents/guardians)</p>
-      </div>
+    <div className="p-4 md:p-6 animate-fade-in">
+      <DataTable
+        title="Guardians"
+        description="Manage all guardian records for students"
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search by name, email, phone..."
+        addButtonLabel="Add Guardian"
+      />
 
-      <div className="mb-4 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Refresh
-        </button>
-      </div>
+      {/* Create/Edit Sidebar */}
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={sidebarMode === 'create' ? 'Add New Guardian' : 'Edit Guardian'}
+        mode={sidebarMode}
+        width="lg"
+      >
+        <GuardianForm
+          mode={sidebarMode}
+          guardian={selectedGuardian || undefined}
+          onSuccess={handleFormSuccess}
+          onCancel={handleCloseSidebar}
+        />
+      </DetailSidebar>
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-lg">Loading guardians...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-          <p className="text-red-800">Error: {error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 dark:bg-black rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200 dark:bg-black text-white">
-            <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
-          </div>
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Guardian"
+        description="Are you sure you want to delete this guardian? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

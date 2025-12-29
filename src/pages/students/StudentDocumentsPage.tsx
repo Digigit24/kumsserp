@@ -1,70 +1,114 @@
 /**
  * Student Documents Page
- * Displays all student documents from API
+ * Displays all student documents with CRUD operations
  */
 
 import { useState } from 'react';
-import { Button } from '../../components/ui/button';
-import { useStudentDocuments } from '../../hooks/useStudents';
-import type { StudentDocumentFilters } from '../../types/students.types';
+import { useNavigate } from 'react-router-dom';
+import { useStudentDocuments, useDeleteStudentDocument } from '../../hooks/useStudentDocuments';
+import { DataTable, Column } from '../../components/common/DataTable';
+import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { FileText } from 'lucide-react';
+import type { StudentDocument } from '../../types/students.types';
 
 export const StudentDocumentsPage = () => {
-  const [filters, setFilters] = useState<StudentDocumentFilters>({
-    page: 1,
-    page_size: 20,
-  });
-
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentDocuments(filters);
+  const deleteMutation = useDeleteStudentDocument();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<StudentDocument | null>(null);
+
+  // Define table columns
+  const columns: Column<StudentDocument>[] = [
+    {
+      key: 'document_name',
+      label: 'Document Name',
+      sortable: true,
+      render: (doc) => (
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{doc.document_name}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'document_type',
+      label: 'Type',
+      render: (doc) => (
+        <Badge variant="outline" className="capitalize">
+          {doc.document_type.replace(/_/g, ' ')}
+        </Badge>
+      ),
+    },
+    {
+      key: 'student_name',
+      label: 'Student',
+      render: (doc) => doc.student_name || `Student #${doc.student}`,
+    },
+    {
+      key: 'is_verified',
+      label: 'Status',
+      render: (doc) => (
+        <div className="flex gap-2">
+          {doc.is_verified && <Badge variant="success">Verified</Badge>}
+          {doc.is_active ? (
+            <Badge variant="default">Active</Badge>
+          ) : (
+            <Badge variant="secondary">Inactive</Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'uploaded_date',
+      label: 'Uploaded',
+      render: (doc) => new Date(doc.uploaded_date || doc.created_at).toLocaleDateString(),
+    },
+  ];
+
+  const handleDelete = (document: StudentDocument) => {
+    setSelectedDocument(document);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedDocument) {
+      await deleteMutation.mutateAsync(selectedDocument.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setSelectedDocument(null);
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Student Documents
-        </h1>
-        <p className="text-muted-foreground">
-          List of all student documents (Certificates, ID Proofs, etc.)
-        </p>
-      </div>
+      <DataTable
+        title="Student Documents"
+        description="View and manage all student documents across the system. To add documents, go to a specific student's detail page."
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onDelete={handleDelete}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search by document name, type, student..."
+      />
 
-      {/* Actions */}
-      <div className="mb-4 flex gap-4">
-        <Button onClick={() => refetch()}>
-          Refresh
-        </Button>
-      </div>
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="text-center py-8 text-muted-foreground">
-          <p className="text-lg">Loading student documents…</p>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 mb-4">
-          <p className="text-destructive font-medium">
-            Error: {String(error)}
-          </p>
-        </div>
-      )}
-
-      {/* Data */}
-      {!isLoading && !error && data && (
-        <div className="rounded-lg border border-border bg-card">
-          <div className="p-4 border-b border-border bg-muted/40">
-            <h2 className="text-lg font-semibold text-foreground">
-              Full API Response (JSON)
-            </h2>
-          </div>
-
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs text-foreground">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Document"
+        description="Are you sure you want to delete this document? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

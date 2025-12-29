@@ -1,70 +1,107 @@
 /**
  * Student Addresses Page
- * Displays all student addresses from API
+ * Displays all student addresses with CRUD operations
  */
 
 import { useState } from 'react';
-import { useStudentAddresses } from '../../hooks/useStudents';
-import type { StudentAddressFilters } from '../../types/students.types';
-import { Button } from '../../components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useStudentAddresses, useDeleteStudentAddress } from '../../hooks/useStudentAddresses';
+import { DataTable, Column } from '../../components/common/DataTable';
+import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { MapPin } from 'lucide-react';
+import type { StudentAddress } from '../../types/students.types';
 
 export const StudentAddressesPage = () => {
-  const [filters, setFilters] = useState<StudentAddressFilters>({
-    page: 1,
-    page_size: 20,
-  });
-
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentAddresses(filters);
+  const deleteMutation = useDeleteStudentAddress();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<StudentAddress | null>(null);
+
+  // Define table columns
+  const columns: Column<StudentAddress>[] = [
+    {
+      key: 'address_type',
+      label: 'Type',
+      render: (address) => (
+        <Badge variant="outline" className="capitalize">
+          {address.address_type}
+        </Badge>
+      ),
+    },
+    {
+      key: 'student_name',
+      label: 'Student',
+      render: (address) => address.student_name || `Student #${address.student}`,
+    },
+    {
+      key: 'address',
+      label: 'Address',
+      render: (address) => (
+        <div className="flex items-start gap-2">
+          <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+          <div>
+            <p className="font-medium">{address.address_line1}</p>
+            {address.address_line2 && (
+              <p className="text-sm text-muted-foreground">{address.address_line2}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {address.city}, {address.state} - {address.pincode}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'country',
+      label: 'Country',
+      render: (address) => address.country,
+    },
+  ];
+
+  const handleDelete = (address: StudentAddress) => {
+    setSelectedAddress(address);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedAddress) {
+      await deleteMutation.mutateAsync(selectedAddress.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setSelectedAddress(null);
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Student Addresses
-        </h1>
-        <p className="text-muted-foreground">
-          List of all student addresses (Permanent, Current, Hostel)
-        </p>
-      </div>
+      <DataTable
+        title="Student Addresses"
+        description="View and manage all student addresses across the system. To add addresses, go to a specific student's detail page."
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onDelete={handleDelete}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search by student, city, state..."
+      />
 
-      {/* Actions */}
-      <div className="mb-4 flex gap-4">
-        <Button onClick={() => refetch()}>
-          Refresh
-        </Button>
-      </div>
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="text-center py-8 text-muted-foreground">
-          <p className="text-lg">Loading student addresses…</p>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 mb-4">
-          <p className="text-destructive font-medium">
-            Error: {String(error)}
-          </p>
-        </div>
-      )}
-
-      {/* Data */}
-      {!isLoading && !error && data && (
-        <div className="rounded-lg border border-border bg-card">
-          <div className="p-4 border-b border-border bg-muted/40">
-            <h2 className="text-lg font-semibold text-foreground">
-              Full API Response (JSON)
-            </h2>
-          </div>
-
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs text-foreground">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Address"
+        description="Are you sure you want to delete this address? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };
