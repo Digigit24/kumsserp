@@ -470,6 +470,96 @@ export const API_ENDPOINTS = {
     sendToStore: (id: number) => `/api/v1/examinations/test-papers/${id}/send_to_store/`,
   },
 
+  // Examination Module - Admit Cards
+  admitCards: {
+    list: "/api/v1/examinations/admit-cards/",
+    create: "/api/v1/examinations/admit-cards/",
+    detail: (id: number) => `/api/v1/examinations/admit-cards/${id}/`,
+    update: (id: number) => `/api/v1/examinations/admit-cards/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/admit-cards/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/admit-cards/${id}/`,
+  },
+
+  // Examination Module - Exam Attendance
+  examAttendance: {
+    list: "/api/v1/examinations/exam-attendance/",
+    create: "/api/v1/examinations/exam-attendance/",
+    detail: (id: number) => `/api/v1/examinations/exam-attendance/${id}/`,
+    update: (id: number) => `/api/v1/examinations/exam-attendance/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/exam-attendance/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/exam-attendance/${id}/`,
+  },
+
+  // Examination Module - Student Marks
+  studentMarks: {
+    list: "/api/v1/examinations/student-marks/",
+    create: "/api/v1/examinations/student-marks/",
+    detail: (id: number) => `/api/v1/examinations/student-marks/${id}/`,
+    update: (id: number) => `/api/v1/examinations/student-marks/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/student-marks/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/student-marks/${id}/`,
+  },
+
+  // Examination Module - Marks Grades
+  marksGrades: {
+    list: "/api/v1/examinations/marks-grades/",
+    create: "/api/v1/examinations/marks-grades/",
+    detail: (id: number) => `/api/v1/examinations/marks-grades/${id}/`,
+    update: (id: number) => `/api/v1/examinations/marks-grades/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/marks-grades/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/marks-grades/${id}/`,
+  },
+
+  // Examination Module - Marks Registers
+  marksRegisters: {
+    list: "/api/v1/examinations/marks-registers/",
+    create: "/api/v1/examinations/marks-registers/",
+    detail: (id: number) => `/api/v1/examinations/marks-registers/${id}/`,
+    update: (id: number) => `/api/v1/examinations/marks-registers/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/marks-registers/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/marks-registers/${id}/`,
+  },
+
+  // Examination Module - Mark Sheets
+  markSheets: {
+    list: "/api/v1/examinations/mark-sheets/",
+    create: "/api/v1/examinations/mark-sheets/",
+    detail: (id: number) => `/api/v1/examinations/mark-sheets/${id}/`,
+    update: (id: number) => `/api/v1/examinations/mark-sheets/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/mark-sheets/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/mark-sheets/${id}/`,
+  },
+
+  // Examination Module - Progress Cards
+  progressCards: {
+    list: "/api/v1/examinations/progress-cards/",
+    create: "/api/v1/examinations/progress-cards/",
+    detail: (id: number) => `/api/v1/examinations/progress-cards/${id}/`,
+    update: (id: number) => `/api/v1/examinations/progress-cards/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/progress-cards/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/progress-cards/${id}/`,
+  },
+
+  // Examination Module - Tabulation Sheets
+  tabulationSheets: {
+    list: "/api/v1/examinations/tabulation-sheets/",
+    create: "/api/v1/examinations/tabulation-sheets/",
+    detail: (id: number) => `/api/v1/examinations/tabulation-sheets/${id}/`,
+    update: (id: number) => `/api/v1/examinations/tabulation-sheets/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/tabulation-sheets/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/tabulation-sheets/${id}/`,
+  },
+
+  // Examination Module - Exam Results
+  examResults: {
+    list: "/api/v1/examinations/exam-results/",
+    create: "/api/v1/examinations/exam-results/",
+    detail: (id: number) => `/api/v1/examinations/exam-results/${id}/`,
+    update: (id: number) => `/api/v1/examinations/exam-results/${id}/`,
+    patch: (id: number) => `/api/v1/examinations/exam-results/${id}/`,
+    delete: (id: number) => `/api/v1/examinations/exam-results/${id}/`,
+  },
+
   // Attendance Module - Student Attendance
   studentAttendance: {
     list: "/api/v1/attendance/student-attendance/",
