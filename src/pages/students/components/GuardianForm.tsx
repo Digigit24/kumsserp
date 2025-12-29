@@ -25,6 +25,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<GuardianCreateInput>({
+    user: '',
     first_name: '',
     last_name: '',
     middle_name: '',
@@ -35,6 +36,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
     occupation: '',
     annual_income: '',
     address: '',
+    photo: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,6 +45,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   useEffect(() => {
     if (mode === 'edit' && guardian) {
       setFormData({
+        user: guardian.user || '',
         first_name: guardian.first_name,
         last_name: guardian.last_name,
         middle_name: guardian.middle_name || '',
@@ -53,6 +56,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
         occupation: guardian.occupation || '',
         annual_income: guardian.annual_income || '',
         address: guardian.address || '',
+        photo: guardian.photo || '',
       });
     }
   }, [mode, guardian]);
@@ -116,12 +120,14 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
       // Clean up empty strings to null
       const cleanedData = {
         ...formData,
+        user: formData.user || null,
         middle_name: formData.middle_name || null,
         email: formData.email || null,
         alternate_phone: formData.alternate_phone || null,
         occupation: formData.occupation || null,
         annual_income: formData.annual_income || null,
         address: formData.address || null,
+        photo: formData.photo || null,
       };
 
       if (mode === 'create') {
@@ -177,6 +183,39 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
           <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
             Basic Information
           </h3>
+
+          {/* User UUID */}
+          <div>
+            <label htmlFor="user" className="block text-sm font-medium mb-2">
+              User UUID
+            </label>
+            <Input
+              id="user"
+              type="text"
+              value={formData.user || ''}
+              onChange={(e) => handleChange('user', e.target.value)}
+              placeholder="Enter user UUID (optional)"
+              disabled={isSubmitting}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Optional: Link to existing user account
+            </p>
+          </div>
+
+          {/* Photo URL */}
+          <div>
+            <label htmlFor="photo" className="block text-sm font-medium mb-2">
+              Photo URL
+            </label>
+            <Input
+              id="photo"
+              type="text"
+              value={formData.photo || ''}
+              onChange={(e) => handleChange('photo', e.target.value)}
+              placeholder="Enter photo URL"
+              disabled={isSubmitting}
+            />
+          </div>
 
           {/* First Name */}
           <div>

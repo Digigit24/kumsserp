@@ -41,6 +41,7 @@ export function StudentPromotionForm({ mode, promotionId, onSuccess, onCancel }:
         promotion_date: new Date().toISOString().split('T')[0],
         academic_year: 0,
         remarks: '',
+        is_active: true,
     });
 
     useEffect(() => {
@@ -64,6 +65,7 @@ export function StudentPromotionForm({ mode, promotionId, onSuccess, onCancel }:
                 promotion_date: data.promotion_date,
                 academic_year: data.academic_year,
                 remarks: data.remarks || '',
+                is_active: data.is_active !== undefined ? data.is_active : true,
             });
         } catch (err: any) {
             setError(err.message || 'Failed to fetch promotion');

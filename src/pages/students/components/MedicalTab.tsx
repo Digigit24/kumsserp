@@ -53,6 +53,7 @@ const MedicalRecordDrawer: React.FC<MedicalRecordDrawerProps> = ({
         health_insurance_provider: '',
         health_insurance_number: '',
         last_checkup_date: '',
+        is_active: true,
     });
 
     React.useEffect(() => {
@@ -72,6 +73,7 @@ const MedicalRecordDrawer: React.FC<MedicalRecordDrawerProps> = ({
                 last_checkup_date: record.last_checkup_date
                     ? record.last_checkup_date.split('T')[0] || record.last_checkup_date
                     : '',
+                is_active: record.is_active !== undefined ? record.is_active : true,
             });
         } else if (open) {
             setFormData({
@@ -87,6 +89,7 @@ const MedicalRecordDrawer: React.FC<MedicalRecordDrawerProps> = ({
                 health_insurance_provider: '',
                 health_insurance_number: '',
                 last_checkup_date: '',
+                is_active: true,
             });
         }
     }, [record, open]);
@@ -110,6 +113,7 @@ const MedicalRecordDrawer: React.FC<MedicalRecordDrawerProps> = ({
             health_insurance_provider: formData.health_insurance_provider || null,
             health_insurance_number: formData.health_insurance_number || null,
             last_checkup_date: formData.last_checkup_date || null,
+            is_active: formData.is_active,
         };
 
         try {

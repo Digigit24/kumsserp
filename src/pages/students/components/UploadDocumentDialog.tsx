@@ -39,6 +39,9 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
         document_name: '',
         notes: '',
         is_verified: false,
+        verified_by: '',
+        verified_date: '',
+        is_active: true,
     });
 
     const handleChange = (field: string, value: any) => {
@@ -62,6 +65,9 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                 document_name: document.document_name || '',
                 notes: document.notes || '',
                 is_verified: document.is_verified || false,
+                verified_by: document.verified_by || '',
+                verified_date: document.verified_date || '',
+                is_active: document.is_active !== undefined ? document.is_active : true,
             });
             setFile(null);
         } else if (open) {
@@ -70,6 +76,9 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                 document_name: '',
                 notes: '',
                 is_verified: false,
+                verified_by: '',
+                verified_date: '',
+                is_active: true,
             });
             setFile(null);
         }
@@ -85,6 +94,9 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                         document_name: formData.document_name,
                         notes: formData.notes,
                         is_verified: formData.is_verified,
+                        verified_by: formData.verified_by || null,
+                        verified_date: formData.verified_date || null,
+                        is_active: formData.is_active,
                     },
                 });
             } else {
@@ -101,6 +113,14 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                 if (formData.notes) {
                     payload.append('notes', formData.notes);
                 }
+                payload.append('is_verified', formData.is_verified.toString());
+                if (formData.verified_by) {
+                    payload.append('verified_by', formData.verified_by);
+                }
+                if (formData.verified_date) {
+                    payload.append('verified_date', formData.verified_date);
+                }
+                payload.append('is_active', formData.is_active.toString());
 
                 await createMutation.mutateAsync(payload as any);
             }
@@ -108,7 +128,7 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
             onSuccess?.();
             onOpenChange(false);
             setFile(null);
-            setFormData({ document_type: 'other', document_name: '', notes: '', is_verified: false });
+            setFormData({ document_type: 'other', document_name: '', notes: '', is_verified: false, verified_by: '', verified_date: '', is_active: true });
         } catch (error) {
             console.error('Failed to save document:', error);
             alert('Failed to save document. Please try again.');
@@ -196,7 +216,7 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                         />
                     </div>
 
-                    {isEdit && (
+                    <div className="space-y-3 border-t pt-3">
                         <label className="flex items-center gap-2 rounded-lg border p-3 cursor-pointer select-none">
                             <Checkbox
                                 id="is_verified"
@@ -205,7 +225,38 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                             />
                             <span className="text-sm">Mark as verified</span>
                         </label>
-                    )}
+
+                        {formData.is_verified && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label>Verified By (User UUID)</Label>
+                                    <Input
+                                        value={formData.verified_by}
+                                        onChange={(e) => handleChange('verified_by', e.target.value)}
+                                        placeholder="Enter verifier user UUID"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Verified Date</Label>
+                                    <Input
+                                        type="date"
+                                        value={formData.verified_date}
+                                        onChange={(e) => handleChange('verified_date', e.target.value)}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        <label className="flex items-center gap-2 rounded-lg border p-3 cursor-pointer select-none">
+                            <Checkbox
+                                id="is_active"
+                                checked={formData.is_active}
+                                onCheckedChange={(checked) => handleChange('is_active', Boolean(checked))}
+                            />
+                            <span className="text-sm">Active Document</span>
+                        </label>
+                    </div>
                 </div>
             </SideDrawerContent>
         </SideDrawer>

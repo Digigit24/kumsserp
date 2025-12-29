@@ -10,6 +10,7 @@ import { DataTable, Column, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { StudentForm } from './components/StudentForm';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
 
 export const StudentsPage = () => {
@@ -146,6 +147,11 @@ export const StudentsPage = () => {
         setIsSidebarOpen(false);
     };
 
+    const handleFormSuccess = () => {
+        setIsSidebarOpen(false);
+        refetch();
+    };
+
     return (
         <div className="p-4 md:p-6 animate-fade-in">
             <DataTable
@@ -169,13 +175,15 @@ export const StudentsPage = () => {
             <DetailSidebar
                 isOpen={isSidebarOpen}
                 onClose={handleCloseSidebar}
-                title="Add New Student"
+                title={sidebarMode === 'create' ? 'Add New Student' : 'Edit Student'}
                 mode={sidebarMode}
                 width="2xl"
             >
-                <div className="text-center py-8 text-muted-foreground">
-                    <p>Create Student Form Coming Soon...</p>
-                </div>
+                <StudentForm
+                    mode={sidebarMode}
+                    onSuccess={handleFormSuccess}
+                    onCancel={handleCloseSidebar}
+                />
             </DetailSidebar>
         </div>
     );
