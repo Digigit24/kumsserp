@@ -417,7 +417,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                     Classroom <span className="text-muted-foreground text-xs">(Optional)</span>
                 </Label>
                 <Select
-                    value={formData.classroom?.toString() || ''}
+                    value={formData.classroom?.toString() || undefined}
                     onValueChange={(v) => setFormData({ ...formData, classroom: v ? parseInt(v) : undefined })}
                     disabled={isViewMode}
                 >
@@ -425,7 +425,6 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                         <SelectValue placeholder="Select classroom (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">None</SelectItem>
                         {classrooms.map((r) => (
                             <SelectItem key={r.id} value={r.id.toString()}>
                                 {r.name} ({r.code}) - Capacity: {r.capacity}
