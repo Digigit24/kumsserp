@@ -10,10 +10,12 @@ import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceFo
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, Users, Check, X } from 'lucide-react';
+import { Calendar, Users, Check, X, Save } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
 import { toast } from 'sonner';
+
+type AttendanceStatus = 'present' | 'absent' | null;
 
 const StudentAttendancePage = () => {
   const [filters, setFilters] = useState<StudentFilters>({
@@ -24,19 +26,61 @@ const StudentAttendancePage = () => {
   const [bulkFormOpen, setBulkFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null);
 
+  // Track attendance status for each student
+  const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Fetch students for marking attendance
   const { data, isLoading, error, refetch } = useStudents(filters);
 
-  const handleMarkPresent = (student: StudentListItem) => {
-    // TODO: Implement API call to mark student as present
-    toast.success(`${student.full_name} marked as Present`);
-    console.log('Mark Present:', student);
+  const handleMarkPresent = (studentId: number) => {
+    setAttendanceMap(prev => ({
+      ...prev,
+      [studentId]: prev[studentId] === 'present' ? null : 'present'
+    }));
   };
 
-  const handleMarkAbsent = (student: StudentListItem) => {
-    // TODO: Implement API call to mark student as absent
-    toast.error(`${student.full_name} marked as Absent`);
-    console.log('Mark Absent:', student);
+  const handleMarkAbsent = (studentId: number) => {
+    setAttendanceMap(prev => ({
+      ...prev,
+      [studentId]: prev[studentId] === 'absent' ? null : 'absent'
+    }));
+  };
+
+  const handleSubmitAttendance = async () => {
+    const markedStudents = Object.entries(attendanceMap).filter(([_, status]) => status !== null);
+
+    if (markedStudents.length === 0) {
+      toast.error('Please mark attendance for at least one student');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // TODO: Implement API call to submit attendance
+      console.log('Submitting attendance:', attendanceMap);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast.success(`Attendance submitted for ${markedStudents.length} student(s)`);
+      setAttendanceMap({});
+    } catch (err) {
+      toast.error('Failed to submit attendance');
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectAll = (status: 'present' | 'absent') => {
+    const students = data?.results || [];
+    const newMap: Record<number, AttendanceStatus> = {};
+    students.forEach(student => {
+      newMap[student.id] = status;
+    });
+    setAttendanceMap(newMap);
+    toast.success(`All students marked as ${status}`);
   };
 
   const handleAdd = () => {
@@ -47,6 +91,10 @@ const StudentAttendancePage = () => {
   const handleFormSuccess = () => {
     refetch();
   };
+
+  const markedCount = Object.values(attendanceMap).filter(status => status !== null).length;
+  const presentCount = Object.values(attendanceMap).filter(status => status === 'present').length;
+  const absentCount = Object.values(attendanceMap).filter(status => status === 'absent').length;
 
   const columns: Column<StudentListItem>[] = [
     {
@@ -76,28 +124,39 @@ const StudentAttendancePage = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (student) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-green-600 hover:text-green-700 hover:bg-green-50"
-            onClick={() => handleMarkPresent(student)}
-          >
-            <Check className="h-4 w-4 mr-1" />
-            Present
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => handleMarkAbsent(student)}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Absent
-          </Button>
-        </div>
-      ),
+      render: (student) => {
+        const status = attendanceMap[student.id];
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant={status === 'present' ? 'default' : 'outline'}
+              size="sm"
+              className={
+                status === 'present'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+              }
+              onClick={() => handleMarkPresent(student.id)}
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Present
+            </Button>
+            <Button
+              variant={status === 'absent' ? 'default' : 'outline'}
+              size="sm"
+              className={
+                status === 'absent'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+              }
+              onClick={() => handleMarkAbsent(student.id)}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Absent
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -123,15 +182,40 @@ const StudentAttendancePage = () => {
           <p className="text-sm text-muted-foreground">
             Available students: {isLoading ? '...' : error ? 'Error' : data?.count ?? 0}
           </p>
+          {markedCount > 0 && (
+            <div className="flex gap-3 mt-2">
+              <span className="text-sm font-medium text-green-600">Present: {presentCount}</span>
+              <span className="text-sm font-medium text-red-600">Absent: {absentCount}</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Marked: {markedCount}</span>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setBulkFormOpen(true)}>
-            <Users className="h-4 w-4 mr-2" />
-            Bulk Mark
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSelectAll('present')}
+            disabled={isSubmitting}
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Select All Present
           </Button>
-          <Button onClick={handleAdd}>
-            <Calendar className="h-4 w-4 mr-2" />
-            Mark Single
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSelectAll('absent')}
+            disabled={isSubmitting}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Select All Absent
+          </Button>
+          <Button
+            onClick={handleSubmitAttendance}
+            disabled={markedCount === 0 || isSubmitting}
+            className="bg-primary"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isSubmitting ? 'Submitting...' : `Submit Attendance (${markedCount})`}
           </Button>
         </div>
       </div>
