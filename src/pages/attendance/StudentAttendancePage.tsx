@@ -2,29 +2,24 @@
  * Student Attendance Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useStudentAttendance } from '../../hooks/useAttendance';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Calendar } from 'lucide-react';
-
-interface StudentAttendanceRecord {
-  id: number;
-  student_name: string;
-  student_roll_number: string;
-  class_name: string;
-  section_name: string;
-  date: string;
-  status: string;
-  subject_name: string | null;
-  is_verified: boolean;
-}
+import type { StudentAttendanceFilters } from '../../types/attendance.types';
 
 const StudentAttendancePage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
-  const mockData = { count: 0, next: null, previous: null, results: [] as StudentAttendanceRecord[] };
+  const [filters, setFilters] = useState<StudentAttendanceFilters>({
+    page: 1,
+    page_size: 10,
+  });
 
-  const columns: Column<StudentAttendanceRecord>[] = [
+  // Fetch attendance data using the hook
+  const { data, isLoading, error, refetch } = useStudentAttendance(filters);
+
+  const columns: Column<any>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
     { key: 'student_name', label: 'Student Name', sortable: true },
     { key: 'class_name', label: 'Class', sortable: true },
@@ -81,10 +76,10 @@ const StudentAttendancePage = () => {
       <DataTable
         title="Attendance Records"
         columns={columns}
-        data={mockData}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data || { count: 0, next: null, previous: null, results: [] }}
+        isLoading={isLoading}
+        error={error?.message || null}
+        onRefresh={() => refetch()}
         onAdd={() => {}}
         filters={filters}
         onFiltersChange={setFilters}
