@@ -12,28 +12,27 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Calendar, Edit, Users } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
+import type { StudentListItem, StudentFilters } from '../../types/students.types';
 
 const StudentAttendancePage = () => {
-  const [filters, setFilters] = useState<StudentAttendanceFilters>({
+  const [filters, setFilters] = useState<StudentFilters>({
     page: 1,
-    page_size: 10,
+    page_size: 20,
   });
   const [formOpen, setFormOpen] = useState(false);
   const [bulkFormOpen, setBulkFormOpen] = useState(false);
-  const [selectedAttendance, setSelectedAttendance] = useState<StudentAttendance | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null);
 
-  // Fetch attendance data using the hook
-  const { data, isLoading, error, refetch } = useStudentAttendance(filters);
-  // Lightweight students fetch to show availability count
-  const { data: studentsData, isLoading: studentsLoading, error: studentsError } = useStudents({ page: 1, page_size: 1 });
+  // Fetch students for marking attendance
+  const { data, isLoading, error, refetch } = useStudents(filters);
 
-  const handleEdit = (attendance: any) => {
-    setSelectedAttendance(attendance);
+  const handleMarkAttendance = (student: StudentListItem) => {
+    setSelectedStudent(student);
     setFormOpen(true);
   };
 
   const handleAdd = () => {
-    setSelectedAttendance(null);
+    setSelectedStudent(null);
     setFormOpen(true);
   };
 
@@ -41,40 +40,42 @@ const StudentAttendancePage = () => {
     refetch();
   };
 
-  const columns: Column<any>[] = [
-    { key: 'student_roll_number', label: 'Roll No', sortable: true },
-    { key: 'student_name', label: 'Student Name', sortable: true },
-    { key: 'class_name', label: 'Class', sortable: true },
-    { key: 'section_name', label: 'Section', sortable: true },
-    { key: 'date', label: 'Date', sortable: true },
+  const columns: Column<StudentListItem>[] = [
     {
-      key: 'status',
-      label: 'Status',
-      render: (record) => {
-        const variant = record.status === 'present' ? 'success' :
-                        record.status === 'absent' ? 'destructive' : 'secondary';
-        return <Badge variant={variant}>{record.status}</Badge>;
-      },
+      key: 'admission_number',
+      label: 'Admission No',
+      sortable: true,
+      className: 'font-semibold'
     },
+    { key: 'full_name', label: 'Student Name', sortable: true },
+    { key: 'email', label: 'Email', sortable: true },
     {
-      key: 'is_verified',
-      label: 'Verified',
-      render: (record) => (
-        <Badge variant={record.is_verified ? 'success' : 'outline'}>
-          {record.is_verified ? 'Yes' : 'No'}
+      key: 'current_class_name',
+      label: 'Class',
+      sortable: true,
+      render: (student) => student.current_class_name || '-'
+    },
+    { key: 'program_name', label: 'Program', sortable: true },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (student) => (
+        <Badge variant={student.is_active ? 'success' : 'secondary'}>
+          {student.is_active ? 'Active' : 'Inactive'}
         </Badge>
       ),
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (record) => (
+      render: (student) => (
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          onClick={() => handleEdit(record)}
+          onClick={() => handleMarkAttendance(student)}
         >
-          <Edit className="h-4 w-4" />
+          <Calendar className="h-4 w-4 mr-2" />
+          Mark Attendance
         </Button>
       ),
     },
@@ -82,15 +83,13 @@ const StudentAttendancePage = () => {
 
   const filterConfig: FilterConfig[] = [
     {
-      name: 'status',
+      name: 'is_active',
       label: 'Status',
       type: 'select',
       options: [
         { value: '', label: 'All' },
-        { value: 'present', label: 'Present' },
-        { value: 'absent', label: 'Absent' },
-        { value: 'late', label: 'Late' },
-        { value: 'excused', label: 'Excused' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
       ],
     },
   ];
@@ -102,7 +101,7 @@ const StudentAttendancePage = () => {
           <h1 className="text-3xl font-bold">Student Attendance</h1>
           <p className="text-muted-foreground">Mark and manage student attendance</p>
           <p className="text-sm text-muted-foreground">
-            Available students: {studentsLoading ? '...' : studentsError ? 'Error' : studentsData?.count ?? 0}
+            Available students: {isLoading ? '...' : error ? 'Error' : data?.count ?? 0}
           </p>
         </div>
         <div className="flex gap-2">
@@ -120,7 +119,7 @@ const StudentAttendancePage = () => {
       <StudentAttendanceForm
         open={formOpen}
         onOpenChange={setFormOpen}
-        attendance={selectedAttendance}
+        attendance={null}
         onSuccess={handleFormSuccess}
       />
 
@@ -131,18 +130,15 @@ const StudentAttendancePage = () => {
       />
 
       <DataTable
-        title="Attendance Records"
         columns={columns}
         data={data || { count: 0, next: null, previous: null, results: [] }}
         isLoading={isLoading}
         error={error?.message || null}
         onRefresh={() => refetch()}
-        onAdd={handleAdd}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
-        searchPlaceholder="Search attendance..."
-        addButtonLabel="Mark Attendance"
+        searchPlaceholder="Search students..."
       />
     </div>
   );
