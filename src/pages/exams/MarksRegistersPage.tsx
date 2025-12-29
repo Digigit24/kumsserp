@@ -8,16 +8,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { MarksRegister, mockMarksRegistersPaginated } from '../../data/examinationMockData';
+import { useMarksRegisters } from '../../hooks/useExamination';
 import { MarksRegisterForm } from './forms';
 
 const MarksRegistersPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedRegister, setSelectedRegister] = useState<MarksRegister | null>(null);
+  const [selectedRegister, setSelectedRegister] = useState<any | null>(null);
 
-  const columns: Column<MarksRegister>[] = [
+  // Fetch marks registers using real API
+  const { data, isLoading, error, refetch } = useMarksRegisters(filters);
+
+  const columns: Column<any>[] = [
     { key: 'class_name', label: 'Class', sortable: true },
     { key: 'subject_name', label: 'Subject', sortable: true },
     {
@@ -109,10 +112,10 @@ const MarksRegistersPage = () => {
         title="Marks Registers"
         description="View and manage exam marks registers"
         columns={columns}
-        data={mockMarksRegistersPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

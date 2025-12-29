@@ -3,34 +3,52 @@
  * Admin view for tabulation sheets
  */
 
+import { useState } from 'react';
+import { Column, DataTable } from '../../components/common/DataTable';
+import { Badge } from '../../components/ui/badge';
 import { Download } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { useTabulationSheets } from '../../hooks/useExamination';
 
 const TabulationSheetsPage = () => {
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+
+  // Fetch tabulation sheets using real API
+  const { data, isLoading, error, refetch } = useTabulationSheets(filters);
+
+  const columns: Column<any>[] = [
+    { key: 'exam_name', label: 'Exam', sortable: true },
+    { key: 'class_name', label: 'Class', sortable: true },
+    { key: 'section_name', label: 'Section', sortable: true },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (sheet) => (
+        <Badge variant={sheet.status === 'finalized' ? 'success' : 'outline'}>
+          {sheet.status || 'Draft'}
+        </Badge>
+      ),
+    },
+  ];
+
   return (
     <div className="">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Tabulation Sheets</h1>
-          <p className="text-muted-foreground">View and download tabulation sheets</p>
-        </div>
-        <Button>
-          <Download className="h-4 w-4 mr-2" />
-          Export Tabulation Sheet
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold">Tabulation Sheets</h1>
+        <p className="text-muted-foreground">View and download tabulation sheets</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tabulation Sheets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Tabulation sheet functionality will be available soon</p>
-          </div>
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Tabulation Sheets"
+        description="View and manage exam tabulation sheets"
+        columns={columns}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search tabulation sheets..."
+      />
     </div>
   );
 };
