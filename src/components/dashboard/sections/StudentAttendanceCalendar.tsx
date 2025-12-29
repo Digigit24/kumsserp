@@ -1,18 +1,39 @@
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-/**
- * StudentAttendanceCalendar Component
- * 
- * TODO: Extract the actual content from the old Dashboard component
- * This is a placeholder - replace with the actual section content
- */
+const WEEK = [
+  { day: 'Mon', status: 'Present' },
+  { day: 'Tue', status: 'Present' },
+  { day: 'Wed', status: 'Present' },
+  { day: 'Thu', status: 'Absent' },
+  { day: 'Fri', status: 'Present' },
+];
+
+const statusColor: Record<string, string> = {
+  Present: 'bg-emerald-500',
+  Absent: 'bg-rose-500',
+  Late: 'bg-amber-500',
+};
+
 export const StudentAttendanceCalendar: React.FC = () => {
   return (
-    <div className="p-6 border rounded-lg bg-muted/30">
-      <h3 className="text-lg font-semibold mb-2">StudentAttendanceCalendar</h3>
-      <p className="text-sm text-muted-foreground">
-        Section content goes here. Extract from old Dashboard component.
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Attendance This Week</CardTitle>
+        <CardDescription>Stay consistent to maintain eligibility</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-5 gap-3">
+          {WEEK.map(({ day, status }) => (
+            <div key={day} className="p-3 border rounded-lg text-center">
+              <p className="text-sm font-medium mb-2">{day}</p>
+              <div className={`h-2 rounded-full ${statusColor[status]}`} />
+              <Badge className="mt-2" variant="outline">{status}</Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

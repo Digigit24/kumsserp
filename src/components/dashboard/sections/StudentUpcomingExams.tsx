@@ -1,18 +1,40 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
-/**
- * StudentUpcomingExams Component
- * 
- * TODO: Extract the actual content from the old Dashboard component
- * This is a placeholder - replace with the actual section content
- */
+const EXAMS = [
+  { name: 'Pathology Internal', date: 'Mar 12', type: 'Internal' },
+  { name: 'Community Medicine Viva', date: 'Mar 18', type: 'Viva' },
+  { name: 'Pharmacology Mid-term', date: 'Mar 25', type: 'Mid-term' },
+];
+
 export const StudentUpcomingExams: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="p-6 border rounded-lg bg-muted/30">
-      <h3 className="text-lg font-semibold mb-2">StudentUpcomingExams</h3>
-      <p className="text-sm text-muted-foreground">
-        Section content goes here. Extract from old Dashboard component.
-      </p>
-    </div>
+    <Card>
+      <CardHeader className="flex items-center justify-between">
+        <div>
+          <CardTitle>Upcoming Exams</CardTitle>
+          <CardDescription>Dates to keep on your radar</CardDescription>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate('/exams/exam-schedules')}>
+          Full Schedule
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {EXAMS.map((exam) => (
+          <div key={exam.name} className="flex items-center justify-between p-3 border rounded-lg">
+            <div>
+              <p className="font-semibold">{exam.name}</p>
+              <p className="text-sm text-muted-foreground">Date: {exam.date}</p>
+            </div>
+            <Badge variant="outline">{exam.type}</Badge>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 };

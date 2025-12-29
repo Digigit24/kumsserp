@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { studentApi } from '../../../services/students.service';
 import { usePrograms, useClasses, useSections } from '../../../hooks/useAcademic';
 import { useAcademicYears } from '../../../hooks/useCore';
+import { useUsers } from '../../../hooks/useAccounts';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -55,7 +56,7 @@ interface StudentFormData {
     disabled_date: string;
     disable_reason: string;
     optional_subjects: number[];
-    custom_fields: string;
+    custom_fields: Record<string, any>;
 }
 
 const ADMISSION_TYPES = [
@@ -83,6 +84,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
     const { data: classesData } = useClasses({ page_size: 100, is_active: true });
     const { data: sectionsData } = useSections({ page_size: 100, is_active: true });
     const { data: yearsData } = useAcademicYears({ page_size: 100 });
+    const { data: studentUsersData, isLoading: isUsersLoading, error: usersError } = useUsers({ user_type: 'student', page_size: 1000, college: formData.college });
 
     const [formData, setFormData] = useState<StudentFormData>({
         user: '', // Will be auto-generated or manually entered
@@ -119,7 +121,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         disabled_date: '',
         disable_reason: '',
         optional_subjects: [],
-        custom_fields: '',
+        custom_fields: {},
     });
 
     useEffect(() => {
@@ -134,6 +136,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
             setIsFetching(true);
             const data = await studentApi.get(studentId);
             setFormData({
+                user: data.user?.toString() || '',
                 college: data.college,
                 admission_number: data.admission_number,
                 admission_date: data.admission_date,
@@ -161,6 +164,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                 mother_tongue: data.mother_tongue || '',
                 aadhar_number: data.aadhar_number || '',
                 pan_number: data.pan_number || '',
+                custom_fields: data.custom_fields || {},
             });
         } catch (err: any) {
             setError(err.message || 'Failed to fetch student');
@@ -173,6 +177,11 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         e.preventDefault();
 
         // Validation
+        if (!formData.user?.trim()) {
+            setError('Please provide the user ID/UUID for this student');
+            return;
+        }
+
         if (!formData.first_name || !formData.last_name || !formData.email || !formData.admission_number || !formData.registration_number || !formData.date_of_birth) {
             setError('Please fill all required fields (marked with *)');
             return;
@@ -194,7 +203,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
 
             // Prepare payload matching backend structure
             const payload = {
-                user: formData.user || undefined, // Optional - backend may auto-create
+                user: formData.user?.trim(), // Required by backend (accounts user id/uuid)
                 college: formData.college,
                 admission_number: formData.admission_number,
                 admission_date: formData.admission_date,
@@ -228,7 +237,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                 disabled_date: formData.disabled_date || null,
                 disable_reason: formData.disable_reason || null,
                 optional_subjects: formData.optional_subjects.length > 0 ? formData.optional_subjects : [],
-                custom_fields: formData.custom_fields || null,
+                custom_fields: formData.custom_fields || {},
             };
 
             if (mode === 'create') {
@@ -276,6 +285,27 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
 
                 {/* BASIC INFO TAB */}
                 <TabsContent value="basic" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                        <Label>User (accounts) <span className="text-destructive">*</span></Label>
+                        <Select
+                            value={formData.user || undefined}
+                            onValueChange={(v) => setFormData({ ...formData, user: v })}
+                            disabled={isViewMode || isUsersLoading}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={isUsersLoading ? 'Loading users...' : 'Select linked user'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {studentUsersData?.results.map((u) => (
+                                    <SelectItem key={u.id} value={u.id}>
+                                        {u.full_name || u.username} ({u.email})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {usersError && <p className="text-xs text-destructive">Failed to load student users: {usersError}</p>}
+                    </div>
+
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="first_name">

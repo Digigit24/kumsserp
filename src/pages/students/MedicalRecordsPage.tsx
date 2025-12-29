@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudentMedicalRecords, useDeleteMedicalRecord, useStudents } from '../../hooks/useStudents';
-import { useMedicalRecords, useCreateMedicalRecord } from '../../hooks/useMedicalRecords';
+import { useStudents } from '../../hooks/useStudents';
+import { useMedicalRecords, useCreateMedicalRecord, useDeleteMedicalRecord } from '../../hooks/useMedicalRecords';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -18,16 +18,19 @@ import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawe
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Heart } from 'lucide-react';
 import type { StudentMedicalRecord } from '../../types/students.types';
+import { isAdmin, isTeacher } from '@/utils/permissions';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 export const MedicalRecordsPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
-  const { data, isLoading, error, refetch } = useStudentMedicalRecords(filters);
+  const { data, isLoading, error, refetch } = useMedicalRecords(filters);
   const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
   const createMutation = useCreateMedicalRecord();
   const deleteMutation = useDeleteMedicalRecord();
+
+  const canManageRecords = isAdmin() || isTeacher();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<StudentMedicalRecord | null>(null);
@@ -50,6 +53,8 @@ export const MedicalRecordsPage = () => {
     last_checkup_date: '',
     is_active: true,
   });
+
+  const errorMessage = error instanceof Error ? error.message : null;
 
   // Define table columns
   const columns: Column<StudentMedicalRecord>[] = [
@@ -88,6 +93,23 @@ export const MedicalRecordsPage = () => {
       ),
     },
   ];
+
+  if (canManageRecords) {
+    columns.push({
+      key: 'actions',
+      label: 'Actions',
+      render: (record) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate(`/students/${record.student}`)}>
+            View Profile
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete(record)}>
+            Delete
+          </Button>
+        </div>
+      ),
+    });
+  }
 
   const handleAdd = () => {
     setSelectedRecord(null);
@@ -166,13 +188,12 @@ export const MedicalRecordsPage = () => {
       <DataTable
         title="Student Medical Records"
         description="Manage all student medical records across the system"
-        data={data}
+        data={data || null}
         columns={columns}
         isLoading={isLoading}
-        error={error}
+        error={errorMessage}
         onRefresh={refetch}
-        onAdd={handleAdd}
-        onDelete={handleDelete}
+        onAdd={canManageRecords ? handleAdd : undefined}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search by student, blood group..."
