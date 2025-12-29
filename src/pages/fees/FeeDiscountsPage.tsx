@@ -103,11 +103,6 @@ const FeeDiscountsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Fee Discounts</h1>
-        <p className="text-muted-foreground">Manage fee discounts and scholarships</p>
-      </div>
-
       <DataTable
         title="Fee Discounts"
         description="View and manage fee discounts"

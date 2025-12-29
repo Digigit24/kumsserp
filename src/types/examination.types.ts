@@ -67,10 +67,11 @@ export interface Exam extends AuditFields {
   exam_type_details: ExamTypeListItem;
   academic_session: number;
   session_name: string;
+  class_obj: number;
   name: string;
   code: string;
-  exam_date_start: string;
-  exam_date_end: string;
+  start_date: string;
+  end_date: string;
   result_declaration_date: string | null;
   registration_start: string;
   registration_end: string;
@@ -89,8 +90,9 @@ export interface ExamListItem {
   exam_type_name: string;
   academic_session: number;
   session_name: string;
-  exam_date_start: string;
-  exam_date_end: string;
+  class_obj: number;
+  start_date: string;
+  end_date: string;
   is_published: boolean;
   is_active: boolean;
 }
@@ -99,10 +101,11 @@ export interface ExamCreateInput {
   college: number;
   exam_type: number;
   academic_session: number;
+  class_obj: number;
   name: string;
   code: string;
-  exam_date_start: string;
-  exam_date_end: string;
+  start_date: string;
+  end_date: string;
   result_declaration_date?: string | null;
   registration_start: string;
   registration_end: string;

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Exam, ExamCreateInput } from '../../../types/examination.types';
 import { useExamTypes } from '../../../hooks/useExamination';
 import { useClasses } from '../../../hooks/useAcademic';
+import { useAcademicSessions } from '../../../hooks/useCore';
 import { Loader2 } from 'lucide-react';
 
 interface ExamFormProps {
@@ -23,21 +24,24 @@ interface ExamFormProps {
 export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
   const { data: examTypesData, isLoading: examTypesLoading } = useExamTypes({ page_size: 100 });
   const { data: classesData, isLoading: classesLoading } = useClasses({ page_size: 100 });
+  const { data: academicSessionsData, isLoading: academicSessionsLoading } = useAcademicSessions({ page_size: 100 });
 
   const examTypes = examTypesData?.results || [];
   const classes = classesData?.results || [];
+  const academicSessions = academicSessionsData?.results || [];
 
   const [formData, setFormData] = useState<Partial<ExamCreateInput>>({
     name: '',
     code: '',
-    exam_date_start: '',
-    exam_date_end: '',
+    start_date: '',
+    end_date: '',
     registration_start: '',
     registration_end: '',
     is_published: false,
     is_active: true,
     exam_type: undefined,
-    academic_session: 1, // Default session
+    class_obj: undefined,
+    academic_session: undefined,
     college: 1, // Default college
   });
 
@@ -82,25 +86,79 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="exam_type">Exam Type *</Label>
+          {examTypesLoading ? (
+            <div className="flex items-center justify-center h-10 border rounded-md bg-muted">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : (
+            <Select
+              value={formData.exam_type?.toString()}
+              onValueChange={(value) => handleChange('exam_type', parseInt(value))}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select exam type" />
+              </SelectTrigger>
+              <SelectContent>
+                {examTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="academic_session">Academic Session *</Label>
+          {academicSessionsLoading ? (
+            <div className="flex items-center justify-center h-10 border rounded-md bg-muted">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : (
+            <Select
+              value={formData.academic_session?.toString()}
+              onValueChange={(value) => handleChange('academic_session', parseInt(value))}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select session" />
+              </SelectTrigger>
+              <SelectContent>
+                {academicSessions.map((session) => (
+                  <SelectItem key={session.id} value={session.id.toString()}>
+                    {session.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
       <div className="space-y-2">
-        <Label htmlFor="exam_type">Exam Type *</Label>
-        {examTypesLoading ? (
+        <Label htmlFor="class_obj">Class *</Label>
+        {classesLoading ? (
           <div className="flex items-center justify-center h-10 border rounded-md bg-muted">
             <Loader2 className="h-4 w-4 animate-spin" />
           </div>
         ) : (
           <Select
-            value={formData.exam_type?.toString()}
-            onValueChange={(value) => handleChange('exam_type', parseInt(value))}
+            value={formData.class_obj?.toString()}
+            onValueChange={(value) => handleChange('class_obj', parseInt(value))}
             required
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select exam type" />
+              <SelectValue placeholder="Select class" />
             </SelectTrigger>
             <SelectContent>
-              {examTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id.toString()}>
-                  {type.name}
+              {classes.map((cls) => (
+                <SelectItem key={cls.id} value={cls.id.toString()}>
+                  {cls.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -110,23 +168,23 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="exam_date_start">Exam Start Date *</Label>
+          <Label htmlFor="start_date">Exam Start Date *</Label>
           <Input
-            id="exam_date_start"
+            id="start_date"
             type="date"
-            value={formData.exam_date_start || ''}
-            onChange={(e) => handleChange('exam_date_start', e.target.value)}
+            value={formData.start_date || ''}
+            onChange={(e) => handleChange('start_date', e.target.value)}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="exam_date_end">Exam End Date *</Label>
+          <Label htmlFor="end_date">Exam End Date *</Label>
           <Input
-            id="exam_date_end"
+            id="end_date"
             type="date"
-            value={formData.exam_date_end || ''}
-            onChange={(e) => handleChange('exam_date_end', e.target.value)}
+            value={formData.end_date || ''}
+            onChange={(e) => handleChange('end_date', e.target.value)}
             required
           />
         </div>

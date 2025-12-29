@@ -111,11 +111,6 @@ const BookIssuesPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Book Issues</h1>
-        <p className="text-muted-foreground">Track book issuances and returns</p>
-      </div>
-
       <DataTable
         title="Book Issues List"
         description="View and manage all book issuances"

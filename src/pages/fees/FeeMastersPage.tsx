@@ -91,11 +91,6 @@ const FeeMastersPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Fee Masters</h1>
-        <p className="text-muted-foreground">Manage fee types and categories</p>
-      </div>
-
       <DataTable
         title="Fee Masters List"
         description="View and manage all fee masters"

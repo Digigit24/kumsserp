@@ -33,11 +33,6 @@ const ProgressCardsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Progress Cards</h1>
-        <p className="text-muted-foreground">Generate student progress cards</p>
-      </div>
-
       <DataTable
         title="Progress Cards"
         description="View and generate student progress cards"

@@ -120,11 +120,6 @@ const FeeFinesPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Fee Fines</h1>
-        <p className="text-muted-foreground">Manage fee fines and penalties</p>
-      </div>
-
       <DataTable
         title="Fee Fines"
         description="View and manage fee fines"

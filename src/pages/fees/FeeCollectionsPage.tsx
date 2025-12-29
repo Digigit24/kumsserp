@@ -105,11 +105,6 @@ const FeeCollectionsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Fee Collections</h1>
-        <p className="text-muted-foreground">Manage fee collections and receipts</p>
-      </div>
-
       <DataTable
         title="Fee Collections"
         description="View and manage fee collections"

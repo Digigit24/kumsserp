@@ -102,11 +102,6 @@ const MarksRegistersPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Marks Registers</h1>
-        <p className="text-muted-foreground">View consolidated marks registers for exams</p>
-      </div>
-
       <DataTable
         title="Marks Registers"
         description="View and manage exam marks registers"

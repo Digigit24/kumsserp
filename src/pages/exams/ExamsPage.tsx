@@ -33,14 +33,14 @@ const ExamsPage = () => {
       render: (exam) => exam.exam_type_name,
     },
     {
-      key: 'exam_date_start',
+      key: 'start_date',
       label: 'Start Date',
-      render: (exam) => new Date(exam.exam_date_start).toLocaleDateString(),
+      render: (exam) => new Date(exam.start_date).toLocaleDateString(),
     },
     {
-      key: 'exam_date_end',
+      key: 'end_date',
       label: 'End Date',
-      render: (exam) => new Date(exam.exam_date_end).toLocaleDateString(),
+      render: (exam) => new Date(exam.end_date).toLocaleDateString(),
     },
     {
       key: 'is_published',
@@ -149,11 +149,6 @@ const ExamsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Examinations</h1>
-        <p className="text-muted-foreground">Manage examinations and exam schedules</p>
-      </div>
-
       <DataTable
         title="Exam List"
         description="View and manage all examinations"
@@ -191,11 +186,11 @@ const ExamsPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Start Date</h3>
-                <p className="mt-1">{new Date((selectedExam as any).exam_date_start || '').toLocaleDateString()}</p>
+                <p className="mt-1">{new Date((selectedExam as any).start_date || '').toLocaleDateString()}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">End Date</h3>
-                <p className="mt-1">{new Date((selectedExam as any).exam_date_end || '').toLocaleDateString()}</p>
+                <p className="mt-1">{new Date((selectedExam as any).end_date || '').toLocaleDateString()}</p>
               </div>
             </div>
             <div>

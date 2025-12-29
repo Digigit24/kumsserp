@@ -89,11 +89,6 @@ const ExamSchedulesPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Exam Schedules</h1>
-        <p className="text-muted-foreground">Manage exam schedules and timetables</p>
-      </div>
-
       <DataTable
         title="Exam Schedules"
         description="View and manage all exam schedules"

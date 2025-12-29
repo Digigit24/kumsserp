@@ -110,11 +110,6 @@ const BookReturnsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Book Returns</h1>
-        <p className="text-muted-foreground">Track book returns and conditions</p>
-      </div>
-
       <DataTable
         title="Book Returns List"
         description="View and manage all book returns"

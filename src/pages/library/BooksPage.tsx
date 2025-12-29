@@ -127,11 +127,6 @@ const BooksPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Books</h1>
-        <p className="text-muted-foreground">Manage library books inventory</p>
-      </div>
-
       <DataTable
         title="Books List"
         description="View and manage all books in the library"

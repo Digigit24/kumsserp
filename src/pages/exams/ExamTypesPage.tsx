@@ -122,11 +122,6 @@ const ExamTypesPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Exam Types</h1>
-        <p className="text-muted-foreground">Manage different types of examinations</p>
-      </div>
-
       <DataTable
         title="Exam Types List"
         description="Configure exam types and their weightages"

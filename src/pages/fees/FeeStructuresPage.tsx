@@ -82,11 +82,6 @@ const FeeStructuresPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Fee Structures</h1>
-        <p className="text-muted-foreground">Manage fee structures for different programs and classes</p>
-      </div>
-
       <DataTable
         title="Fee Structures"
         description="View and manage fee structures"

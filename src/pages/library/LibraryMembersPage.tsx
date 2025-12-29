@@ -130,11 +130,6 @@ const LibraryMembersPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Library Members</h1>
-        <p className="text-muted-foreground">Manage library membership</p>
-      </div>
-
       <DataTable
         title="Members List"
         description="View and manage all library members"

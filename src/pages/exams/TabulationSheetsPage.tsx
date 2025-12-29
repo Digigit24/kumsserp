@@ -32,11 +32,6 @@ const TabulationSheetsPage = () => {
 
   return (
     <div className="">
-      <div>
-        <h1 className="text-3xl font-bold">Tabulation Sheets</h1>
-        <p className="text-muted-foreground">View and download tabulation sheets</p>
-      </div>
-
       <DataTable
         title="Tabulation Sheets"
         description="View and manage exam tabulation sheets"
