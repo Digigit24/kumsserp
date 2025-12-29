@@ -8,14 +8,17 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Exam, mockExamsPaginated } from '../../data/examinationMockData';
+import { useExams } from '../../hooks/useExamination';
 import { ExamForm } from './forms';
 
 const ExamsPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+
+  // Fetch exams using real API
+  const { data, isLoading, error, refetch } = useExams(filters);
 
   const columns: Column<Exam>[] = [
     { key: 'name', label: 'Exam Name', sortable: true },
@@ -109,10 +112,10 @@ const ExamsPage = () => {
         title="Exam List"
         description="View and manage all examinations"
         columns={columns}
-        data={mockExamsPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
