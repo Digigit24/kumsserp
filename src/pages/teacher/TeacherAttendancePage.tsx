@@ -1,9 +1,44 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, ClipboardList, Users } from 'lucide-react';
 
+// Mock data for today's classes
+const TODAYS_CLASSES = [
+  {
+    id: 'class-1',
+    subject: 'Mathematics',
+    section: 'Class 10-A',
+    time: '09:00 AM - 10:00 AM',
+    room: 'Room 101',
+    status: 'pending',
+  },
+  {
+    id: 'class-2',
+    subject: 'Physics',
+    section: 'Class 11-B',
+    time: '11:00 AM - 12:00 PM',
+    room: 'Lab 1',
+    status: 'completed',
+  },
+  {
+    id: 'class-3',
+    subject: 'Mathematics',
+    section: 'Class 12-A',
+    time: '02:00 PM - 03:00 PM',
+    room: 'Room 101',
+    status: 'pending',
+  },
+];
+
 export const TeacherAttendancePage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleTakeAttendance = (classId: string) => {
+    navigate(`/attendance/marking?session=${classId}`);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -54,29 +89,21 @@ export const TeacherAttendancePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div>
-                <div className="font-medium">Mathematics - Class 10-A</div>
-                <div className="text-sm text-muted-foreground">09:00 AM - 10:00 AM • Room 101</div>
+            {TODAYS_CLASSES.map((cls) => (
+              <div key={cls.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <div className="font-medium">{cls.subject} - {cls.section}</div>
+                  <div className="text-sm text-muted-foreground">{cls.time} • {cls.room}</div>
+                </div>
+                {cls.status === 'completed' ? (
+                  <Button size="sm" variant="outline" disabled>Completed</Button>
+                ) : (
+                  <Button size="sm" onClick={() => handleTakeAttendance(cls.id)}>
+                    Take Attendance
+                  </Button>
+                )}
               </div>
-              <Button size="sm">Take Attendance</Button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div>
-                <div className="font-medium">Physics - Class 11-B</div>
-                <div className="text-sm text-muted-foreground">11:00 AM - 12:00 PM • Lab 1</div>
-              </div>
-              <Button size="sm" variant="outline" disabled>Completed</Button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div>
-                <div className="font-medium">Mathematics - Class 12-A</div>
-                <div className="text-sm text-muted-foreground">02:00 PM - 03:00 PM • Room 101</div>
-              </div>
-              <Button size="sm">Take Attendance</Button>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>

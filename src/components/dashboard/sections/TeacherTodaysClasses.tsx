@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarClock, MapPin } from 'lucide-react';
 
 const CLASSES = [
-  { time: '09:00 AM', subject: 'Physiology', section: 'MBBS 3A', room: 'Hall 2' },
-  { time: '11:00 AM', subject: 'Pharmacology', section: 'MBBS 3B', room: 'Lab 1' },
-  { time: '02:30 PM', subject: 'Community Medicine', section: 'MBBS 3A', room: 'Room 204' },
+  { id: 'session-1', time: '09:00 AM', subject: 'Physiology', section: 'MBBS 3A', room: 'Hall 2' },
+  { id: 'session-2', time: '11:00 AM', subject: 'Pharmacology', section: 'MBBS 3B', room: 'Lab 1' },
+  { id: 'session-3', time: '02:30 PM', subject: 'Community Medicine', section: 'MBBS 3A', room: 'Room 204' },
 ];
 
 export const TeacherTodaysClasses: React.FC = () => {
@@ -27,7 +27,7 @@ export const TeacherTodaysClasses: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         {CLASSES.map((cls) => (
-          <div key={`${cls.subject}-${cls.time}`} className="flex items-center justify-between p-3 border rounded-lg">
+          <div key={cls.id} className="flex items-center justify-between p-3 border rounded-lg">
             <div>
               <p className="font-semibold">{cls.subject}</p>
               <div className="text-sm text-muted-foreground flex items-center gap-2">
@@ -39,7 +39,7 @@ export const TeacherTodaysClasses: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{cls.section}</Badge>
-              <Button size="sm" onClick={() => navigate('/teacher/attendance')}>
+              <Button size="sm" onClick={() => navigate(`/attendance/marking?session=${cls.id}`)}>
                 Take Attendance
               </Button>
             </div>

@@ -8,8 +8,9 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useExamSchedules } from '../../hooks/useExamination';
+import { useExamSchedules, useCreateExamSchedule, useUpdateExamSchedule, useDeleteExamSchedule } from '../../hooks/useExamination';
 import { ExamScheduleForm } from './forms';
+import { toast } from 'sonner';
 
 const ExamSchedulesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -19,6 +20,9 @@ const ExamSchedulesPage = () => {
 
   // Fetch exam schedules using real API
   const { data, isLoading, error, refetch } = useExamSchedules(filters);
+  const createMutation = useCreateExamSchedule();
+  const updateMutation = useUpdateExamSchedule();
+  const deleteMutation = useDeleteExamSchedule();
 
   const columns: Column<any>[] = [
     {
@@ -77,9 +81,37 @@ const ExamSchedulesPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<ExamSchedule>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: Partial<ExamSchedule>) => {
+    try {
+      if (sidebarMode === 'edit' && selectedSchedule?.id) {
+        await updateMutation.mutateAsync({ id: selectedSchedule.id, data: data as any });
+        toast.success('Exam schedule updated successfully');
+      } else {
+        await createMutation.mutateAsync(data as any);
+        toast.success('Exam schedule created successfully');
+      }
+      setIsSidebarOpen(false);
+      refetch();
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to save exam schedule';
+      toast.error(errorMessage);
+      console.error('Failed to save exam schedule:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedSchedule?.id) return;
+
+    if (window.confirm('Are you sure you want to delete this exam schedule?')) {
+      try {
+        await deleteMutation.mutateAsync(selectedSchedule.id);
+        toast.success('Exam schedule deleted successfully');
+        setIsSidebarOpen(false);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to delete exam schedule');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -141,8 +173,9 @@ const ExamSchedulesPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4">
+            <div className="pt-4 flex gap-2">
               <Button onClick={handleEdit}>Edit</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
           </div>
         ) : (
