@@ -8,19 +8,24 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useExamTypes } from '../../hooks/useExamination';
+import { useExamTypes, useCreateExamType, useUpdateExamType, useDeleteExamType } from '../../hooks/useExamination';
+import { ExamType, ExamTypeListItem } from '../../types/examination.types';
 import { ExamTypeForm } from './forms';
+import { toast } from 'sonner';
 
 const ExamTypesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedExamType, setSelectedExamType] = useState<any | null>(null);
+  const [selectedExamType, setSelectedExamType] = useState<ExamType | null>(null);
 
   // Fetch exam types using real API
   const { data, isLoading, error, refetch } = useExamTypes(filters);
+  const createMutation = useCreateExamType();
+  const updateMutation = useUpdateExamType();
+  const deleteMutation = useDeleteExamType();
 
-  const columns: Column<any>[] = [
+  const columns: Column<ExamTypeListItem>[] = [
     { key: 'code', label: 'Code', sortable: true },
     { key: 'name', label: 'Exam Type', sortable: true },
     {
@@ -62,8 +67,8 @@ const ExamTypesPage = () => {
     setIsSidebarOpen(true);
   };
 
-  const handleRowClick = (examType: ExamType) => {
-    setSelectedExamType(examType);
+  const handleRowClick = (examType: ExamTypeListItem) => {
+    setSelectedExamType(examType as any);
     setSidebarMode('view');
     setIsSidebarOpen(true);
   };
@@ -72,11 +77,42 @@ const ExamTypesPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<ExamType>) => {
-    console.log('Form submitted:', data);
-    // In real implementation, this would call the API
-    setIsSidebarOpen(false);
-    // Refresh data
+  const handleFormSubmit = async (data: Partial<ExamType>) => {
+    try {
+      if (sidebarMode === 'edit' && selectedExamType?.id) {
+        await updateMutation.mutateAsync({
+          id: selectedExamType.id,
+          data: data as any,
+        });
+        toast.success('Exam type updated successfully');
+      } else {
+        await createMutation.mutateAsync(data as any);
+        toast.success('Exam type created successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedExamType(null);
+      refetch();
+    } catch (error: any) {
+      console.error('Failed to save exam type:', error);
+      toast.error(error?.message || 'Failed to save exam type');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedExamType?.id) return;
+
+    if (confirm('Are you sure you want to delete this exam type?')) {
+      try {
+        await deleteMutation.mutateAsync(selectedExamType.id);
+        toast.success('Exam type deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedExamType(null);
+        refetch();
+      } catch (error: any) {
+        console.error('Failed to delete exam type:', error);
+        toast.error(error?.message || 'Failed to delete exam type');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -137,8 +173,9 @@ const ExamTypesPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4">
+            <div className="pt-4 flex gap-2">
               <Button onClick={handleEdit}>Edit</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
           </div>
         ) : (
