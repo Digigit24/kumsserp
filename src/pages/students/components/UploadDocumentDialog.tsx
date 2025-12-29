@@ -2,7 +2,7 @@
  * Upload/Edit Document Drawer
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SideDrawer, SideDrawerContent } from '../../../components/common/SideDrawer';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../../../components/ui/textarea';
 import { Upload } from 'lucide-react';
 import { useCreateStudentDocument, useUpdateStudentDocument } from '../../../hooks/useStudentDocuments';
+import { userApi } from '../../../services/accounts.service';
 import type { StudentDocument } from '../../../types/students.types';
+import type { UserListItem } from '../../../types/accounts.types';
 import { Checkbox } from '../../../components/ui/checkbox';
 
 interface UploadDocumentDialogProps {
@@ -34,6 +36,8 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
     const isEdit = !!document;
 
     const [file, setFile] = useState<File | null>(null);
+    const [users, setUsers] = useState<UserListItem[]>([]);
+    const [loadingUsers, setLoadingUsers] = useState(false);
     const [formData, setFormData] = useState({
         document_type: 'other',
         document_name: '',
@@ -43,6 +47,25 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
         verified_date: '',
         is_active: true,
     });
+
+    // Fetch users when dialog opens
+    useEffect(() => {
+        if (open) {
+            fetchUsers();
+        }
+    }, [open]);
+
+    const fetchUsers = async () => {
+        try {
+            setLoadingUsers(true);
+            const data = await userApi.list({ page_size: 500, is_active: true });
+            setUsers(data.results);
+        } catch (err) {
+            console.error('Failed to fetch users:', err);
+        } finally {
+            setLoadingUsers(false);
+        }
+    };
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -229,12 +252,23 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                         {formData.is_verified && (
                             <>
                                 <div className="space-y-2">
-                                    <Label>Verified By (User UUID)</Label>
-                                    <Input
-                                        value={formData.verified_by}
-                                        onChange={(e) => handleChange('verified_by', e.target.value)}
-                                        placeholder="Enter verifier user UUID"
-                                    />
+                                    <Label>Verified By</Label>
+                                    <Select
+                                        value={formData.verified_by || undefined}
+                                        onValueChange={(v) => handleChange('verified_by', v || '')}
+                                        disabled={loadingUsers}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={loadingUsers ? "Loading users..." : "Select verifier (optional)"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {users.map((user) => (
+                                                <SelectItem key={user.id} value={user.id}>
+                                                    {user.full_name || user.username} {user.email && `(${user.email})`}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-2">
