@@ -8,16 +8,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ExamType, mockExamTypesPaginated } from '../../data/examinationMockData';
+import { useExamTypes } from '../../hooks/useExamination';
 import { ExamTypeForm } from './forms';
 
 const ExamTypesPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedExamType, setSelectedExamType] = useState<ExamType | null>(null);
+  const [selectedExamType, setSelectedExamType] = useState<any | null>(null);
 
-  const columns: Column<ExamType>[] = [
+  // Fetch exam types using real API
+  const { data, isLoading, error, refetch } = useExamTypes(filters);
+
+  const columns: Column<any>[] = [
     { key: 'code', label: 'Code', sortable: true },
     { key: 'name', label: 'Exam Type', sortable: true },
     {
@@ -92,10 +95,10 @@ const ExamTypesPage = () => {
         title="Exam Types List"
         description="Configure exam types and their weightages"
         columns={columns}
-        data={mockExamTypesPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
