@@ -8,16 +8,22 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
-import { FeeStructure } from '../../../data/feesMockData';
+import { useAcademicSessions } from '../../../hooks/useCore';
+import { usePrograms, useClasses } from '../../../hooks/useAcademic';
 
 interface FeeStructureFormProps {
-  feeStructure: FeeStructure | null;
-  onSubmit: (data: Partial<FeeStructure>) => void;
+  feeStructure: any | null;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 export const FeeStructureForm = ({ feeStructure, onSubmit, onCancel }: FeeStructureFormProps) => {
-  const [formData, setFormData] = useState<Partial<FeeStructure>>({
+  // Fetch dropdown data
+  const { data: sessionsData } = useAcademicSessions({ page_size: 100 });
+  const { data: programsData } = usePrograms({ page_size: 100 });
+  const { data: classesData } = useClasses({ page_size: 100 });
+
+  const [formData, setFormData] = useState<any>({
     name: '',
     academic_session: 0,
     program: 0,
@@ -64,8 +70,11 @@ export const FeeStructureForm = ({ feeStructure, onSubmit, onCancel }: FeeStruct
             required
           >
             <option value="">Select Session</option>
-            <option value="1">2024-2025</option>
-            <option value="2">2025-2026</option>
+            {sessionsData?.results?.map((session) => (
+              <option key={session.id} value={session.id}>
+                {session.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -79,9 +88,11 @@ export const FeeStructureForm = ({ feeStructure, onSubmit, onCancel }: FeeStruct
             required
           >
             <option value="">Select Program</option>
-            <option value="1">B.Tech Computer Science</option>
-            <option value="2">MBA</option>
-            <option value="3">BBA</option>
+            {programsData?.results?.map((program) => (
+              <option key={program.id} value={program.id}>
+                {program.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -96,8 +107,11 @@ export const FeeStructureForm = ({ feeStructure, onSubmit, onCancel }: FeeStruct
             onChange={(e) => setFormData({ ...formData, class_obj: e.target.value ? parseInt(e.target.value) : null })}
           >
             <option value="">Select Class</option>
-            <option value="1">First Year</option>
-            <option value="2">Second Year</option>
+            {classesData?.results?.map((classItem) => (
+              <option key={classItem.id} value={classItem.id}>
+                {classItem.name}
+              </option>
+            ))}
           </select>
         </div>
 

@@ -7,16 +7,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeFine, mockFeeFinesPaginated } from '../../data/feesMockData';
+import { useFeeFines } from '../../hooks/useFees';
 import { FeeFineForm } from './forms';
 
 const FeeFinesPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedFine, setSelectedFine] = useState<FeeFine | null>(null);
+  const [selectedFine, setSelectedFine] = useState<any | null>(null);
 
-  const columns: Column<FeeFine>[] = [
+  // Fetch fee fines using real API
+  const { data, isLoading, error, refetch } = useFeeFines(filters);
+
+  const columns: Column<any>[] = [
     { key: 'name', label: 'Fine Name', sortable: true },
     {
       key: 'fine_type',
@@ -126,10 +129,10 @@ const FeeFinesPage = () => {
         title="Fee Fines"
         description="View and manage fee fines"
         columns={columns}
-        data={mockFeeFinesPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

@@ -7,16 +7,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { FeeStructure, mockFeeStructuresPaginated } from '../../data/feesMockData';
+import { useFeeStructures } from '../../hooks/useFees';
 import { FeeStructureForm } from './forms';
 
 const FeeStructuresPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedStructure, setSelectedStructure] = useState<FeeStructure | null>(null);
+  const [selectedStructure, setSelectedStructure] = useState<any | null>(null);
 
-  const columns: Column<FeeStructure>[] = [
+  // Fetch fee structures using real API
+  const { data, isLoading, error, refetch } = useFeeStructures(filters);
+
+  const columns: Column<any>[] = [
     { key: 'name', label: 'Structure Name', sortable: true },
     { key: 'session_name', label: 'Session', sortable: true },
     { key: 'program_name', label: 'Program', sortable: true },
@@ -88,10 +91,10 @@ const FeeStructuresPage = () => {
         title="Fee Structures"
         description="View and manage fee structures"
         columns={columns}
-        data={mockFeeStructuresPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

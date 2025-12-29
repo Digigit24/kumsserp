@@ -8,16 +8,21 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
-import { FeeCollection } from '../../../data/feesMockData';
+import { useStudents } from '../../../hooks/useStudents';
+import { useAcademicSessions } from '../../../hooks/useCore';
 
 interface FeeCollectionFormProps {
-  feeCollection: FeeCollection | null;
-  onSubmit: (data: Partial<FeeCollection>) => void;
+  feeCollection: any | null;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 export const FeeCollectionForm = ({ feeCollection, onSubmit, onCancel }: FeeCollectionFormProps) => {
-  const [formData, setFormData] = useState<Partial<FeeCollection>>({
+  // Fetch dropdown data
+  const { data: studentsData } = useStudents({ page_size: 100 });
+  const { data: sessionsData } = useAcademicSessions({ page_size: 100 });
+
+  const [formData, setFormData] = useState<any>({
     receipt_number: '',
     student: 0,
     academic_session: 0,
@@ -76,9 +81,11 @@ export const FeeCollectionForm = ({ feeCollection, onSubmit, onCancel }: FeeColl
             required
           >
             <option value="">Select Student</option>
-            <option value="1">John Smith (2024001)</option>
-            <option value="2">Emma Johnson (2024002)</option>
-            <option value="3">Michael Brown (2024003)</option>
+            {studentsData?.results?.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.full_name} ({student.roll_number})
+              </option>
+            ))}
           </select>
         </div>
 
@@ -92,8 +99,11 @@ export const FeeCollectionForm = ({ feeCollection, onSubmit, onCancel }: FeeColl
             required
           >
             <option value="">Select Session</option>
-            <option value="1">2024-2025</option>
-            <option value="2">2025-2026</option>
+            {sessionsData?.results?.map((session) => (
+              <option key={session.id} value={session.id}>
+                {session.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
