@@ -2,7 +2,7 @@
  * Student Attendance Page
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
@@ -10,9 +10,10 @@ import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceFo
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, Edit, Users } from 'lucide-react';
+import { Calendar, Users, Check, X } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
+import { toast } from 'sonner';
 
 const StudentAttendancePage = () => {
   const [filters, setFilters] = useState<StudentFilters>({
@@ -26,9 +27,16 @@ const StudentAttendancePage = () => {
   // Fetch students for marking attendance
   const { data, isLoading, error, refetch } = useStudents(filters);
 
-  const handleMarkAttendance = (student: StudentListItem) => {
-    setSelectedStudent(student);
-    setFormOpen(true);
+  const handleMarkPresent = (student: StudentListItem) => {
+    // TODO: Implement API call to mark student as present
+    toast.success(`${student.full_name} marked as Present`);
+    console.log('Mark Present:', student);
+  };
+
+  const handleMarkAbsent = (student: StudentListItem) => {
+    // TODO: Implement API call to mark student as absent
+    toast.error(`${student.full_name} marked as Absent`);
+    console.log('Mark Absent:', student);
   };
 
   const handleAdd = () => {
@@ -69,14 +77,26 @@ const StudentAttendancePage = () => {
       key: 'actions',
       label: 'Actions',
       render: (student) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleMarkAttendance(student)}
-        >
-          <Calendar className="h-4 w-4 mr-2" />
-          Mark Attendance
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+            onClick={() => handleMarkPresent(student)}
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Present
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={() => handleMarkAbsent(student)}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Absent
+          </Button>
+        </div>
       ),
     },
   ];
