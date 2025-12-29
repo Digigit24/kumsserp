@@ -484,12 +484,12 @@ export const API_ENDPOINTS = {
 
   // Attendance Module - Staff Attendance
   staffAttendance: {
-    list: "/api/v1/attendance/staff/",
-    create: "/api/v1/attendance/staff/",
-    detail: (id: number) => `/api/v1/attendance/staff/${id}/`,
-    update: (id: number) => `/api/v1/attendance/staff/${id}/`,
-    patch: (id: number) => `/api/v1/attendance/staff/${id}/`,
-    delete: (id: number) => `/api/v1/attendance/staff/${id}/`,
+    list: "/api/v1/attendance/staff-attendance/",
+    create: "/api/v1/attendance/staff-attendance/",
+    detail: (id: number) => `/api/v1/attendance/staff-attendance/${id}/`,
+    update: (id: number) => `/api/v1/attendance/staff-attendance/${id}/`,
+    patch: (id: number) => `/api/v1/attendance/staff-attendance/${id}/`,
+    delete: (id: number) => `/api/v1/attendance/staff-attendance/${id}/`,
   },
 
   // Attendance Module - Subject Attendance
