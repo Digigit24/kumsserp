@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { classTeacherApi, classApi, sectionApi } from '../../../services/academic.service';
+import { userApi } from '../../../services/accounts.service';
 import { useAcademicSessions } from '../../../hooks/useCore';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -13,6 +14,7 @@ import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import type { ClassTeacher, ClassTeacherCreateInput } from '../../../types/academic.types';
+import type { UserListItem } from '../../../types/accounts.types';
 
 interface ClassTeacherFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -27,7 +29,9 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
     const [error, setError] = useState<string | null>(null);
     const [classes, setClasses] = useState<any[]>([]);
     const [sections, setSections] = useState<any[]>([]);
+    const [teachers, setTeachers] = useState<UserListItem[]>([]);
     const [loadingSections, setLoadingSections] = useState(false);
+    const [loadingTeachers, setLoadingTeachers] = useState(false);
 
     const { data: sessionsData, isLoading: isLoadingSessions } = useAcademicSessions({ page_size: 100 });
 
@@ -42,6 +46,7 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
 
     useEffect(() => {
         fetchClasses();
+        fetchTeachers();
     }, []);
 
     useEffect(() => {
@@ -86,6 +91,23 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
         }
     };
 
+    const fetchTeachers = async () => {
+        try {
+            setLoadingTeachers(true);
+            const data = await userApi.list({
+                user_type: 'teacher',
+                page_size: 200,
+                is_active: true
+            });
+            setTeachers(data.results);
+        } catch (err) {
+            console.error('Failed to fetch teachers:', err);
+            setTeachers([]);
+        } finally {
+            setLoadingTeachers(false);
+        }
+    };
+
     const fetchClassTeacher = async () => {
         if (!classTeacherId) return;
         try {
@@ -123,8 +145,8 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
             setError('Please select an academic session');
             return;
         }
-        if (!formData.teacher.trim()) {
-            setError('Please enter teacher username or email');
+        if (!formData.teacher || !formData.teacher.trim()) {
+            setError('Please select a teacher');
             return;
         }
 
@@ -261,19 +283,33 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
             {/* Teacher */}
             <div className="space-y-2">
                 <Label htmlFor="teacher">
-                    Teacher Username/Email <span className="text-destructive">*</span>
+                    Teacher <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                    id="teacher"
+                <Select
                     value={formData.teacher}
-                    onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                    placeholder="e.g., john.doe or john.doe@school.edu"
-                    disabled={isViewMode}
-                    required
-                />
-                <p className="text-xs text-muted-foreground">
-                    Enter the teacher's username or email address from the system
-                </p>
+                    onValueChange={(v) => setFormData({ ...formData, teacher: v })}
+                    disabled={isViewMode || loadingTeachers}
+                >
+                    <SelectTrigger id="teacher">
+                        <SelectValue placeholder={
+                            loadingTeachers ? "Loading teachers..." :
+                            teachers.length === 0 ? "No teachers available" :
+                            "Select teacher"
+                        } />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {teachers.map((teacher) => (
+                            <SelectItem key={teacher.id} value={teacher.id}>
+                                {teacher.full_name || teacher.username} {teacher.email && `(${teacher.email})`}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {teachers.length === 0 && !loadingTeachers && (
+                    <p className="text-xs text-amber-600">
+                        ⚠️ No teachers found. Please create teacher users first.
+                    </p>
+                )}
             </div>
 
             {/* Assigned From Date */}
