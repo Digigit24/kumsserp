@@ -8,16 +8,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ExamSchedule, mockExamSchedulesPaginated } from '../../data/examinationMockData';
+import { useExamSchedules } from '../../hooks/useExamination';
 import { ExamScheduleForm } from './forms';
 
 const ExamSchedulesPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedSchedule, setSelectedSchedule] = useState<ExamSchedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
 
-  const columns: Column<ExamSchedule>[] = [
+  // Fetch exam schedules using real API
+  const { data, isLoading, error, refetch } = useExamSchedules(filters);
+
+  const columns: Column<any>[] = [
     {
       key: 'date',
       label: 'Date',
@@ -95,10 +98,10 @@ const ExamSchedulesPage = () => {
         title="Exam Schedules"
         description="View and manage all exam schedules"
         columns={columns}
-        data={mockExamSchedulesPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}

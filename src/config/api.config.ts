@@ -605,54 +605,142 @@ export const API_ENDPOINTS = {
 
   // Fees Module - Fee Masters
   feeMasters: {
-    list: "/api/v1/fees/masters/",
-    create: "/api/v1/fees/masters/",
-    detail: (id: number) => `/api/v1/fees/masters/${id}/`,
-    update: (id: number) => `/api/v1/fees/masters/${id}/`,
-    patch: (id: number) => `/api/v1/fees/masters/${id}/`,
-    delete: (id: number) => `/api/v1/fees/masters/${id}/`,
+    list: "/api/v1/fees/fee-masters/",
+    create: "/api/v1/fees/fee-masters/",
+    detail: (id: number) => `/api/v1/fees/fee-masters/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-masters/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-masters/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-masters/${id}/`,
+  },
+
+  // Fees Module - Fee Types
+  feeTypes: {
+    list: "/api/v1/fees/fee-types/",
+    create: "/api/v1/fees/fee-types/",
+    detail: (id: number) => `/api/v1/fees/fee-types/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-types/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-types/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-types/${id}/`,
   },
 
   // Fees Module - Fee Structures
   feeStructures: {
-    list: "/api/v1/fees/structures/",
-    create: "/api/v1/fees/structures/",
-    detail: (id: number) => `/api/v1/fees/structures/${id}/`,
-    update: (id: number) => `/api/v1/fees/structures/${id}/`,
-    patch: (id: number) => `/api/v1/fees/structures/${id}/`,
-    delete: (id: number) => `/api/v1/fees/structures/${id}/`,
+    list: "/api/v1/fees/fee-structures/",
+    create: "/api/v1/fees/fee-structures/",
+    detail: (id: number) => `/api/v1/fees/fee-structures/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-structures/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-structures/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-structures/${id}/`,
+  },
+
+  // Fees Module - Fee Groups
+  feeGroups: {
+    list: "/api/v1/fees/fee-groups/",
+    create: "/api/v1/fees/fee-groups/",
+    detail: (id: number) => `/api/v1/fees/fee-groups/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-groups/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-groups/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-groups/${id}/`,
   },
 
   // Fees Module - Fee Discounts
   feeDiscounts: {
-    list: "/api/v1/fees/discounts/",
-    create: "/api/v1/fees/discounts/",
-    detail: (id: number) => `/api/v1/fees/discounts/${id}/`,
-    update: (id: number) => `/api/v1/fees/discounts/${id}/`,
-    patch: (id: number) => `/api/v1/fees/discounts/${id}/`,
-    delete: (id: number) => `/api/v1/fees/discounts/${id}/`,
+    list: "/api/v1/fees/fee-discounts/",
+    create: "/api/v1/fees/fee-discounts/",
+    detail: (id: number) => `/api/v1/fees/fee-discounts/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-discounts/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-discounts/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-discounts/${id}/`,
+  },
+
+  // Fees Module - Student Fee Discounts
+  studentFeeDiscounts: {
+    list: "/api/v1/fees/student-fee-discounts/",
+    create: "/api/v1/fees/student-fee-discounts/",
+    detail: (id: number) => `/api/v1/fees/student-fee-discounts/${id}/`,
+    update: (id: number) => `/api/v1/fees/student-fee-discounts/${id}/`,
+    patch: (id: number) => `/api/v1/fees/student-fee-discounts/${id}/`,
+    delete: (id: number) => `/api/v1/fees/student-fee-discounts/${id}/`,
   },
 
   // Fees Module - Fee Fines
   feeFines: {
-    list: "/api/v1/fees/fines/",
-    create: "/api/v1/fees/fines/",
-    detail: (id: number) => `/api/v1/fees/fines/${id}/`,
-    update: (id: number) => `/api/v1/fees/fines/${id}/`,
-    patch: (id: number) => `/api/v1/fees/fines/${id}/`,
-    delete: (id: number) => `/api/v1/fees/fines/${id}/`,
+    list: "/api/v1/fees/fee-fines/",
+    create: "/api/v1/fees/fee-fines/",
+    detail: (id: number) => `/api/v1/fees/fee-fines/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-fines/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-fines/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-fines/${id}/`,
+  },
+
+  // Fees Module - Fee Installments
+  feeInstallments: {
+    list: "/api/v1/fees/fee-installments/",
+    create: "/api/v1/fees/fee-installments/",
+    detail: (id: number) => `/api/v1/fees/fee-installments/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-installments/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-installments/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-installments/${id}/`,
   },
 
   // Fees Module - Fee Collections
   feeCollections: {
-    list: "/api/v1/fees/collections/",
-    create: "/api/v1/fees/collections/",
-    detail: (id: number) => `/api/v1/fees/collections/${id}/`,
-    update: (id: number) => `/api/v1/fees/collections/${id}/`,
-    patch: (id: number) => `/api/v1/fees/collections/${id}/`,
-    delete: (id: number) => `/api/v1/fees/collections/${id}/`,
-    cancel: (id: number) => `/api/v1/fees/collections/${id}/cancel/`,
-    studentStatus: (studentId: number) => `/api/v1/fees/collections/student/${studentId}/status/`,
+    list: "/api/v1/fees/fee-collections/",
+    create: "/api/v1/fees/fee-collections/",
+    detail: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
+  },
+
+  // Fees Module - Fee Receipts
+  feeReceipts: {
+    list: "/api/v1/fees/fee-receipts/",
+    create: "/api/v1/fees/fee-receipts/",
+    detail: (id: number) => `/api/v1/fees/fee-receipts/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-receipts/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-receipts/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-receipts/${id}/`,
+  },
+
+  // Fees Module - Fee Refunds
+  feeRefunds: {
+    list: "/api/v1/fees/fee-refunds/",
+    create: "/api/v1/fees/fee-refunds/",
+    detail: (id: number) => `/api/v1/fees/fee-refunds/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-refunds/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-refunds/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-refunds/${id}/`,
+  },
+
+  // Fees Module - Fee Reminders
+  feeReminders: {
+    list: "/api/v1/fees/fee-reminders/",
+    create: "/api/v1/fees/fee-reminders/",
+    detail: (id: number) => `/api/v1/fees/fee-reminders/${id}/`,
+    update: (id: number) => `/api/v1/fees/fee-reminders/${id}/`,
+    patch: (id: number) => `/api/v1/fees/fee-reminders/${id}/`,
+    delete: (id: number) => `/api/v1/fees/fee-reminders/${id}/`,
+  },
+
+  // Fees Module - Bank Payments
+  bankPayments: {
+    list: "/api/v1/fees/bank-payments/",
+    create: "/api/v1/fees/bank-payments/",
+    detail: (id: number) => `/api/v1/fees/bank-payments/${id}/`,
+    update: (id: number) => `/api/v1/fees/bank-payments/${id}/`,
+    patch: (id: number) => `/api/v1/fees/bank-payments/${id}/`,
+    delete: (id: number) => `/api/v1/fees/bank-payments/${id}/`,
+  },
+
+  // Fees Module - Online Payments
+  onlinePayments: {
+    list: "/api/v1/fees/online-payments/",
+    create: "/api/v1/fees/online-payments/",
+    detail: (id: number) => `/api/v1/fees/online-payments/${id}/`,
+    update: (id: number) => `/api/v1/fees/online-payments/${id}/`,
+    patch: (id: number) => `/api/v1/fees/online-payments/${id}/`,
+    delete: (id: number) => `/api/v1/fees/online-payments/${id}/`,
   },
 
   // Library Module - Books

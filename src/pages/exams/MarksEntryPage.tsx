@@ -8,16 +8,19 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { StudentMarks, mockStudentMarksPaginated } from '../../data/examinationMockData';
+import { useStudentMarks } from '../../hooks/useExamination';
 import { StudentMarksForm } from './forms';
 
 const MarksEntryPage = () => {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedMarks, setSelectedMarks] = useState<StudentMarks | null>(null);
+  const [selectedMarks, setSelectedMarks] = useState<any | null>(null);
 
-  const columns: Column<StudentMarks>[] = [
+  // Fetch student marks using real API
+  const { data, isLoading, error, refetch } = useStudentMarks(filters);
+
+  const columns: Column<any>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
     { key: 'student_name', label: 'Student Name', sortable: true },
     {
@@ -107,10 +110,10 @@ const MarksEntryPage = () => {
         title="Student Marks"
         description="View and enter marks for students"
         columns={columns}
-        data={mockStudentMarksPaginated}
-        isLoading={false}
-        error={null}
-        onRefresh={() => {}}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
         onAdd={handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
