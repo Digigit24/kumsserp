@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useBulkMarkStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
-import { useAcademicClasses, useSections } from '../../hooks/useAcademic';
+import { useClasses, useSections } from '../../hooks/useAcademic';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
@@ -59,7 +59,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch classes, sections, and students
-  const { data: classesData } = useAcademicClasses({ page_size: 100 });
+  const { data: classesData } = useClasses({ page_size: 100 });
   const { data: sectionsData } = useSections({
     page_size: 100,
     class_obj: selectedClass ? Number(selectedClass) : undefined

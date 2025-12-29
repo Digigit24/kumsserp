@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMarkStudentAttendance, useUpdateStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
-import { useAcademicClasses, useSections } from '../../hooks/useAcademic';
+import { useClasses, useSections } from '../../hooks/useAcademic';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -60,7 +60,7 @@ export const StudentAttendanceForm: React.FC<StudentAttendanceFormProps> = ({
 
   // Fetch students, classes, and sections for dropdowns
   const { data: studentsData } = useStudents({ page_size: 1000 });
-  const { data: classesData } = useAcademicClasses({ page_size: 100 });
+  const { data: classesData } = useClasses({ page_size: 100 });
   const { data: sectionsData } = useSections({
     page_size: 100,
     class_obj: selectedClass ? Number(selectedClass) : undefined
