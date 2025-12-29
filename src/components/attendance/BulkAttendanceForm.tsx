@@ -3,21 +3,17 @@
  * For marking attendance for multiple students at once
  */
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useBulkMarkStudentAttendance } from '../../hooks/useAttendance';
-import { useStudents } from '../../hooks/useStudents';
+import { format } from 'date-fns';
+import { CalendarIcon, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useClasses, useSections } from '../../hooks/useAcademic';
+import { useBulkMarkAttendance } from '../../hooks/useAttendance';
+import { useStudents } from '../../hooks/useStudents';
+import { cn } from '../../lib/utils';
+import type { BulkAttendanceCreateInput } from '../../types/attendance.types';
 import { Button } from '../ui/button';
-import { Label } from '../ui/label';
+import { Calendar } from '../ui/calendar';
 import { Checkbox } from '../ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
 import {
   Dialog,
   DialogContent,
@@ -26,13 +22,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-import { Calendar } from '../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, Search } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
-import type { BulkAttendanceCreateInput } from '../../types/attendance.types';
+import { Label } from '../ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 interface BulkAttendanceFormProps {
   open: boolean;
@@ -69,7 +68,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
     current_class: selectedClass ? Number(selectedClass) : undefined
   });
 
-  const bulkMutation = useBulkMarkStudentAttendance();
+  const bulkMutation = useBulkMarkAttendance();
 
   // Filter students based on search query
   const filteredStudents = studentsData?.results?.filter(student =>
