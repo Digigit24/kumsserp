@@ -5,12 +5,11 @@
 
 import { useState, useEffect } from 'react';
 import { classTimeApi } from '../../../services/academic.service';
-import { useColleges } from '../../../hooks/useCore';
+import { useAuth } from '../../../hooks/useAuth';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { AlertCircle, Loader2, Clock } from 'lucide-react';
 import type { ClassTime, ClassTimeCreateInput } from '../../../types/academic.types';
 
@@ -26,10 +25,11 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: collegesData, isLoading: isLoadingColleges } = useColleges({ page_size: 100 });
+    const { user } = useAuth();
+    const collegeId = user?.college || user?.user_roles?.[0]?.college_id || 0;
 
     const [formData, setFormData] = useState<ClassTimeCreateInput>({
-        college: 0,
+        college: collegeId,
         period_number: 1,
         start_time: '',
         end_time: '',
@@ -69,10 +69,6 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
         e.preventDefault();
 
         // Validation
-        if (!formData.college) {
-            setError('Please select a college');
-            return;
-        }
         if (!formData.period_number || formData.period_number < 1) {
             setError('Period number must be at least 1');
             return;
@@ -94,9 +90,10 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
             setIsLoading(true);
             setError(null);
 
-            // Clean up break_name if not a break
+            // Clean up break_name if not a break and ensure college is set
             const submitData = {
                 ...formData,
+                college: collegeId,
                 break_name: formData.is_break ? formData.break_name : null,
             };
 
@@ -150,29 +147,6 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
                     </div>
                 </div>
             )}
-
-            {/* College Selection */}
-            <div className="space-y-2">
-                <Label htmlFor="college">
-                    College <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                    value={formData.college?.toString()}
-                    onValueChange={(v) => setFormData({ ...formData, college: parseInt(v) })}
-                    disabled={isViewMode || isLoadingColleges}
-                >
-                    <SelectTrigger id="college">
-                        <SelectValue placeholder="Select college" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {collegesData?.results.map((c) => (
-                            <SelectItem key={c.id} value={c.id.toString()}>
-                                {c.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
 
             {/* Period Number */}
             <div className="space-y-2">
