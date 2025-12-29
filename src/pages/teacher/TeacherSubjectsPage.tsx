@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Users, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { BookOpen, Users, Clock, FileText, Settings, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const TeacherSubjectsPage: React.FC = () => {
+  const [syllabusDialogOpen, setSyllabusDialogOpen] = useState(false);
+  const [manageDialogOpen, setManageDialogOpen] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState<any>(null);
+
+  const mockSyllabus = [
+    { unit: 'Unit 1', topic: 'Introduction to Algebra', duration: '2 weeks', status: 'Completed' },
+    { unit: 'Unit 2', topic: 'Quadratic Equations', duration: '3 weeks', status: 'In Progress' },
+    { unit: 'Unit 3', topic: 'Trigonometry', duration: '4 weeks', status: 'Pending' },
+    { unit: 'Unit 4', topic: 'Calculus Basics', duration: '4 weeks', status: 'Pending' },
+  ];
+
   const mockSubjects = [
     {
       id: '1',
@@ -115,10 +128,27 @@ export const TeacherSubjectsPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedSubject(subject);
+                      setSyllabusDialogOpen(true);
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
                     View Syllabus
                   </Button>
-                  <Button size="sm" className="flex-1">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedSubject(subject);
+                      setManageDialogOpen(true);
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-1" />
                     Manage
                   </Button>
                 </div>
@@ -127,6 +157,114 @@ export const TeacherSubjectsPage: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      {/* Syllabus Dialog */}
+      <Dialog open={syllabusDialogOpen} onOpenChange={setSyllabusDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Subject Syllabus</DialogTitle>
+            <DialogDescription>
+              {selectedSubject && `${selectedSubject.name} (${selectedSubject.code})`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="text-left p-3 font-medium">Unit</th>
+                    <th className="text-left p-3 font-medium">Topic</th>
+                    <th className="text-left p-3 font-medium">Duration</th>
+                    <th className="text-left p-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mockSyllabus.map((item, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="p-3 font-medium">{item.unit}</td>
+                      <td className="p-3">{item.topic}</td>
+                      <td className="p-3">{item.duration}</td>
+                      <td className="p-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                          item.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                          item.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => toast.info('Download syllabus functionality coming soon')} variant="outline" className="flex-1">
+                Download PDF
+              </Button>
+              <Button onClick={() => setSyllabusDialogOpen(false)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Subject Dialog */}
+      <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage Subject</DialogTitle>
+            <DialogDescription>
+              {selectedSubject && `${selectedSubject.name} (${selectedSubject.code})`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => {
+                  setManageDialogOpen(false);
+                  toast.success('Opening assignment management...');
+                }}
+              >
+                <Plus className="h-6 w-6" />
+                <span>Create Assignment</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => toast.info('View assignments functionality coming soon')}
+              >
+                <FileText className="h-6 w-6" />
+                <span>View Assignments</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => toast.info('Add study material functionality coming soon')}
+              >
+                <BookOpen className="h-6 w-6" />
+                <span>Study Materials</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => toast.info('Grade management functionality coming soon')}
+              >
+                <Users className="h-6 w-6" />
+                <span>Manage Grades</span>
+              </Button>
+            </div>
+            <div className="flex gap-2 pt-4 border-t">
+              <Button onClick={() => setManageDialogOpen(false)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
