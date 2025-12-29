@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ACTIONS = [
-  { label: 'Assignments', icon: ClipboardList, href: '/student/assignments', color: 'text-blue-600' },
-  { label: 'Attendance', icon: CalendarDays, href: '/student/attendance', color: 'text-emerald-600' },
-  { label: 'Exam Results', icon: BookOpen, href: '/exams/my-results', color: 'text-purple-600' },
+  { label: 'Assignments', icon: ClipboardList, href: '/student/academics/assignments', color: 'text-blue-600' },
+  { label: 'Attendance', icon: CalendarDays, href: '/student/academics/attendance', color: 'text-emerald-600' },
+  { label: 'Exam Results', icon: BookOpen, href: '/student/examinations/results', color: 'text-purple-600' },
   { label: 'My Fees', icon: CreditCard, href: '/fees/my-fees', color: 'text-amber-600' },
   { label: 'Library', icon: BookOpen, href: '/library/my-books', color: 'text-indigo-600' },
-  { label: 'Notices', icon: Megaphone, href: '/communication/student', color: 'text-pink-600' },
+  { label: 'Notices', icon: Megaphone, href: '/student/notices', color: 'text-pink-600' },
   { label: 'Support', icon: Megaphone, href: '/student/support', color: 'text-sky-600' },
   { label: 'Profile', icon: UserCircle, href: '/student/profile', color: 'text-gray-700' },
 ];
