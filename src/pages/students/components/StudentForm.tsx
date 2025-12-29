@@ -353,7 +353,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                         <div className="space-y-2">
                             <Label>Blood Group</Label>
                             <Select
-                                value={formData.blood_group}
+                                value={formData.blood_group || undefined}
                                 onValueChange={(v) => setFormData({ ...formData, blood_group: v })}
                                 disabled={isViewMode}
                             >
@@ -361,7 +361,6 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                                     <SelectValue placeholder="Select blood group" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
                                     {BLOOD_GROUPS.map((bg) => (
                                         <SelectItem key={bg} value={bg}>
                                             {bg}
@@ -542,7 +541,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                         <div className="space-y-2">
                             <Label>Current Class</Label>
                             <Select
-                                value={formData.current_class?.toString() || ''}
+                                value={formData.current_class?.toString() || undefined}
                                 onValueChange={(v) => setFormData({ ...formData, current_class: v ? parseInt(v) : null })}
                                 disabled={isViewMode}
                             >
@@ -550,7 +549,6 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                                     <SelectValue placeholder="Select class (optional)" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
                                     {classesData?.results.map((c) => (
                                         <SelectItem key={c.id} value={c.id.toString()}>
                                             {c.name}
@@ -562,7 +560,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                         <div className="space-y-2">
                             <Label>Current Section</Label>
                             <Select
-                                value={formData.current_section?.toString() || ''}
+                                value={formData.current_section?.toString() || undefined}
                                 onValueChange={(v) => setFormData({ ...formData, current_section: v ? parseInt(v) : null })}
                                 disabled={isViewMode || !formData.current_class}
                             >
@@ -570,7 +568,6 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                                     <SelectValue placeholder="Select section (optional)" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
                                     {sectionsData?.results.map((s) => (
                                         <SelectItem key={s.id} value={s.id.toString()}>
                                             {s.name}

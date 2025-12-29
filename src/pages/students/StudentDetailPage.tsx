@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Save, X, Mail, Phone, Calendar, User, GraduationCap, CreditCard, FileText, Heart, Award, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Edit, Save, X, Mail, Phone, Calendar, User, GraduationCap, CreditCard, FileText, Heart, Award, ClipboardList, MapPin, TrendingUp } from 'lucide-react';
 import { useStudent } from '../../hooks/useStudents';
 import { studentApi } from '../../services/students.service';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
@@ -20,6 +20,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { GuardiansTab } from './components/GuardiansTab';
 import { DocumentsTab } from './components/DocumentsTab';
 import { MedicalTab } from './components/MedicalTab';
+import { AddressTab } from './components/AddressTab';
+import { PromotionsTab } from './components/PromotionsTab';
 import { CertificatesTab } from './components/CertificatesTab';
 import { AttendanceTab } from './components/AttendanceTab';
 import { FeesTab } from './components/FeesTab';
@@ -343,6 +345,16 @@ export const StudentDetailPage = () => {
               <Heart className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Medical</span>
               <span className="sm:hidden">Medical</span>
+            </TabsTrigger>
+            <TabsTrigger value="address">
+              <MapPin className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Address</span>
+              <span className="sm:hidden">Address</span>
+            </TabsTrigger>
+            <TabsTrigger value="promotions">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Promotions</span>
+              <span className="sm:hidden">Promo</span>
             </TabsTrigger>
             <TabsTrigger value="certificates">
               <Award className="h-4 w-4 mr-2" />
@@ -682,6 +694,14 @@ export const StudentDetailPage = () => {
 
           <TabsContent value="medical">
             <MedicalTab studentId={student.id} />
+          </TabsContent>
+
+          <TabsContent value="address">
+            <AddressTab studentId={student.id} />
+          </TabsContent>
+
+          <TabsContent value="promotions">
+            <PromotionsTab studentId={student.id} />
           </TabsContent>
 
           <TabsContent value="certificates">
