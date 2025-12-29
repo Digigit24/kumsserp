@@ -21,6 +21,7 @@ interface StudentFormProps {
 }
 
 interface StudentFormData {
+    user?: string; // UUID - optional for create, backend may auto-create
     college: number;
     admission_number: string;
     admission_date: string;
@@ -42,12 +43,19 @@ interface StudentFormData {
     email: string;
     phone: string;
     alternate_phone: string;
+    photo: string;
     nationality: string;
     religion: string;
     caste: string;
     mother_tongue: string;
     aadhar_number: string;
     pan_number: string;
+    is_active: boolean;
+    is_alumni: boolean;
+    disabled_date: string;
+    disable_reason: string;
+    optional_subjects: number[];
+    custom_fields: string;
 }
 
 const ADMISSION_TYPES = [
@@ -77,6 +85,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
     const { data: yearsData } = useAcademicYears({ page_size: 100 });
 
     const [formData, setFormData] = useState<StudentFormData>({
+        user: '', // Will be auto-generated or manually entered
         college: 1,
         admission_number: '',
         admission_date: new Date().toISOString().split('T')[0],
@@ -98,12 +107,19 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         email: '',
         phone: '',
         alternate_phone: '',
+        photo: '',
         nationality: 'Indian',
         religion: '',
         caste: '',
         mother_tongue: '',
         aadhar_number: '',
         pan_number: '',
+        is_active: true,
+        is_alumni: false,
+        disabled_date: '',
+        disable_reason: '',
+        optional_subjects: [],
+        custom_fields: '',
     });
 
     useEffect(() => {
@@ -178,6 +194,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
 
             // Prepare payload matching backend structure
             const payload = {
+                user: formData.user || undefined, // Optional - backend may auto-create
                 college: formData.college,
                 admission_number: formData.admission_number,
                 admission_date: formData.admission_date,
@@ -199,12 +216,19 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                 email: formData.email,
                 phone: formData.phone || null,
                 alternate_phone: formData.alternate_phone || null,
+                photo: formData.photo || null,
                 nationality: formData.nationality || 'Indian',
                 religion: formData.religion || null,
                 caste: formData.caste || null,
                 mother_tongue: formData.mother_tongue || null,
                 aadhar_number: formData.aadhar_number || null,
                 pan_number: formData.pan_number || null,
+                is_active: formData.is_active,
+                is_alumni: formData.is_alumni,
+                disabled_date: formData.disabled_date || null,
+                disable_reason: formData.disable_reason || null,
+                optional_subjects: formData.optional_subjects.length > 0 ? formData.optional_subjects : [],
+                custom_fields: formData.custom_fields || null,
             };
 
             if (mode === 'create') {
