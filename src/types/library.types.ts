@@ -10,11 +10,38 @@ import { UserBasic } from './accounts.types';
 // ============================================================================
 
 export interface AuditFields {
-  created_by: UserBasic | null;
-  updated_by: UserBasic | null;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// ============================================================================
+// BOOK CATEGORY TYPES
+// ============================================================================
+
+export interface BookCategory {
+  id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
+
+export interface BookCategoryListItem {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
+export interface BookCategoryCreateInput {
+  name: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface BookCategoryUpdateInput extends Partial<BookCategoryCreateInput> {}
 
 // ============================================================================
 // BOOK TYPES
@@ -22,62 +49,61 @@ export interface AuditFields {
 
 export interface Book extends AuditFields {
   id: number;
-  college: number;
-  college_name: string;
-  accession_number: string;
-  isbn: string | null;
+  is_active: boolean;
   title: string;
-  subtitle: string | null;
   author: string;
+  isbn: string | null;
   publisher: string | null;
   edition: string | null;
   publication_year: number | null;
-  category: string;
   language: string;
   pages: number | null;
-  price: number | null;
-  location: string | null; // Shelf location
-  total_copies: number;
-  available_copies: number;
+  quantity: number;
+  available_quantity: number;
+  price: string;
+  location: string | null;
+  barcode: string | null;
   description: string | null;
   cover_image: string | null;
-  is_available: boolean;
-  is_active: boolean;
+  college: number;
+  category: number;
+  category_name?: string;
 }
 
 export interface BookListItem {
   id: number;
-  accession_number: string;
-  isbn: string | null;
   title: string;
   author: string;
+  isbn: string | null;
   publisher: string | null;
-  category: string;
-  total_copies: number;
-  available_copies: number;
-  is_available: boolean;
+  category_name: string;
+  quantity: number;
+  available_quantity: number;
+  price: string;
   is_active: boolean;
 }
 
 export interface BookCreateInput {
-  college: number;
-  accession_number: string;
-  isbn?: string | null;
-  title: string;
-  subtitle?: string | null;
-  author: string;
-  publisher?: string | null;
-  edition?: string | null;
-  publication_year?: number | null;
-  category: string;
-  language: string;
-  pages?: number | null;
-  price?: number | null;
-  location?: string | null;
-  total_copies: number;
-  description?: string | null;
-  cover_image?: string | null;
   is_active?: boolean;
+  title: string;
+  author: string;
+  isbn?: string;
+  publisher?: string;
+  edition?: string;
+  publication_year?: number;
+  language: string;
+  pages?: number;
+  quantity: number;
+  available_quantity?: number;
+  price: string;
+  location?: string;
+  barcode?: string;
+  description?: string;
+  cover_image?: string;
+  created_by?: string;
+  updated_by?: string;
+  college: number;
+  category: number;
 }
 
 export interface BookUpdateInput extends Partial<BookCreateInput> {}
@@ -88,22 +114,18 @@ export interface BookUpdateInput extends Partial<BookCreateInput> {}
 
 export interface LibraryMember extends AuditFields {
   id: number;
-  college: number;
-  college_name: string;
+  is_active: boolean;
   member_id: string;
   user: string;
-  user_details: UserBasic;
+  user_name?: string;
   member_type: 'student' | 'teacher' | 'staff';
   max_books_allowed: number;
   max_days_allowed: number;
-  current_books_issued: number;
-  total_books_issued: number;
-  total_fines_paid: number;
   joined_date: string;
   expiry_date: string | null;
   is_blocked: boolean;
   block_reason: string | null;
-  is_active: boolean;
+  college: number;
 }
 
 export interface LibraryMemberListItem {
@@ -113,14 +135,13 @@ export interface LibraryMemberListItem {
   user_name: string;
   member_type: string;
   max_books_allowed: number;
-  current_books_issued: number;
   joined_date: string;
   is_blocked: boolean;
   is_active: boolean;
 }
 
 export interface LibraryMemberCreateInput {
-  college: number;
+  is_active?: boolean;
   member_id: string;
   user: string;
   member_type: 'student' | 'teacher' | 'staff';
@@ -128,10 +149,49 @@ export interface LibraryMemberCreateInput {
   max_days_allowed: number;
   joined_date: string;
   expiry_date?: string | null;
-  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+  college: number;
 }
 
 export interface LibraryMemberUpdateInput extends Partial<LibraryMemberCreateInput> {}
+
+// ============================================================================
+// LIBRARY CARD TYPES
+// ============================================================================
+
+export interface LibraryCard extends AuditFields {
+  id: number;
+  is_active: boolean;
+  card_number: string;
+  issue_date: string;
+  valid_until: string;
+  card_file: string | null;
+  member: number;
+  member_name?: string;
+}
+
+export interface LibraryCardListItem {
+  id: number;
+  card_number: string;
+  member_name: string;
+  issue_date: string;
+  valid_until: string;
+  is_active: boolean;
+}
+
+export interface LibraryCardCreateInput {
+  is_active?: boolean;
+  card_number: string;
+  issue_date: string;
+  valid_until: string;
+  card_file?: string;
+  created_by?: string;
+  updated_by?: string;
+  member: number;
+}
+
+export interface LibraryCardUpdateInput extends Partial<LibraryCardCreateInput> {}
 
 // ============================================================================
 // BOOK ISSUE TYPES
@@ -139,59 +199,127 @@ export interface LibraryMemberUpdateInput extends Partial<LibraryMemberCreateInp
 
 export interface BookIssue extends AuditFields {
   id: number;
-  college: number;
-  college_name: string;
-  book: number;
-  book_details: BookListItem;
-  member: number;
-  member_details: LibraryMemberListItem;
+  is_active: boolean;
   issue_date: string;
   due_date: string;
   return_date: string | null;
   status: 'issued' | 'returned' | 'overdue' | 'lost';
-  fine_amount: number;
-  fine_paid: boolean;
-  fine_paid_date: string | null;
   remarks: string | null;
-  issued_by: UserBasic | null;
-  returned_to: UserBasic | null;
-  is_renewed: boolean;
-  renewal_count: number;
+  book: number;
+  book_title?: string;
+  member: number;
+  member_name?: string;
+  issued_by: string | null;
+  issued_by_name?: string;
 }
 
 export interface BookIssueListItem {
   id: number;
-  book: number;
   book_title: string;
-  accession_number: string;
-  member: number;
   member_name: string;
-  member_id: string;
   issue_date: string;
   due_date: string;
   return_date: string | null;
   status: string;
-  fine_amount: number;
   issued_by_name: string | null;
-  is_renewed: boolean;
 }
 
 export interface BookIssueCreateInput {
-  college: number;
-  book: number;
-  member: number;
+  is_active?: boolean;
   issue_date: string;
   due_date: string;
-  remarks?: string | null;
+  return_date?: string | null;
+  status: 'issued' | 'returned' | 'overdue' | 'lost';
+  remarks?: string;
+  created_by?: string;
+  updated_by?: string;
+  book: number;
+  member: number;
+  issued_by?: string;
 }
 
 export interface BookIssueUpdateInput extends Partial<BookIssueCreateInput> {}
 
-export interface RenewBookInput {
-  issue_id: number;
-  new_due_date: string;
-  remarks?: string | null;
+// ============================================================================
+// FINE TYPES
+// ============================================================================
+
+export interface Fine extends AuditFields {
+  id: number;
+  is_active: boolean;
+  amount: string;
+  reason: string;
+  fine_date: string;
+  is_paid: boolean;
+  paid_date: string | null;
+  remarks: string | null;
+  member: number;
+  member_name?: string;
+  book_issue: number | null;
 }
+
+export interface FineListItem {
+  id: number;
+  member_name: string;
+  amount: string;
+  reason: string;
+  fine_date: string;
+  is_paid: boolean;
+  paid_date: string | null;
+}
+
+export interface FineCreateInput {
+  is_active?: boolean;
+  amount: string;
+  reason: string;
+  fine_date: string;
+  is_paid?: boolean;
+  paid_date?: string | null;
+  remarks?: string;
+  created_by?: string;
+  updated_by?: string;
+  member: number;
+  book_issue?: number | null;
+}
+
+export interface FineUpdateInput extends Partial<FineCreateInput> {}
+
+// ============================================================================
+// RESERVATION TYPES
+// ============================================================================
+
+export interface Reservation extends AuditFields {
+  id: number;
+  is_active: boolean;
+  reservation_date: string;
+  status: 'pending' | 'fulfilled' | 'cancelled';
+  remarks: string | null;
+  book: number;
+  book_title?: string;
+  member: number;
+  member_name?: string;
+}
+
+export interface ReservationListItem {
+  id: number;
+  book_title: string;
+  member_name: string;
+  reservation_date: string;
+  status: string;
+}
+
+export interface ReservationCreateInput {
+  is_active?: boolean;
+  reservation_date: string;
+  status?: 'pending' | 'fulfilled' | 'cancelled';
+  remarks?: string;
+  created_by?: string;
+  updated_by?: string;
+  book: number;
+  member: number;
+}
+
+export interface ReservationUpdateInput extends Partial<ReservationCreateInput> {}
 
 // ============================================================================
 // BOOK RETURN TYPES
@@ -199,80 +327,37 @@ export interface RenewBookInput {
 
 export interface BookReturn extends AuditFields {
   id: number;
-  book_issue: number;
-  book_issue_details: BookIssueListItem;
+  is_active: boolean;
   return_date: string;
   condition: 'good' | 'fair' | 'damaged' | 'lost';
-  fine_amount: number;
-  damage_charges: number;
-  total_amount: number;
-  amount_paid: number;
-  payment_mode: 'cash' | 'card' | 'upi' | 'net_banking' | 'waived';
+  fine_amount: string;
   remarks: string | null;
-  returned_to: UserBasic | null;
+  book_issue: number;
+  book_title?: string;
+  member_name?: string;
 }
 
 export interface BookReturnListItem {
   id: number;
-  book_issue: number;
   book_title: string;
   member_name: string;
   return_date: string;
   condition: string;
-  fine_amount: number;
-  damage_charges: number;
-  total_amount: number;
-  returned_to_name: string | null;
+  fine_amount: string;
 }
 
 export interface BookReturnCreateInput {
-  book_issue: number;
+  is_active?: boolean;
   return_date: string;
   condition: 'good' | 'fair' | 'damaged' | 'lost';
-  fine_amount?: number;
-  damage_charges?: number;
-  amount_paid?: number;
-  payment_mode: 'cash' | 'card' | 'upi' | 'net_banking' | 'waived';
-  remarks?: string | null;
+  fine_amount?: string;
+  remarks?: string;
+  created_by?: string;
+  updated_by?: string;
+  book_issue: number;
 }
 
 export interface BookReturnUpdateInput extends Partial<BookReturnCreateInput> {}
-
-// ============================================================================
-// LIBRARY STATISTICS TYPES
-// ============================================================================
-
-export interface LibraryStatistics {
-  total_books: number;
-  total_copies: number;
-  available_copies: number;
-  issued_copies: number;
-  total_members: number;
-  active_members: number;
-  total_issues_today: number;
-  total_returns_today: number;
-  overdue_books: number;
-  total_fines_collected: number;
-  category_wise_books: {
-    category: string;
-    count: number;
-  }[];
-  popular_books: {
-    book_id: number;
-    title: string;
-    issue_count: number;
-  }[];
-}
-
-export interface MemberHistory {
-  member: number;
-  member_name: string;
-  member_id: string;
-  total_books_issued: number;
-  currently_issued: number;
-  total_fines_paid: number;
-  issue_history: BookIssueListItem[];
-}
 
 // ============================================================================
 // FILTER TYPES
@@ -282,11 +367,18 @@ export interface BookFilters {
   page?: number;
   page_size?: number;
   college?: number;
-  category?: string;
+  category?: number;
   language?: string;
   author?: string;
   publisher?: string;
-  is_available?: boolean;
+  is_active?: boolean;
+  search?: string;
+  ordering?: string;
+}
+
+export interface BookCategoryFilters {
+  page?: number;
+  page_size?: number;
   is_active?: boolean;
   search?: string;
   ordering?: string;
@@ -303,17 +395,47 @@ export interface LibraryMemberFilters {
   ordering?: string;
 }
 
+export interface LibraryCardFilters {
+  page?: number;
+  page_size?: number;
+  member?: number;
+  is_active?: boolean;
+  search?: string;
+  ordering?: string;
+}
+
 export interface BookIssueFilters {
   page?: number;
   page_size?: number;
-  college?: number;
   book?: number;
   member?: number;
   status?: string;
   issue_date?: string;
   date_from?: string;
   date_to?: string;
-  fine_paid?: boolean;
+  search?: string;
+  ordering?: string;
+}
+
+export interface FineFilters {
+  page?: number;
+  page_size?: number;
+  member?: number;
+  is_paid?: boolean;
+  fine_date?: string;
+  date_from?: string;
+  date_to?: string;
+  search?: string;
+  ordering?: string;
+}
+
+export interface ReservationFilters {
+  page?: number;
+  page_size?: number;
+  book?: number;
+  member?: number;
+  status?: string;
+  reservation_date?: string;
   search?: string;
   ordering?: string;
 }

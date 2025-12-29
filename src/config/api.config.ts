@@ -776,6 +776,46 @@ export const API_ENDPOINTS = {
     renew: (id: number) => `/api/v1/library/issues/${id}/renew/`,
   },
 
+  // Library Module - Book Categories
+  bookCategories: {
+    list: "/api/v1/library/categories/",
+    create: "/api/v1/library/categories/",
+    detail: (id: number) => `/api/v1/library/categories/${id}/`,
+    update: (id: number) => `/api/v1/library/categories/${id}/`,
+    patch: (id: number) => `/api/v1/library/categories/${id}/`,
+    delete: (id: number) => `/api/v1/library/categories/${id}/`,
+  },
+
+  // Library Module - Library Cards
+  libraryCards: {
+    list: "/api/v1/library/cards/",
+    create: "/api/v1/library/cards/",
+    detail: (id: number) => `/api/v1/library/cards/${id}/`,
+    update: (id: number) => `/api/v1/library/cards/${id}/`,
+    patch: (id: number) => `/api/v1/library/cards/${id}/`,
+    delete: (id: number) => `/api/v1/library/cards/${id}/`,
+  },
+
+  // Library Module - Fines
+  fines: {
+    list: "/api/v1/library/fines/",
+    create: "/api/v1/library/fines/",
+    detail: (id: number) => `/api/v1/library/fines/${id}/`,
+    update: (id: number) => `/api/v1/library/fines/${id}/`,
+    patch: (id: number) => `/api/v1/library/fines/${id}/`,
+    delete: (id: number) => `/api/v1/library/fines/${id}/`,
+  },
+
+  // Library Module - Reservations
+  reservations: {
+    list: "/api/v1/library/reservations/",
+    create: "/api/v1/library/reservations/",
+    detail: (id: number) => `/api/v1/library/reservations/${id}/`,
+    update: (id: number) => `/api/v1/library/reservations/${id}/`,
+    patch: (id: number) => `/api/v1/library/reservations/${id}/`,
+    delete: (id: number) => `/api/v1/library/reservations/${id}/`,
+  },
+
   // Library Module - Book Returns
   bookReturns: {
     list: "/api/v1/library/returns/",
