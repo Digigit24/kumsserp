@@ -4,7 +4,7 @@
  */
 
 import { format } from 'date-fns';
-import { CalendarIcon, Search } from 'lucide-react';
+import { CalendarIcon, Search, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useClasses, useSections } from '../../hooks/useAcademic';
 import { useBulkMarkAttendance } from '../../hooks/useAttendance';
@@ -32,6 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { Alert, AlertDescription } from '../ui/alert';
+import { toast } from 'sonner';
 
 interface BulkAttendanceFormProps {
   open: boolean;
@@ -51,6 +53,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
   const [status, setStatus] = useState<'present' | 'absent' | 'late' | 'excused' | 'half_day'>('present');
   const [remarks, setRemarks] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Fetch classes, sections, and students
   const { data: classesData } = useClasses({ page_size: 100 });
@@ -94,8 +97,12 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
 
   const onSubmit = async () => {
     if (!selectedClass || !selectedSection || selectedStudents.size === 0) {
+      setErrorMessage('Please select class, section, and at least one student');
       return;
     }
+
+    // Clear any previous errors
+    setErrorMessage('');
 
     try {
       const data: BulkAttendanceCreateInput = {
@@ -107,9 +114,15 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
         remarks: remarks?.trim() || undefined,
       };
 
-      await bulkMutation.mutateAsync(data);
+      console.log('Submitting bulk attendance:', data);
+
+      const result = await bulkMutation.mutateAsync(data);
+
+      // Success
+      toast.success(`Successfully marked ${status} for ${selectedStudents.size} student(s)`);
       onSuccess?.();
       onOpenChange(false);
+
       // Reset form
       setSelectedClass('');
       setSelectedSection('');
@@ -117,8 +130,34 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
       setSearchQuery('');
       setRemarks('');
       setStatus('present');
-    } catch (error) {
+      setErrorMessage('');
+    } catch (error: any) {
       console.error('Failed to mark bulk attendance:', error);
+
+      // Extract error message
+      let message = 'Failed to mark attendance';
+
+      if (error?.errors) {
+        // If there are specific field errors, show them
+        const errorDetails = Object.entries(error.errors)
+          .map(([field, msgs]) => {
+            if (Array.isArray(msgs)) {
+              return `${field}: ${msgs.join(', ')}`;
+            }
+            return `${field}: ${msgs}`;
+          })
+          .join('\n');
+        message = errorDetails || error.message || message;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
+      if (error?.status === 500) {
+        message = 'Server error occurred. Please check:\n- Class and section IDs are valid\n- Selected students belong to the class\n- Date is valid\n\nOriginal error: ' + message;
+      }
+
+      setErrorMessage(message);
+      toast.error('Failed to mark attendance. See error details below.');
     }
   };
 
@@ -131,6 +170,7 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
       setSearchQuery('');
       setRemarks('');
       setStatus('present');
+      setErrorMessage('');
     }
   }, [open]);
 
@@ -143,6 +183,16 @@ export const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
             Select class and section, then mark attendance for multiple students
           </DialogDescription>
         </DialogHeader>
+
+        {/* Error Display */}
+        {errorMessage && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="whitespace-pre-line">
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="space-y-4">
           {/* Date */}
