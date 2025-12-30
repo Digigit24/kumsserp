@@ -56,6 +56,39 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= MY ACADEMICS (STUDENT ONLY) =================
+  {
+    group: "My Academics",
+    icon: BookOpen,
+    roles: ["student"],
+    items: [
+      {
+        name: "My Subjects",
+        href: "/student/academics/subjects",
+        icon: BookOpen,
+        roles: ["student"],
+      },
+      {
+        name: "My Timetable",
+        href: "/student/academics/timetable",
+        icon: Calendar,
+        roles: ["student"],
+      },
+      {
+        name: "My Attendance",
+        href: "/student/academics/attendance",
+        icon: ClipboardList,
+        roles: ["student"],
+      },
+      {
+        name: "My Assignments",
+        href: "/student/academics/assignments",
+        icon: FileText,
+        roles: ["student"],
+      },
+    ],
+  },
+
   // ================= MY CLASSES (TEACHER ONLY) =================
   {
     group: "My Classes",
@@ -87,7 +120,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Assignments",
     icon: FileText,
-    roles: ["teacher", "student"],
+    roles: ["teacher"],
     items: [
       {
         name: "Create Assignment",
@@ -106,12 +139,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/assignments/submissions",
         icon: ClipboardList,
         roles: ["teacher"],
-      },
-      {
-        name: "View Assignments",
-        href: "/assignments/student",
-        icon: FileText,
-        roles: ["student"],
       },
     ],
   },
@@ -360,7 +387,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Attendance Management",
     icon: ClipboardList,
-    roles: ["super_admin", "college_admin", "teacher", "student"],
+    roles: ["super_admin", "college_admin", "teacher"],
     items: [
       {
         name: "Student Attendance",
@@ -385,12 +412,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/attendance/notifications",
         icon: Bell,
         roles: ["super_admin", "college_admin"],
-      },
-      {
-        name: "My Attendance", // NEW for students
-        href: "/attendance/my-attendance",
-        icon: ClipboardList,
-        roles: ["student"],
       },
     ],
   },
