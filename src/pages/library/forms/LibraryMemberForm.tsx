@@ -3,13 +3,15 @@
  * Create/Edit form for library members
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { LibraryMember, LibraryMemberCreateInput } from '../../../types/library.types';
+import { useUsers } from '../../../hooks/useAccounts';
 
 interface LibraryMemberFormProps {
   member: LibraryMember | null;
@@ -18,6 +20,9 @@ interface LibraryMemberFormProps {
 }
 
 export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberFormProps) => {
+  // Fetch users for the searchable dropdown
+  const { data: usersData, isLoading: loadingUsers } = useUsers({ page_size: 1000 });
+
   const [formData, setFormData] = useState<Partial<LibraryMemberCreateInput>>({
     member_id: '',
     user: '',
@@ -29,6 +34,16 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
     college: 1,
     is_active: true,
   });
+
+  // Transform users data for SearchableSelect
+  const userOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!usersData?.results) return [];
+    return usersData.results.map((user) => ({
+      value: user.id,
+      label: user.full_name || user.username,
+      subtitle: `${user.username} • ${user.user_type_display}${user.email ? ' • ' + user.email : ''}`,
+    }));
+  }, [usersData]);
 
   useEffect(() => {
     if (member) {
@@ -45,6 +60,29 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
       });
     }
   }, [member]);
+
+  // Auto-generate member ID when user is selected
+  const handleUserSelect = (userId: string | number) => {
+    // Find the selected user to get their user type
+    const selectedUser = usersData?.results.find(u => u.id === userId);
+
+    // Auto-generate member ID based on user type
+    let prefix = 'LM';
+    if (selectedUser?.user_type === 'student') prefix = 'STU';
+    else if (selectedUser?.user_type === 'teacher') prefix = 'TCH';
+    else if (selectedUser?.user_type === 'staff') prefix = 'STF';
+
+    const timestamp = Date.now().toString().slice(-6);
+    const generatedMemberId = `${prefix}-${timestamp}`;
+
+    setFormData({
+      ...formData,
+      user: String(userId),
+      member_id: generatedMemberId,
+      member_type: selectedUser?.user_type === 'teacher' ? 'teacher' :
+                   selectedUser?.user_type === 'staff' ? 'staff' : 'student'
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,25 +105,31 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
+        <Label htmlFor="user">Select User *</Label>
+        <SearchableSelect
+          options={userOptions}
+          value={formData.user}
+          onChange={handleUserSelect}
+          placeholder="Select a user..."
+          searchPlaceholder="Search by name, username, or email..."
+          emptyText={loadingUsers ? 'Loading users...' : 'No users found.'}
+          disabled={loadingUsers || !!member}
+        />
+        {member && (
+          <p className="text-xs text-muted-foreground">User cannot be changed after creation</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="member_id">Member ID *</Label>
         <Input
           id="member_id"
           value={formData.member_id}
           onChange={(e) => setFormData({ ...formData, member_id: e.target.value })}
-          placeholder="LM-001"
+          placeholder="STU-123456 (auto-generated, editable)"
           required
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="user">User ID *</Label>
-        <Input
-          id="user"
-          value={formData.user}
-          onChange={(e) => setFormData({ ...formData, user: e.target.value })}
-          placeholder="User UUID"
-          required
-        />
+        <p className="text-xs text-muted-foreground">Auto-generated when you select a user, but you can edit it</p>
       </div>
 
       <div className="space-y-2">
