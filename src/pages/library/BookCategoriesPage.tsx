@@ -201,3 +201,5 @@ export const BookCategoriesPage = () => {
     </div>
   );
 };
+
+export default BookCategoriesPage;
