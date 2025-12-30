@@ -3,13 +3,11 @@
  * Create/Edit form for fee masters
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { FeeMaster, FeeMasterCreateInput } from '../../../types/fees.types';
-import { useCollegeContext } from '../../../contexts/CollegeContext';
 
 interface FeeMasterFormProps {
   feeMaster: FeeMaster | null;
@@ -18,8 +16,6 @@ interface FeeMasterFormProps {
 }
 
 export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormProps) => {
-  const { selectedCollege } = useCollegeContext();
-
   const [formData, setFormData] = useState<Partial<FeeMasterCreateInput>>({
     semester: 1,
     amount: '0',
@@ -42,11 +38,11 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
         is_active: feeMaster.is_active,
       });
     } else {
-      // Auto-populate college from context
+      // Auto-populate college from user data
       const storedUser = localStorage.getItem('kumss_user');
-      let collegeId = selectedCollege || 1;
+      let collegeId = 1;
 
-      if (!collegeId && storedUser) {
+      if (storedUser) {
         const user = JSON.parse(storedUser);
         if (user?.college) {
           collegeId = user.college;
@@ -58,7 +54,7 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
 
       setFormData(prev => ({ ...prev, college: collegeId }));
     }
-  }, [feeMaster, selectedCollege]);
+  }, [feeMaster]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
