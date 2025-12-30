@@ -528,8 +528,32 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     roles: ["super_admin", "college_admin", "student", "parent"],
     items: [
       {
+        name: "Fee Types",
+        href: "/fees/types",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Fee Masters",
         href: "/fees/masters",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Fee Groups",
+        href: "/fees/groups",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Fee Structures",
+        href: "/fees/structures",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Fee Installments",
+        href: "/fees/installments",
         icon: CreditCard,
         roles: ["super_admin", "college_admin"],
       },
@@ -540,8 +564,20 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
+        name: "Fee Receipts",
+        href: "/fees/receipts",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Fee Discounts",
         href: "/fees/discounts",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Student Discounts",
+        href: "/fees/student-discounts",
         icon: CreditCard,
         roles: ["super_admin", "college_admin"],
       },
@@ -552,8 +588,26 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
-        name: "Fee Structures",
-        href: "/fees/structures",
+        name: "Fee Refunds",
+        href: "/fees/refunds",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Fee Reminders",
+        href: "/fees/reminders",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Bank Payments",
+        href: "/fees/bank-payments",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Online Payments",
+        href: "/fees/online-payments",
         icon: CreditCard,
         roles: ["super_admin", "college_admin"],
       },
