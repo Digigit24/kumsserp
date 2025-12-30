@@ -10,6 +10,7 @@ import type { BookCategory, BookCategoryCreateInput, BookCategoryUpdateInput } f
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
+import { getCurrentUser } from '../../../services/auth.service';
 
 interface BookCategoryFormProps {
   mode: 'create' | 'edit';
@@ -25,8 +26,10 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
 
   const [formData, setFormData] = useState<BookCategoryCreateInput>({
     name: '',
+    code: '',
     description: '',
     is_active: true,
+    college: 0,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -36,9 +39,16 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
     if (mode === 'edit' && category) {
       setFormData({
         name: category.name,
+        code: category.code,
         description: category.description || '',
         is_active: category.is_active,
+        college: category.college,
       });
+    } else if (mode === 'create') {
+      // Get college ID from current user
+      const user = getCurrentUser();
+      const collegeId = user?.college || 0;
+      setFormData(prev => ({ ...prev, college: collegeId }));
     }
   }, [mode, category]);
 
@@ -47,6 +57,14 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
 
     if (!formData.name.trim()) {
       newErrors.name = 'Category name is required';
+    }
+
+    if (!formData.code.trim()) {
+      newErrors.code = 'Category code is required';
+    }
+
+    if (!formData.college || formData.college === 0) {
+      newErrors.college = 'College is required';
     }
 
     setErrors(newErrors);
@@ -81,6 +99,7 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
       } else if (category) {
         const updateData: BookCategoryUpdateInput = {
           name: formData.name,
+          code: formData.code,
           description: formData.description,
           is_active: formData.is_active,
         };
@@ -134,6 +153,26 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
           />
           {errors.name && (
             <p className="text-sm text-destructive mt-1">{errors.name}</p>
+          )}
+        </div>
+
+        {/* Category Code */}
+        <div>
+          <label htmlFor="code" className="block text-sm font-medium mb-2">
+            Category Code <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id="code"
+            type="text"
+            value={formData.code}
+            onChange={(e) => handleChange('code', e.target.value.toUpperCase())}
+            placeholder="e.g., FICT, NFICT, REF, SCI"
+            disabled={isSubmitting}
+            className={errors.code ? 'border-destructive' : ''}
+            maxLength={20}
+          />
+          {errors.code && (
+            <p className="text-sm text-destructive mt-1">{errors.code}</p>
           )}
         </div>
 

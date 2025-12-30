@@ -24,6 +24,17 @@ export const BookCategoriesPage = () => {
   // Define table columns
   const columns: Column<BookCategoryListItem>[] = [
     {
+      key: 'code',
+      label: 'Code',
+      sortable: true,
+      className: 'font-medium',
+      render: (category) => (
+        <code className="px-2 py-1 bg-muted rounded text-sm">
+          {category.code}
+        </code>
+      ),
+    },
+    {
       key: 'name',
       label: 'Category Name',
       sortable: true,
@@ -149,6 +160,14 @@ export const BookCategoriesPage = () => {
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3">Basic Information</h3>
                 <div className="space-y-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Code</label>
+                    <p className="font-medium">
+                      <code className="px-2 py-1 bg-background rounded text-sm">
+                        {selectedCategory.code}
+                      </code>
+                    </p>
+                  </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Category Name</label>
                     <p className="font-medium text-lg">{selectedCategory.name}</p>

@@ -23,25 +23,37 @@ export interface AuditFields {
 export interface BookCategory {
   id: number;
   name: string;
+  code: string;
   description?: string;
   is_active: boolean;
+  college: number;
   created_at: string;
   updated_at: string;
+  created_by?: any;
+  updated_by?: any;
 }
 
 export interface BookCategoryListItem {
   id: number;
   name: string;
+  code: string;
   is_active: boolean;
 }
 
 export interface BookCategoryCreateInput {
   name: string;
+  code: string;
+  description?: string;
+  is_active?: boolean;
+  college: number;
+}
+
+export interface BookCategoryUpdateInput {
+  name?: string;
+  code?: string;
   description?: string;
   is_active?: boolean;
 }
-
-export interface BookCategoryUpdateInput extends Partial<BookCategoryCreateInput> {}
 
 // ============================================================================
 // BOOK TYPES
