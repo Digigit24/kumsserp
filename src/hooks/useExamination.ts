@@ -245,6 +245,16 @@ export const useUpdateStudentMarks = () => {
   });
 };
 
+export const useDeleteStudentMarks = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => studentMarksApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-marks'] });
+    },
+  });
+};
+
 // ============================================================================
 // MARKS GRADES HOOKS
 // ============================================================================
@@ -283,6 +293,26 @@ export const useCreateMarksRegister = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: any) => marksRegistersApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marks-registers'] });
+    },
+  });
+};
+
+export const useUpdateMarksRegister = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => marksRegistersApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marks-registers'] });
+    },
+  });
+};
+
+export const useDeleteMarksRegister = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => marksRegistersApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marks-registers'] });
     },

@@ -7,8 +7,9 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useMarksRegisters } from '../../hooks/useExamination';
+import { useMarksRegisters, useCreateMarksRegister, useUpdateMarksRegister, useDeleteMarksRegister } from '../../hooks/useExamination';
 import { MarksRegisterForm } from './forms';
+import { toast } from 'sonner';
 
 const MarksRegistersPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -18,6 +19,9 @@ const MarksRegistersPage = () => {
 
   // Fetch marks registers using real API
   const { data, isLoading, error, refetch } = useMarksRegisters(filters);
+  const createMutation = useCreateMarksRegister();
+  const updateMutation = useUpdateMarksRegister();
+  const deleteMutation = useDeleteMarksRegister();
 
   const columns: Column<any>[] = [
     { key: 'class_name', label: 'Class', sortable: true },
@@ -90,9 +94,37 @@ const MarksRegistersPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<MarksRegister>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (sidebarMode === 'edit' && selectedRegister?.id) {
+        await updateMutation.mutateAsync({ id: selectedRegister.id, data });
+        toast.success('Marks register updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Marks register created successfully');
+      }
+      setIsSidebarOpen(false);
+      refetch();
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to save marks register';
+      toast.error(errorMessage);
+      console.error('Failed to save marks register:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedRegister?.id) return;
+
+    if (window.confirm('Are you sure you want to delete this marks register?')) {
+      try {
+        await deleteMutation.mutateAsync(selectedRegister.id);
+        toast.success('Marks register deleted successfully');
+        setIsSidebarOpen(false);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to delete marks register');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -192,13 +224,14 @@ const MarksRegistersPage = () => {
                 <p className="mt-1">{selectedRegister.remarks}</p>
               </div>
             )}
-            <div className="pt-4">
+            <div className="pt-4 flex gap-2">
               <Button onClick={handleEdit}>Edit</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
           </div>
         ) : (
           <MarksRegisterForm
-            marksRegister={sidebarMode === 'edit' ? selectedRegister : null}
+            register={sidebarMode === 'edit' ? selectedRegister : null}
             onSubmit={handleFormSubmit}
             onCancel={handleCloseSidebar}
           />

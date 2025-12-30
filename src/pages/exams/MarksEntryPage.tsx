@@ -8,8 +8,9 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useStudentMarks } from '../../hooks/useExamination';
+import { useStudentMarks, useCreateStudentMarks, useUpdateStudentMarks, useDeleteStudentMarks } from '../../hooks/useExamination';
 import { StudentMarksForm } from './forms';
+import { toast } from 'sonner';
 
 const MarksEntryPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -19,6 +20,9 @@ const MarksEntryPage = () => {
 
   // Fetch student marks using real API
   const { data, isLoading, error, refetch } = useStudentMarks(filters);
+  const createMutation = useCreateStudentMarks();
+  const updateMutation = useUpdateStudentMarks();
+  const deleteMutation = useDeleteStudentMarks();
 
   const columns: Column<any>[] = [
     { key: 'student_roll_number', label: 'Roll No', sortable: true },
@@ -89,9 +93,37 @@ const MarksEntryPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<StudentMarks>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (sidebarMode === 'edit' && selectedMarks?.id) {
+        await updateMutation.mutateAsync({ id: selectedMarks.id, data });
+        toast.success('Student marks updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Student marks created successfully');
+      }
+      setIsSidebarOpen(false);
+      refetch();
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to save student marks';
+      toast.error(errorMessage);
+      console.error('Failed to save student marks:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedMarks?.id) return;
+
+    if (window.confirm('Are you sure you want to delete these marks?')) {
+      try {
+        await deleteMutation.mutateAsync(selectedMarks.id);
+        toast.success('Student marks deleted successfully');
+        setIsSidebarOpen(false);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to delete student marks');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -180,13 +212,14 @@ const MarksEntryPage = () => {
                 <p className="mt-1">{selectedMarks.remarks}</p>
               </div>
             )}
-            <div className="pt-4">
+            <div className="pt-4 flex gap-2">
               <Button onClick={handleEdit}>Edit</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
           </div>
         ) : (
           <StudentMarksForm
-            studentMarks={sidebarMode === 'edit' ? selectedMarks : null}
+            marks={sidebarMode === 'edit' ? selectedMarks : null}
             onSubmit={handleFormSubmit}
             onCancel={handleCloseSidebar}
           />
