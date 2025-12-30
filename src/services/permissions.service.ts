@@ -30,6 +30,12 @@ import type {
 export async function fetchUserPermissions(): Promise<PermissionsResponse> {
   try {
     const response = await apiClient.get<PermissionsResponse>('/api/v1/core/permissions/');
+
+    // Ensure the response has all required fields
+    if (!response.data.user_context) {
+      throw new Error('API response missing user_context field');
+    }
+
     return response.data;
   } catch (error: any) {
     // Fallback: construct from existing user data if endpoint doesn't exist yet
@@ -39,6 +45,7 @@ export async function fetchUserPermissions(): Promise<PermissionsResponse> {
     const userStr = localStorage.getItem('kumss_user');
     const user = userStr ? JSON.parse(userStr) : null;
 
+    // Always return a valid user_context, even if user is null
     return {
       user_permissions: user?.user_permissions || {},
       user_context: {

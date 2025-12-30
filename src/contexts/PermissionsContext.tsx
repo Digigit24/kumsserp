@@ -69,6 +69,11 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       setRawPermissions(response.user_permissions);
       setUserContext(response.user_context);
 
+      // Ensure user_context exists before normalizing
+      if (!response.user_context) {
+        throw new Error('User context is missing from permissions response');
+      }
+
       const normalized = normalizePermissions(
         response.user_permissions,
         response.user_context

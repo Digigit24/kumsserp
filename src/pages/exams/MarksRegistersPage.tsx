@@ -190,7 +190,7 @@ const MarksRegistersPage = () => {
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Pass Percentage</h3>
-                <p className="mt-1 text-2xl font-bold text-green-600">{selectedRegister.pass_percentage.toFixed(1)}%</p>
+                <p className="mt-1 text-2xl font-bold text-green-600">{(selectedRegister.pass_percentage ?? 0).toFixed(1)}%</p>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
@@ -204,7 +204,7 @@ const MarksRegistersPage = () => {
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Average Marks</h3>
-                <p className="mt-1 text-lg font-semibold">{selectedRegister.average_marks.toFixed(2)}</p>
+                <p className="mt-1 text-lg font-semibold">{(selectedRegister.average_marks ?? 0).toFixed(2)}</p>
               </div>
             </div>
             <div>
