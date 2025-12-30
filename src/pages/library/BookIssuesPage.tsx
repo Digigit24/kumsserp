@@ -8,6 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useBookIssues, useCreateBookIssue, useUpdateBookIssue, useDeleteBookIssue, useBooks, useLibraryMembers } from '../../hooks/useLibrary';
+import { useUsers } from '../../hooks/useAccounts';
 import { BookIssue } from '../../types/library.types';
 import { BookIssueForm } from './forms/BookIssueForm';
 import { toast } from 'sonner';
@@ -21,18 +22,25 @@ const BookIssuesPage = () => {
   const { data, isLoading, error, refetch } = useBookIssues(filters);
   const { data: booksData } = useBooks({ page_size: 1000 });
   const { data: membersData } = useLibraryMembers({ page_size: 1000 });
+  const { data: usersData } = useUsers({ page_size: 1000 });
   const createIssue = useCreateBookIssue();
   const updateIssue = useUpdateBookIssue();
   const deleteIssue = useDeleteBookIssue();
 
   // Enrich issues data with book and member names
   const enrichedData = useMemo(() => {
-    if (!data?.results || !booksData?.results || !membersData?.results) {
+    if (!data?.results) {
+      return data;
+    }
+
+    // Return original data if we don't have the lookup data yet
+    if (!booksData?.results || !membersData?.results || !usersData?.results) {
       return data;
     }
 
     const booksMap = new Map(booksData.results.map(b => [b.id, b]));
     const membersMap = new Map(membersData.results.map(m => [m.id, m]));
+    const usersMap = new Map(usersData.results.map(u => [u.id, u]));
 
     const enrichedResults = data.results.map(issue => {
       const bookId = typeof issue.book === 'number' ? issue.book : issue.book.id;
@@ -41,17 +49,25 @@ const BookIssuesPage = () => {
       const book = booksMap.get(bookId);
       const member = membersMap.get(memberId);
 
+      // Get the user name from the member's user ID
+      let memberName = `Member #${memberId}`;
+      if (member) {
+        const userId = typeof member.user === 'number' ? member.user : member.user?.id;
+        const user = usersMap.get(userId);
+        memberName = user?.full_name || user?.username || member.member_id || memberName;
+      }
+
       return {
         ...issue,
         book_title: book?.title || `Book #${bookId}`,
         book_author: book?.author,
-        member_name: member?.user_name || `Member #${memberId}`,
+        member_name: memberName,
         member_id_display: member?.member_id,
       };
     });
 
     return { ...data, results: enrichedResults };
-  }, [data, booksData, membersData]);
+  }, [data, booksData, membersData, usersData]);
 
   const columns: Column<BookIssue>[] = [
     { key: 'book_title', label: 'Book', sortable: false },
