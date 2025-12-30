@@ -19,7 +19,6 @@ import { FileText, Loader2 } from 'lucide-react';
 import type { Assignment, AssignmentCreateInput } from '@/types/assignments.types';
 import { useSubjects } from '@/hooks/useAcademic';
 import { useClasses, useSections } from '@/hooks/useAcademic';
-import { useAuth } from '@/hooks/useAuth';
 
 interface AssignmentFormProps {
   assignment?: Assignment | null;
@@ -34,7 +33,6 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
-  const { user } = useAuth();
   const [formData, setFormData] = useState<AssignmentCreateInput>({
     title: '',
     description: '',
@@ -98,21 +96,9 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.id) {
-      console.error('User ID not found');
-      return;
-    }
-
-    // Debug: log user object to find correct teacher ID field
-    console.log('User object:', user);
-    console.log('User ID:', user.id);
-    console.log('User ID type:', typeof user.id);
-
     // If there's a file attachment, use FormData
     if (attachmentFile) {
       const formDataWithFile = new FormData();
-      // Send user.id as string (UUID)
-      formDataWithFile.append('teacher', String(user.id));
       formDataWithFile.append('title', formData.title);
       formDataWithFile.append('description', formData.description);
       formDataWithFile.append('subject', String(formData.subject));
@@ -130,13 +116,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
       onSubmit(formDataWithFile);
     } else {
       // No file, use JSON
-      const payload = {
-        ...formData,
-        // Send user.id as string (UUID) - backend should accept it
-        teacher: user.id as any,
-      };
-      console.log('Payload being sent:', payload);
-      onSubmit(payload as any);
+      onSubmit(formData);
     }
   };
 
