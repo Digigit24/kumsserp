@@ -902,6 +902,35 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/reports/saved/${id}/`,
     delete: (id: number) => `/api/v1/reports/saved/${id}/`,
   },
+
+  // Assignments Module (Teacher)
+  assignments: {
+    list: "/api/v1/teachers/assignments/",
+    create: "/api/v1/teachers/assignments/",
+    detail: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    update: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    patch: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    delete: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    myAssignments: "/api/v1/teachers/assignments/my-assignments/",
+  },
+
+  // Student Assignments Module
+  studentAssignments: {
+    list: "/api/v1/students/assignments/",
+    detail: (id: number) => `/api/v1/students/assignments/${id}/`,
+  },
+
+  // Assignment Submissions Module
+  assignmentSubmissions: {
+    list: "/api/v1/assignment-submissions/",
+    create: "/api/v1/assignment-submissions/",
+    detail: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    update: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    patch: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    delete: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    grade: (id: number) => `/api/v1/assignment-submissions/${id}/grade/`,
+    mySubmissions: "/api/v1/assignment-submissions/my-submissions/",
+  },
 };
 
 /**

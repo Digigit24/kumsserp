@@ -79,6 +79,7 @@ const MyProfile = lazy(() => import("../pages/student").then(m => ({ default: m.
 const Attendance = lazy(() => import("../pages/student").then(m => ({ default: m.Attendance })));
 const Subjects = lazy(() => import("../pages/student").then(m => ({ default: m.Subjects })));
 const Assignments = lazy(() => import("../pages/student").then(m => ({ default: m.Assignments })));
+const Timetable = lazy(() => import("../pages/student").then(m => ({ default: m.Timetable })));
 const ExamForm = lazy(() => import("../pages/student").then(m => ({ default: m.ExamForm })));
 const Results = lazy(() => import("../pages/student").then(m => ({ default: m.Results })));
 const Fees = lazy(() => import("../pages/student").then(m => ({ default: m.Fees })));
@@ -224,6 +225,7 @@ export default function AppRoutes() {
                     <Route path="student/academics/attendance" element={<LazyRoute component={Attendance} />} />
                     <Route path="student/academics/subjects" element={<LazyRoute component={Subjects} />} />
                     <Route path="student/academics/assignments" element={<LazyRoute component={Assignments} />} />
+                    <Route path="student/academics/timetable" element={<LazyRoute component={Timetable} />} />
                     <Route path="student/examinations/exam-form" element={<LazyRoute component={ExamForm} />} />
                     <Route path="student/examinations/results" element={<LazyRoute component={Results} />} />
                     <Route path="student/fees" element={<LazyRoute component={Fees} />} />

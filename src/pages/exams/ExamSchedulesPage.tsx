@@ -11,12 +11,17 @@ import { Button } from '../../components/ui/button';
 import { useExamSchedules, useCreateExamSchedule, useUpdateExamSchedule, useDeleteExamSchedule } from '../../hooks/useExamination';
 import { ExamScheduleForm } from './forms';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
 
 const ExamSchedulesPage = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
+
+  // Check if user is student (students can only view, not add/edit/delete)
+  const isStudent = user?.userType === 'student';
 
   // Fetch exam schedules using real API
   const { data, isLoading, error, refetch } = useExamSchedules(filters);
@@ -129,7 +134,7 @@ const ExamSchedulesPage = () => {
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
-        onAdd={handleAddNew}
+        onAdd={isStudent ? undefined : handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -173,10 +178,12 @@ const ExamSchedulesPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4 flex gap-2">
-              <Button onClick={handleEdit}>Edit</Button>
-              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-            </div>
+            {!isStudent && (
+              <div className="pt-4 flex gap-2">
+                <Button onClick={handleEdit}>Edit</Button>
+                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+              </div>
+            )}
           </div>
         ) : (
           <ExamScheduleForm

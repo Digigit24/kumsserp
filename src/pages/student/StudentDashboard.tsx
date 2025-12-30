@@ -19,9 +19,21 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAssignments } from '@/hooks/useAssignments';
 
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
+
+  // Fetch assignments from API
+  const { data: assignmentsData } = useAssignments({ page_size: 10, status: 'active' });
+  const assignments = assignmentsData?.results || [];
+
+  // Filter assignments that are not yet submitted (pending)
+  const today = new Date();
+  const pendingAssignments = assignments.filter(a => {
+    const dueDate = new Date(a.due_date);
+    return dueDate >= today; // Only show assignments that haven't passed due date
+  });
 
   // Mock data - Replace with actual API calls
   const todaysClasses = [
@@ -42,11 +54,6 @@ export const StudentDashboard: React.FC = () => {
     dueDate: '2025-01-15',
     description: 'Semester Fee'
   };
-
-  const pendingAssignments = [
-    { id: 1, subject: 'Chemistry', title: 'Lab Report', dueDate: '2025-12-28', priority: 'high' },
-    { id: 2, subject: 'History', title: 'Essay on World War II', dueDate: '2025-12-30', priority: 'medium' },
-  ];
 
   const upcomingExams = [
     { id: 1, subject: 'Mathematics', date: '2026-01-05', type: 'Mid-term' },
@@ -221,7 +228,10 @@ export const StudentDashboard: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{pendingAssignments.length}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {pendingAssignments.filter(a => a.priority === 'high').length} high priority
+              {pendingAssignments.filter(a => {
+                const daysUntilDue = Math.ceil((new Date(a.due_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return daysUntilDue <= 3; // Due within 3 days
+              }).length} due soon
             </p>
           </CardContent>
         </Card>
@@ -378,21 +388,32 @@ export const StudentDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {pendingAssignments.map((assignment) => (
-                <div key={assignment.id} className="p-3 rounded-lg border">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium text-sm">{assignment.subject}</p>
-                    <Badge variant={assignment.priority === 'high' ? 'destructive' : 'warning'}>
-                      {assignment.priority}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{assignment.title}</p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
+              {pendingAssignments.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No pending assignments
+                </p>
+              ) : (
+                pendingAssignments.slice(0, 5).map((assignment) => {
+                  const daysUntilDue = Math.ceil((new Date(assignment.due_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                  const isUrgent = daysUntilDue <= 3;
+
+                  return (
+                    <div key={assignment.id} className="p-3 rounded-lg border">
+                      <div className="flex items-start justify-between mb-2">
+                        <p className="font-medium text-sm">{assignment.subject_name}</p>
+                        <Badge variant={isUrgent ? 'destructive' : 'default'}>
+                          {daysUntilDue === 0 ? 'Today' : daysUntilDue === 1 ? 'Tomorrow' : `${daysUntilDue} days`}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">{assignment.title}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        Due: {new Date(assignment.due_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
               <Button
                 variant="outline"
                 className="w-full mt-2"

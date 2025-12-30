@@ -6,6 +6,7 @@ export { MyProfile } from './MyProfile';
 export { Attendance } from './Attendance';
 export { Subjects } from './Subjects';
 export { Assignments } from './Assignments';
+export { Timetable } from './Timetable';
 
 // Examinations
 export { ExamForm } from './ExamForm';

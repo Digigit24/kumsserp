@@ -223,9 +223,8 @@ export const getCurrentUser = (): User | null => {
  * Clear authentication data from localStorage
  */
 export const clearAuthData = (): void => {
-  localStorage.removeItem(STORAGE_KEYS.USER);
-  localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
-  localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+  // Clear all localStorage data on logout
+  localStorage.clear();
 };
 
 /**
