@@ -180,7 +180,6 @@ export function normalizePermissions(
     !isStudent &&
     (isSuperAdmin ||
       isCollegeAdmin ||
-      isTeacher ||
       getScope('attendance', 'read') === 'team' ||
       getScope('attendance', 'read') === 'all');
 

@@ -39,6 +39,12 @@ const StudentAttendancePage = () => {
   const { selectedClass, selectedSection } = useHierarchicalContext();
   const { permissions } = usePermissions();
 
+  // Debug permissions
+  console.log('Permissions:', permissions);
+  console.log('canChooseSection:', permissions?.canChooseSection);
+  console.log('selectedClass:', selectedClass);
+  console.log('selectedSection:', selectedSection);
+
   // Track attendance status for each student
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
