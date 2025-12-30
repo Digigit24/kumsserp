@@ -11,6 +11,8 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { useCollegeContext } from '../../../contexts/HierarchicalContext';
+import { getCurrentUser } from '../../../services/auth.service';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface BookCategoryFormProps {
   mode: 'create' | 'edit';
@@ -22,6 +24,7 @@ interface BookCategoryFormProps {
 export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCategoryFormProps) => {
   const { theme } = useTheme();
   const { selectedCollege } = useCollegeContext();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,12 +49,32 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
         college: category.college,
       });
     } else if (mode === 'create') {
-      // Get college ID from context
-      const collegeId = selectedCollege || 0;
-      console.log('Setting college ID from context:', collegeId);
+      // Get college ID with multiple fallbacks
+      const storedUser = getCurrentUser();
+      let collegeId = 0;
+
+      // Try multiple sources for college ID
+      if (selectedCollege) {
+        collegeId = selectedCollege;
+        console.log('Using college from context:', collegeId);
+      } else if (storedUser?.college) {
+        collegeId = storedUser.college;
+        console.log('Using college from stored user:', collegeId);
+      } else if (storedUser?.user_roles && storedUser.user_roles.length > 0) {
+        // Get primary role's college or first role's college
+        const primaryRole = storedUser.user_roles.find(r => r.is_primary) || storedUser.user_roles[0];
+        collegeId = primaryRole.college_id;
+        console.log('Using college from user role:', collegeId);
+      } else {
+        // Default fallback - you might want to set this to a specific college
+        collegeId = 1;
+        console.log('Using default college ID:', collegeId);
+      }
+
+      console.log('Final college ID being set:', collegeId);
       setFormData(prev => ({ ...prev, college: collegeId }));
     }
-  }, [mode, category, selectedCollege]);
+  }, [mode, category, selectedCollege, user]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -64,8 +87,10 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
       newErrors.code = 'Category code is required';
     }
 
+    // Log college validation
+    console.log('Validating college:', formData.college);
     if (!formData.college || formData.college === 0) {
-      newErrors.college = 'College is required. Please select a college from the top navigation.';
+      newErrors.college = 'College ID is missing. Please refresh the page or contact support.';
     }
 
     setErrors(newErrors);
