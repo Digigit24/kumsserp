@@ -8,8 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useMarksRegisters, useCreateMarksRegister, useUpdateMarksRegister, useDeleteMarksRegister, useExams } from '../../hooks/useExamination';
-import { useSubjects } from '../../hooks/useAcademics';
-import { useSections } from '../../hooks/useAcademics';
+import { useSubjects, useSections } from '../../hooks/useAcademic';
 import { MarksRegisterForm } from './forms';
 import { toast } from 'sonner';
 

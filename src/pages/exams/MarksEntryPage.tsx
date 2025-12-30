@@ -3,12 +3,13 @@
  * Teachers can enter marks for students
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useStudentMarks, useCreateStudentMarks, useUpdateStudentMarks, useDeleteStudentMarks } from '../../hooks/useExamination';
+import { useStudentMarks, useCreateStudentMarks, useUpdateStudentMarks, useDeleteStudentMarks, useMarksRegisters } from '../../hooks/useExamination';
+import { useStudents } from '../../hooks/useStudents';
 import { StudentMarksForm } from './forms';
 import { toast } from 'sonner';
 
@@ -20,6 +21,52 @@ const MarksEntryPage = () => {
 
   // Fetch student marks using real API
   const { data, isLoading, error, refetch } = useStudentMarks(filters);
+
+  // Fetch related data for ID-to-name mapping
+  const { data: studentsData } = useStudents({ page_size: 1000 });
+  const { data: registersData } = useMarksRegisters({ page_size: 1000 });
+
+  // Create lookup maps for IDs to names
+  const studentMap = useMemo(() => {
+    if (!studentsData?.results) return {};
+    return Object.fromEntries(
+      studentsData.results.map((student: any) => [student.id, student])
+    );
+  }, [studentsData]);
+
+  const registerMap = useMemo(() => {
+    if (!registersData?.results) return {};
+    return Object.fromEntries(
+      registersData.results.map((register: any) => [register.id, register])
+    );
+  }, [registersData]);
+
+  // Transform student marks data to include display names
+  const enrichedData = useMemo(() => {
+    if (!data?.results) return data;
+
+    return {
+      ...data,
+      results: data.results.map((marks: any) => {
+        const student = studentMap[marks.student];
+        const register = registerMap[marks.marks_register];
+
+        return {
+          ...marks,
+          student_name: student ? `${student.first_name} ${student.last_name}` : '-',
+          student_roll_number: student?.roll_number || '-',
+          subject_name: register?.subject_name || '-',
+          exam_name: register?.exam_name || '-',
+          // Ensure numeric fields have defaults
+          theory_marks: marks.theory_marks ?? null,
+          practical_marks: marks.practical_marks ?? null,
+          internal_marks: marks.internal_marks ?? null,
+          total_marks: marks.total_marks ?? 0,
+        };
+      }),
+    };
+  }, [data, studentMap, registerMap]);
+
   const createMutation = useCreateStudentMarks();
   const updateMutation = useUpdateStudentMarks();
   const deleteMutation = useDeleteStudentMarks();
@@ -142,7 +189,7 @@ const MarksEntryPage = () => {
         title="Student Marks"
         description="View and enter marks for students"
         columns={columns}
-        data={data}
+        data={enrichedData}
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
