@@ -2,12 +2,12 @@
  * Book Issues Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useBookIssues, useCreateBookIssue, useUpdateBookIssue, useDeleteBookIssue } from '../../hooks/useLibrary';
+import { useBookIssues, useCreateBookIssue, useUpdateBookIssue, useDeleteBookIssue, useBooks, useLibraryMembers } from '../../hooks/useLibrary';
 import { BookIssue } from '../../types/library.types';
 import { BookIssueForm } from './forms/BookIssueForm';
 import { toast } from 'sonner';
@@ -19,9 +19,39 @@ const BookIssuesPage = () => {
   const [selectedIssue, setSelectedIssue] = useState<BookIssue | null>(null);
 
   const { data, isLoading, error, refetch } = useBookIssues(filters);
+  const { data: booksData } = useBooks({ page_size: 1000 });
+  const { data: membersData } = useLibraryMembers({ page_size: 1000 });
   const createIssue = useCreateBookIssue();
   const updateIssue = useUpdateBookIssue();
   const deleteIssue = useDeleteBookIssue();
+
+  // Enrich issues data with book and member names
+  const enrichedData = useMemo(() => {
+    if (!data?.results || !booksData?.results || !membersData?.results) {
+      return data;
+    }
+
+    const booksMap = new Map(booksData.results.map(b => [b.id, b]));
+    const membersMap = new Map(membersData.results.map(m => [m.id, m]));
+
+    const enrichedResults = data.results.map(issue => {
+      const bookId = typeof issue.book === 'number' ? issue.book : issue.book.id;
+      const memberId = typeof issue.member === 'number' ? issue.member : issue.member.id;
+
+      const book = booksMap.get(bookId);
+      const member = membersMap.get(memberId);
+
+      return {
+        ...issue,
+        book_title: book?.title || `Book #${bookId}`,
+        book_author: book?.author,
+        member_name: member?.user_name || `Member #${memberId}`,
+        member_id_display: member?.member_id,
+      };
+    });
+
+    return { ...data, results: enrichedResults };
+  }, [data, booksData, membersData]);
 
   const columns: Column<BookIssue>[] = [
     { key: 'book_title', label: 'Book', sortable: false },
@@ -115,7 +145,7 @@ const BookIssuesPage = () => {
         title="Book Issues List"
         description="View and manage all book issuances"
         columns={columns}
-        data={data}
+        data={enrichedData}
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
@@ -138,11 +168,17 @@ const BookIssuesPage = () => {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Book</h3>
-              <p className="mt-1 text-lg font-semibold">{selectedIssue.book_title || `Book ID: ${selectedIssue.book}`}</p>
+              <p className="mt-1 text-lg font-semibold">{selectedIssue.book_title || `Book #${typeof selectedIssue.book === 'number' ? selectedIssue.book : selectedIssue.book.id}`}</p>
+              {selectedIssue.book_author && (
+                <p className="text-sm text-muted-foreground">by {selectedIssue.book_author}</p>
+              )}
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Member</h3>
-              <p className="mt-1">{selectedIssue.member_name || `Member ID: ${selectedIssue.member}`}</p>
+              <p className="mt-1">{selectedIssue.member_name || `Member #${typeof selectedIssue.member === 'number' ? selectedIssue.member : selectedIssue.member.id}`}</p>
+              {selectedIssue.member_id_display && (
+                <p className="text-sm text-muted-foreground">ID: {selectedIssue.member_id_display}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

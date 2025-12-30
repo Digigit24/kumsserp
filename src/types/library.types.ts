@@ -217,23 +217,27 @@ export interface BookIssue extends AuditFields {
   return_date: string | null;
   status: 'issued' | 'returned' | 'overdue' | 'lost';
   remarks: string | null;
-  book: number;
+  book: number | { id: number; title: string; author: string };
   book_title?: string;
-  member: number;
+  book_author?: string;
+  member: number | { id: number; member_id: string; user_name: string };
   member_name?: string;
+  member_id_display?: string;
   issued_by: string | null;
   issued_by_name?: string;
 }
 
 export interface BookIssueListItem {
   id: number;
-  book_title: string;
-  member_name: string;
+  book: number;
+  book_title?: string;
+  member: number;
+  member_name?: string;
   issue_date: string;
   due_date: string;
   return_date: string | null;
   status: string;
-  issued_by_name: string | null;
+  issued_by_name?: string | null;
 }
 
 export interface BookIssueCreateInput {
