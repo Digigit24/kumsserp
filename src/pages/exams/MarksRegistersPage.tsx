@@ -60,14 +60,6 @@ const MarksRegistersPage = () => {
         subject_name: subjectMap[register.subject]?.name || '-',
         section_name: sectionMap[register.section]?.name || '-',
         class_name: sectionMap[register.section]?.class_name || '-',
-        // Set default values for statistics if not provided by backend
-        total_students: register.total_students ?? 0,
-        students_appeared: register.students_appeared ?? 0,
-        students_passed: register.students_passed ?? 0,
-        pass_percentage: register.pass_percentage ?? 0,
-        average_marks: register.average_marks ?? 0,
-        highest_marks: register.highest_marks ?? 0,
-        lowest_marks: register.lowest_marks ?? 0,
       })),
     };
   }, [data, examMap, subjectMap, sectionMap]);
@@ -80,34 +72,15 @@ const MarksRegistersPage = () => {
     { key: 'class_name', label: 'Class', sortable: true },
     { key: 'subject_name', label: 'Subject', sortable: true },
     {
-      key: 'total_students',
-      label: 'Total Students',
-      render: (register) => <Badge variant="outline">{register.total_students}</Badge>,
+      key: 'max_marks',
+      label: 'Max Marks',
+      render: (register) => <Badge variant="outline">{register.max_marks}</Badge>,
       sortable: true,
     },
     {
-      key: 'students_appeared',
-      label: 'Appeared',
-      render: (register) => <Badge variant="secondary">{register.students_appeared}</Badge>,
-      sortable: true,
-    },
-    {
-      key: 'students_passed',
-      label: 'Passed',
-      render: (register) => <Badge variant="success">{register.students_passed}</Badge>,
-      sortable: true,
-    },
-    {
-      key: 'pass_percentage',
-      label: 'Pass %',
-      render: (register) => {
-        const percentage = register.pass_percentage ?? 0;
-        return (
-          <Badge variant={percentage >= 75 ? 'success' : 'warning'}>
-            {percentage.toFixed(1)}%
-          </Badge>
-        );
-      },
+      key: 'pass_marks',
+      label: 'Pass Marks',
+      render: (register) => <Badge variant="secondary">{register.pass_marks}</Badge>,
       sortable: true,
     },
     {
@@ -228,36 +201,12 @@ const MarksRegistersPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Total Students</h3>
-                <p className="mt-1 text-2xl font-bold">{selectedRegister.total_students}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Max Marks</h3>
+                <p className="mt-1 text-2xl font-bold">{selectedRegister.max_marks}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Students Appeared</h3>
-                <p className="mt-1 text-2xl font-bold">{selectedRegister.students_appeared}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Students Passed</h3>
-                <p className="mt-1 text-2xl font-bold text-green-600">{selectedRegister.students_passed}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Pass Percentage</h3>
-                <p className="mt-1 text-2xl font-bold text-green-600">{(selectedRegister.pass_percentage ?? 0).toFixed(1)}%</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Highest Marks</h3>
-                <p className="mt-1 text-lg font-semibold">{selectedRegister.highest_marks}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Lowest Marks</h3>
-                <p className="mt-1 text-lg font-semibold">{selectedRegister.lowest_marks}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Average Marks</h3>
-                <p className="mt-1 text-lg font-semibold">{(selectedRegister.average_marks ?? 0).toFixed(2)}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Pass Marks</h3>
+                <p className="mt-1 text-2xl font-bold text-green-600">{selectedRegister.pass_marks}</p>
               </div>
             </div>
             <div>
