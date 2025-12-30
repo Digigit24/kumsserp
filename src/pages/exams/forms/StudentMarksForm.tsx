@@ -9,30 +9,65 @@ import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { StudentMarks, mockMarksRegisters } from '../../../data/examinationMockData';
+import { useMarksRegisters } from '../../../hooks/useExamination';
+import { useQuery } from '@tanstack/react-query';
+import { studentApi } from '../../../services/students.service';
+import { Loader2 } from 'lucide-react';
+
+interface StudentMarksFormData {
+  theory_marks: number | null;
+  practical_marks: number | null;
+  internal_marks: number | null;
+  total_marks: number;
+  grade: string | null;
+  is_absent: boolean;
+  is_active: boolean;
+  register?: number;
+  student?: number;
+}
 
 interface StudentMarksFormProps {
-  marks?: StudentMarks | null;
-  onSubmit: (data: Partial<StudentMarks>) => void;
+  marks?: any | null;
+  onSubmit: (data: StudentMarksFormData) => void;
   onCancel: () => void;
 }
 
 export const StudentMarksForm = ({ marks, onSubmit, onCancel }: StudentMarksFormProps) => {
-  const [formData, setFormData] = useState<Partial<StudentMarks>>({
+  const [formData, setFormData] = useState<StudentMarksFormData>({
     theory_marks: null,
     practical_marks: null,
     internal_marks: null,
     total_marks: 0,
-    grade: '',
+    grade: null,
     is_absent: false,
     is_active: true,
     register: undefined,
     student: undefined,
   });
 
+  // Fetch real data from API
+  const { data: registersData, isLoading: isLoadingRegisters } = useMarksRegisters({ page_size: 100, is_active: true });
+  const { data: studentsData, isLoading: isLoadingStudents } = useQuery({
+    queryKey: ['students', { page_size: 100, is_active: true }],
+    queryFn: () => studentApi.list({ page_size: 100, is_active: true }),
+  });
+
+  const registers = registersData?.results || [];
+  const students = studentsData?.results || [];
+
   useEffect(() => {
     if (marks) {
-      setFormData(marks);
+      setFormData({
+        theory_marks: marks.theory_marks ?? null,
+        practical_marks: marks.practical_marks ?? null,
+        internal_marks: marks.internal_marks ?? null,
+        total_marks: marks.total_marks || 0,
+        grade: marks.grade || null,
+        is_absent: marks.is_absent || false,
+        is_active: marks.is_active ?? true,
+        register: marks.register,
+        student: marks.student,
+      });
     }
   }, [marks]);
 
@@ -50,9 +85,11 @@ export const StudentMarksForm = ({ marks, onSubmit, onCancel }: StudentMarksForm
     onSubmit(formData);
   };
 
-  const handleChange = (field: keyof StudentMarks, value: any) => {
+  const handleChange = (field: keyof StudentMarksFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const isLoading = isLoadingRegisters || isLoadingStudents;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,14 +98,18 @@ export const StudentMarksForm = ({ marks, onSubmit, onCancel }: StudentMarksForm
         <Select
           value={formData.register?.toString()}
           onValueChange={(value) => handleChange('register', parseInt(value))}
+          disabled={isLoadingRegisters}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select marks register" />
+            <SelectValue placeholder={isLoadingRegisters ? "Loading registers..." : "Select marks register"} />
           </SelectTrigger>
           <SelectContent>
-            {mockMarksRegisters.map((reg) => (
+            {registers.length === 0 && !isLoadingRegisters && (
+              <div className="p-2 text-sm text-muted-foreground">No marks registers available</div>
+            )}
+            {registers.map((reg) => (
               <SelectItem key={reg.id} value={reg.id.toString()}>
-                Register #{reg.id}
+                Register #{reg.id} - {reg.exam_schedule_name || 'Exam Schedule'}
               </SelectItem>
             ))}
           </SelectContent>
@@ -80,14 +121,20 @@ export const StudentMarksForm = ({ marks, onSubmit, onCancel }: StudentMarksForm
         <Select
           value={formData.student?.toString()}
           onValueChange={(value) => handleChange('student', parseInt(value))}
+          disabled={isLoadingStudents}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select student" />
+            <SelectValue placeholder={isLoadingStudents ? "Loading students..." : "Select student"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">John Doe (Roll: 001)</SelectItem>
-            <SelectItem value="2">Jane Smith (Roll: 002)</SelectItem>
-            <SelectItem value="3">Bob Johnson (Roll: 003)</SelectItem>
+            {students.length === 0 && !isLoadingStudents && (
+              <div className="p-2 text-sm text-muted-foreground">No students available</div>
+            )}
+            {students.map((student) => (
+              <SelectItem key={student.id} value={student.id.toString()}>
+                {student.full_name} (Roll: {student.roll_number})
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -203,7 +250,8 @@ export const StudentMarksForm = ({ marks, onSubmit, onCancel }: StudentMarksForm
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {marks ? 'Update' : 'Create'}
         </Button>
       </div>
