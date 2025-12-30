@@ -81,8 +81,15 @@ const StudentAttendancePage = () => {
       return;
     }
 
-    if (!selectedClass || !selectedSection) {
-      toast.error('Please select class and section');
+    // Only require class (section is optional if user doesn't have permission)
+    if (!selectedClass) {
+      toast.error('Please select class');
+      return;
+    }
+
+    // Check if section is required based on permissions
+    if (permissions?.canChooseSection && !selectedSection) {
+      toast.error('Please select section');
       return;
     }
 
@@ -108,7 +115,7 @@ const StudentAttendancePage = () => {
           return await markSingleMutation.mutateAsync({
             student: studentIds[0],
             class_obj: selectedClass,
-            section: selectedSection,
+            section: selectedSection || null,
             date: selectedDate,
             status: status as 'present' | 'absent',
             subject: null,
@@ -120,7 +127,7 @@ const StudentAttendancePage = () => {
           return await bulkMarkMutation.mutateAsync({
             student_ids: studentIds,
             class_obj: selectedClass,
-            section: selectedSection,
+            section: selectedSection || null,
             date: selectedDate,
             status: status,
             subject: null,
@@ -264,7 +271,7 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('present')}
-            disabled={isSubmitting || !selectedClass || !selectedSection}
+            disabled={isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection)}
           >
             <Check className="h-4 w-4 mr-2" />
             Select All Present
@@ -273,14 +280,14 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('absent')}
-            disabled={isSubmitting || !selectedClass || !selectedSection}
+            disabled={isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection)}
           >
             <X className="h-4 w-4 mr-2" />
             Select All Absent
           </Button>
           <Button
             onClick={handleSubmitAttendance}
-            disabled={markedCount === 0 || isSubmitting || !selectedClass || !selectedSection || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
+            disabled={markedCount === 0 || isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection) || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
             className="bg-primary"
           >
             <Save className="h-4 w-4 mr-2" />
