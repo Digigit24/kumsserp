@@ -10,7 +10,7 @@ import type { BookCategory, BookCategoryCreateInput, BookCategoryUpdateInput } f
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
-import { getCurrentUser } from '../../../services/auth.service';
+import { useCollegeContext } from '../../../contexts/HierarchicalContext';
 
 interface BookCategoryFormProps {
   mode: 'create' | 'edit';
@@ -21,6 +21,7 @@ interface BookCategoryFormProps {
 
 export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCategoryFormProps) => {
   const { theme } = useTheme();
+  const { selectedCollege } = useCollegeContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,12 +46,12 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
         college: category.college,
       });
     } else if (mode === 'create') {
-      // Get college ID from current user
-      const user = getCurrentUser();
-      const collegeId = user?.college || 0;
+      // Get college ID from context
+      const collegeId = selectedCollege || 0;
+      console.log('Setting college ID from context:', collegeId);
       setFormData(prev => ({ ...prev, college: collegeId }));
     }
-  }, [mode, category]);
+  }, [mode, category, selectedCollege]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -64,7 +65,7 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
     }
 
     if (!formData.college || formData.college === 0) {
-      newErrors.college = 'College is required';
+      newErrors.college = 'College is required. Please select a college from the top navigation.';
     }
 
     setErrors(newErrors);
@@ -147,6 +148,12 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
       {error && (
         <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md">
           <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
+
+      {errors.college && (
+        <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md">
+          <p className="text-sm font-medium">{errors.college}</p>
         </div>
       )}
 
