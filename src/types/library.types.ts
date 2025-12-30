@@ -345,12 +345,15 @@ export interface BookReturn extends AuditFields {
   id: number;
   is_active: boolean;
   return_date: string;
-  condition: 'good' | 'fair' | 'damaged' | 'lost';
+  is_damaged: boolean;
+  damage_charges: string;
   fine_amount: string;
   remarks: string | null;
-  book_issue: number;
+  issue: number;
+  received_by: string;
   book_title?: string;
   member_name?: string;
+  member_id_display?: string;
 }
 
 export interface BookReturnListItem {
@@ -358,19 +361,22 @@ export interface BookReturnListItem {
   book_title: string;
   member_name: string;
   return_date: string;
-  condition: string;
+  is_damaged: boolean;
   fine_amount: string;
+  damage_charges: string;
 }
 
 export interface BookReturnCreateInput {
   is_active?: boolean;
   return_date: string;
-  condition: 'good' | 'fair' | 'damaged' | 'lost';
+  is_damaged: boolean;
+  damage_charges?: string;
   fine_amount?: string;
   remarks?: string;
   created_by?: string;
   updated_by?: string;
-  book_issue: number;
+  issue: number;
+  received_by?: string;
 }
 
 export interface BookReturnUpdateInput extends Partial<BookReturnCreateInput> {}

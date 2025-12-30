@@ -41,7 +41,7 @@ const BookReturnsPage = () => {
     const usersMap = usersData?.results ? new Map(usersData.results.map(u => [u.id, u])) : new Map();
 
     const enrichedResults = data.results.map(returnRecord => {
-      const issueId = typeof returnRecord.book_issue === 'number' ? returnRecord.book_issue : returnRecord.book_issue?.id;
+      const issueId = typeof returnRecord.issue === 'number' ? returnRecord.issue : returnRecord.issue?.id;
       const issue = issuesMap.get(issueId);
 
       // Get book and member from the issue
@@ -78,27 +78,26 @@ const BookReturnsPage = () => {
     { key: 'member_name', label: 'Member', sortable: false },
     { key: 'return_date', label: 'Return Date', sortable: true },
     {
-      key: 'condition',
-      label: 'Condition',
-      render: (ret) => {
-        const variant = ret.condition === 'good' ? 'success' : ret.condition === 'fair' ? 'default' : 'destructive';
-        return <Badge variant={variant}>{ret.condition}</Badge>;
-      },
+      key: 'is_damaged',
+      label: 'Status',
+      render: (ret) => (
+        <Badge variant={ret.is_damaged ? 'destructive' : 'success'}>
+          {ret.is_damaged ? 'Damaged' : 'Good'}
+        </Badge>
+      ),
     },
     { key: 'fine_amount', label: 'Fine', render: (ret) => `₹${ret.fine_amount}` },
   ];
 
   const filterConfig: FilterConfig[] = [
     {
-      name: 'condition',
-      label: 'Condition',
+      name: 'is_damaged',
+      label: 'Status',
       type: 'select',
       options: [
         { value: '', label: 'All' },
-        { value: 'good', label: 'Good' },
-        { value: 'fair', label: 'Fair' },
-        { value: 'damaged', label: 'Damaged' },
-        { value: 'lost', label: 'Lost' },
+        { value: 'false', label: 'Good' },
+        { value: 'true', label: 'Damaged' },
       ],
     },
   ];
@@ -187,7 +186,7 @@ const BookReturnsPage = () => {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Book</h3>
-              <p className="mt-1 text-lg font-semibold">{selectedReturn.book_title || `Issue ID: ${selectedReturn.book_issue}`}</p>
+              <p className="mt-1 text-lg font-semibold">{selectedReturn.book_title || `Issue ID: ${selectedReturn.issue}`}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Member</h3>
@@ -198,13 +197,19 @@ const BookReturnsPage = () => {
               <p className="mt-1">{selectedReturn.return_date}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Condition</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
               <p className="mt-1">
-                <Badge variant={selectedReturn.condition === 'good' ? 'success' : selectedReturn.condition === 'fair' ? 'default' : 'destructive'}>
-                  {selectedReturn.condition}
+                <Badge variant={selectedReturn.is_damaged ? 'destructive' : 'success'}>
+                  {selectedReturn.is_damaged ? 'Damaged' : 'Good'}
                 </Badge>
               </p>
             </div>
+            {selectedReturn.is_damaged && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Damage Charges</h3>
+                <p className="mt-1 text-lg font-semibold">₹{selectedReturn.damage_charges}</p>
+              </div>
+            )}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Fine Amount</h3>
               <p className="mt-1 text-lg font-semibold">₹{selectedReturn.fine_amount}</p>

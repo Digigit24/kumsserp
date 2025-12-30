@@ -21,9 +21,10 @@ interface BookReturnFormProps {
 
 export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFormProps) => {
   const [formData, setFormData] = useState<Partial<BookReturnCreateInput>>({
-    book_issue: 0,
+    issue: 0,
     return_date: new Date().toISOString().split('T')[0],
-    condition: 'good',
+    is_damaged: false,
+    damage_charges: '0',
     fine_amount: '0',
     remarks: '',
     is_active: true,
@@ -77,12 +78,14 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
   useEffect(() => {
     if (bookReturn) {
       setFormData({
-        book_issue: bookReturn.book_issue,
+        issue: bookReturn.issue,
         return_date: bookReturn.return_date,
-        condition: bookReturn.condition,
+        is_damaged: bookReturn.is_damaged,
+        damage_charges: bookReturn.damage_charges,
         fine_amount: bookReturn.fine_amount,
         remarks: bookReturn.remarks || '',
         is_active: bookReturn.is_active,
+        received_by: bookReturn.received_by,
       });
     }
   }, [bookReturn]);
@@ -95,11 +98,17 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
     if (!bookReturn && userId) {
       submitData.created_by = userId;
       submitData.updated_by = userId;
+      submitData.received_by = userId;
     } else if (bookReturn && userId) {
       submitData.updated_by = userId;
+      if (!submitData.received_by) {
+        submitData.received_by = userId;
+      }
     }
 
     if (submitData.remarks === '') submitData.remarks = null;
+    if (submitData.damage_charges === '') submitData.damage_charges = '0';
+    if (submitData.fine_amount === '') submitData.fine_amount = '0';
 
     onSubmit(submitData);
   };
@@ -107,11 +116,11 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="book_issue">Book Issue *</Label>
+        <Label htmlFor="issue">Book Issue *</Label>
         <SearchableSelect
           options={bookIssueOptions}
-          value={formData.book_issue}
-          onChange={(value) => setFormData({ ...formData, book_issue: Number(value) })}
+          value={formData.issue}
+          onChange={(value) => setFormData({ ...formData, issue: Number(value) })}
           placeholder="Select book issue to return"
           searchPlaceholder="Search by book title or member name..."
           emptyText="No issued books available for return"
@@ -130,31 +139,40 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="condition">Book Condition *</Label>
-        <Select
-          value={formData.condition}
-          onValueChange={(value: 'good' | 'fair' | 'damaged' | 'lost') => setFormData({ ...formData, condition: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select condition" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="good">Good</SelectItem>
-            <SelectItem value="fair">Fair</SelectItem>
-            <SelectItem value="damaged">Damaged</SelectItem>
-            <SelectItem value="lost">Lost</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="space-y-2 flex items-center gap-2">
+        <input
+          id="is_damaged"
+          type="checkbox"
+          checked={formData.is_damaged}
+          onChange={(e) => setFormData({ ...formData, is_damaged: e.target.checked })}
+          className="h-4 w-4"
+        />
+        <Label htmlFor="is_damaged" className="cursor-pointer">Book is Damaged</Label>
       </div>
+
+      {formData.is_damaged && (
+        <div className="space-y-2">
+          <Label htmlFor="damage_charges">Damage Charges (₹)</Label>
+          <Input
+            id="damage_charges"
+            type="number"
+            value={formData.damage_charges}
+            onChange={(e) => setFormData({ ...formData, damage_charges: e.target.value })}
+            placeholder="0"
+            min="0"
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="fine_amount">Fine Amount (₹)</Label>
         <Input
           id="fine_amount"
+          type="number"
           value={formData.fine_amount}
           onChange={(e) => setFormData({ ...formData, fine_amount: e.target.value })}
           placeholder="0"
+          min="0"
         />
       </div>
 
