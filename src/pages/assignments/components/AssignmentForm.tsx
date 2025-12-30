@@ -103,10 +103,16 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
       return;
     }
 
+    // Debug: log user object to find correct teacher ID field
+    console.log('User object:', user);
+    console.log('User ID:', user.id);
+    console.log('User ID type:', typeof user.id);
+
     // If there's a file attachment, use FormData
     if (attachmentFile) {
       const formDataWithFile = new FormData();
-      formDataWithFile.append('teacher', user.id);
+      // Send user.id as string (UUID)
+      formDataWithFile.append('teacher', String(user.id));
       formDataWithFile.append('title', formData.title);
       formDataWithFile.append('description', formData.description);
       formDataWithFile.append('subject', String(formData.subject));
@@ -126,8 +132,10 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
       // No file, use JSON
       const payload = {
         ...formData,
-        teacher: Number(user.id),
+        // Send user.id as string (UUID) - backend should accept it
+        teacher: user.id as any,
       };
+      console.log('Payload being sent:', payload);
       onSubmit(payload as any);
     }
   };
