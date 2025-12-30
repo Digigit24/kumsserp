@@ -2,10 +2,9 @@
  * Student Attendance Page
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStudentAttendance, useBulkMarkAttendance, useMarkStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
-import { useClasses, useSections } from '../../hooks/useAcademic';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
 import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
@@ -14,13 +13,9 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../components/ui/select';
+import { ContextSelectorToolbar } from '../../components/context';
+import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import { Calendar, Users, Check, X, Save } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
@@ -39,8 +34,10 @@ const StudentAttendancePage = () => {
 
   // Attendance form fields
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedClass, setSelectedClass] = useState<number | null>(null);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+
+  // Use hierarchical context for class and section
+  const { selectedClass, selectedSection } = useHierarchicalContext();
+  const { permissions } = usePermissions();
 
   // Track attendance status for each student
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
@@ -53,16 +50,10 @@ const StudentAttendancePage = () => {
     section: selectedSection || undefined,
   });
 
-  // Fetch classes and sections
-  const { data: classesData } = useClasses({ page_size: 100, is_active: true });
-  const { data: sectionsData } = useSections({
-    page_size: 100,
-    class_id: selectedClass || undefined,
-    is_active: true
-  });
-
-  const classes = classesData?.results || [];
-  const sections = sectionsData?.results || [];
+  // Clear attendance map when class or section changes
+  useEffect(() => {
+    setAttendanceMap({});
+  }, [selectedClass, selectedSection]);
 
   // Attendance mutations
   const bulkMarkMutation = useBulkMarkAttendance();
@@ -298,65 +289,20 @@ const StudentAttendancePage = () => {
         </div>
       </div>
 
-      {/* Date, Class, and Section Selectors */}
+      {/* Context Selectors - Permission-driven */}
+      <ContextSelectorToolbar />
+
+      {/* Date Selector */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="class">Class *</Label>
-              <Select
-                value={selectedClass ? String(selectedClass) : undefined}
-                onValueChange={(value) => {
-                  setSelectedClass(Number(value));
-                  setSelectedSection(null); // Reset section
-                  setAttendanceMap({}); // Clear attendance map
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes.map(cls => (
-                    <SelectItem key={cls.id} value={String(cls.id)}>
-                      {cls.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="section">Section *</Label>
-              <Select
-                value={selectedSection ? String(selectedSection) : undefined}
-                onValueChange={(value) => {
-                  setSelectedSection(Number(value));
-                  setAttendanceMap({}); // Clear attendance map
-                }}
-                disabled={!selectedClass}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select section" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sections.map(section => (
-                    <SelectItem key={section.id} value={String(section.id)}>
-                      {section.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2 max-w-sm">
+            <Label htmlFor="date">Date *</Label>
+            <Input
+              id="date"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>

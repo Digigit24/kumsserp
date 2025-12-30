@@ -1,0 +1,98 @@
+/**
+ * Class Selector Component
+ *
+ * Permission-aware dropdown for selecting class context
+ * - Shows only if user has permission (canChooseClass)
+ * - Auto-fetches available classes based on selected college
+ * - Syncs with HierarchicalContext
+ */
+
+import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { useClassContext, useCollegeContext } from '@/contexts/HierarchicalContext';
+import { usePermissions } from '@/contexts/PermissionsContext';
+import { useContextClasses } from '@/hooks/useContextSelectors';
+
+interface ClassSelectorProps {
+  label?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onValueChange?: (value: number | null) => void;
+}
+
+export const ClassSelector: React.FC<ClassSelectorProps> = ({
+  label = 'Class',
+  placeholder = 'Select class',
+  required = false,
+  disabled = false,
+  className = '',
+  onValueChange,
+}) => {
+  const { selectedCollege } = useCollegeContext();
+  const { selectedClass, setSelectedClass, classes, isLoadingClasses } =
+    useClassContext();
+  const { permissions } = usePermissions();
+
+  // Fetch classes (hook updates context automatically)
+  useContextClasses();
+
+  // Don't render if user can't choose class
+  if (!permissions?.canChooseClass) {
+    return null;
+  }
+
+  const handleChange = (value: string) => {
+    const classId = value ? Number(value) : null;
+    setSelectedClass(classId);
+    onValueChange?.(classId);
+  };
+
+  const isDisabled =
+    disabled ||
+    isLoadingClasses ||
+    (permissions.canChooseCollege && !selectedCollege);
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      {label && (
+        <Label htmlFor="class-selector">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+      )}
+      <Select
+        value={selectedClass ? String(selectedClass) : undefined}
+        onValueChange={handleChange}
+        disabled={isDisabled}
+      >
+        <SelectTrigger id="class-selector">
+          <SelectValue
+            placeholder={
+              isLoadingClasses
+                ? 'Loading...'
+                : !selectedCollege && permissions.canChooseCollege
+                ? 'Select college first'
+                : placeholder
+            }
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {classes.map((cls) => (
+            <SelectItem key={cls.id} value={String(cls.id)}>
+              {cls.name} ({cls.program_name})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
