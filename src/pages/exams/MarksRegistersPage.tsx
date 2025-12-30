@@ -2,12 +2,14 @@
  * Marks Registers Page
  * View consolidated marks registers
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useMarksRegisters, useCreateMarksRegister, useUpdateMarksRegister, useDeleteMarksRegister } from '../../hooks/useExamination';
+import { useMarksRegisters, useCreateMarksRegister, useUpdateMarksRegister, useDeleteMarksRegister, useExams } from '../../hooks/useExamination';
+import { useSubjects } from '../../hooks/useAcademics';
+import { useSections } from '../../hooks/useAcademics';
 import { MarksRegisterForm } from './forms';
 import { toast } from 'sonner';
 
@@ -20,8 +22,57 @@ const MarksRegistersPage = () => {
   // Fetch marks registers using real API
   const { data, isLoading, error, refetch } = useMarksRegisters(filters);
 
-  // Debug: log the actual data structure
-  console.log('Marks Registers Data:', data);
+  // Fetch related data for ID-to-name mapping
+  const { data: examsData } = useExams({ page_size: 1000 });
+  const { data: subjectsData } = useSubjects({ page_size: 1000 });
+  const { data: sectionsData } = useSections({ page_size: 1000 });
+
+  // Create lookup maps for IDs to names
+  const examMap = useMemo(() => {
+    if (!examsData?.results) return {};
+    return Object.fromEntries(
+      examsData.results.map((exam: any) => [exam.id, exam])
+    );
+  }, [examsData]);
+
+  const subjectMap = useMemo(() => {
+    if (!subjectsData?.results) return {};
+    return Object.fromEntries(
+      subjectsData.results.map((subject: any) => [subject.id, subject])
+    );
+  }, [subjectsData]);
+
+  const sectionMap = useMemo(() => {
+    if (!sectionsData?.results) return {};
+    return Object.fromEntries(
+      sectionsData.results.map((section: any) => [section.id, section])
+    );
+  }, [sectionsData]);
+
+  // Transform marks register data to include display names
+  const enrichedData = useMemo(() => {
+    if (!data?.results) return data;
+
+    return {
+      ...data,
+      results: data.results.map((register: any) => ({
+        ...register,
+        exam_name: examMap[register.exam]?.name || '-',
+        subject_name: subjectMap[register.subject]?.name || '-',
+        section_name: sectionMap[register.section]?.name || '-',
+        class_name: sectionMap[register.section]?.class_name || '-',
+        // Set default values for statistics if not provided by backend
+        total_students: register.total_students ?? 0,
+        students_appeared: register.students_appeared ?? 0,
+        students_passed: register.students_passed ?? 0,
+        pass_percentage: register.pass_percentage ?? 0,
+        average_marks: register.average_marks ?? 0,
+        highest_marks: register.highest_marks ?? 0,
+        lowest_marks: register.lowest_marks ?? 0,
+      })),
+    };
+  }, [data, examMap, subjectMap, sectionMap]);
+
   const createMutation = useCreateMarksRegister();
   const updateMutation = useUpdateMarksRegister();
   const deleteMutation = useDeleteMarksRegister();
@@ -144,7 +195,7 @@ const MarksRegistersPage = () => {
         title="Marks Registers"
         description="View and manage exam marks registers"
         columns={columns}
-        data={data}
+        data={enrichedData}
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
