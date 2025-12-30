@@ -137,6 +137,29 @@ export const assignmentsApi = {
 };
 
 // ===========================================
+// STUDENT ASSIGNMENTS API
+// ===========================================
+
+export const studentAssignmentsApi = {
+  /**
+   * List assignments (for students)
+   */
+  list: async (params?: AssignmentListParams): Promise<PaginatedAssignments> => {
+    const queryString = params ? buildQueryString(params) : '';
+    return fetchApi<PaginatedAssignments>(
+      buildApiUrl(`${API_ENDPOINTS.studentAssignments.list}${queryString}`)
+    );
+  },
+
+  /**
+   * Get assignment by ID (for students)
+   */
+  get: async (id: number): Promise<Assignment> => {
+    return fetchApi<Assignment>(buildApiUrl(API_ENDPOINTS.studentAssignments.detail(id)));
+  },
+};
+
+// ===========================================
 // ASSIGNMENT SUBMISSIONS API
 // ===========================================
 

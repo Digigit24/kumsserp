@@ -3,7 +3,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
-import { assignmentsApi, assignmentSubmissionsApi } from '../services/assignments.service';
+import { assignmentsApi, studentAssignmentsApi, assignmentSubmissionsApi } from '../services/assignments.service';
+import { useAuth } from './useAuth';
 import type {
   Assignment,
   AssignmentCreateInput,
@@ -41,24 +42,40 @@ export const submissionKeys = {
 // ===========================================
 
 /**
- * Fetch assignments list
+ * Fetch assignments list (auto-detects student vs teacher)
  */
 export const useAssignments = (
   params?: AssignmentListParams
 ): UseQueryResult<PaginatedAssignments, Error> => {
+  const { user } = useAuth();
+  const isStudent = user?.userType === 'student' || user?.user_type === 'student';
+
   return useQuery({
     queryKey: assignmentKeys.list(params),
-    queryFn: () => assignmentsApi.list(params),
+    queryFn: () => {
+      if (isStudent) {
+        return studentAssignmentsApi.list(params);
+      }
+      return assignmentsApi.list(params);
+    },
   });
 };
 
 /**
- * Fetch single assignment
+ * Fetch single assignment (auto-detects student vs teacher)
  */
 export const useAssignment = (id: number): UseQueryResult<Assignment, Error> => {
+  const { user } = useAuth();
+  const isStudent = user?.userType === 'student' || user?.user_type === 'student';
+
   return useQuery({
     queryKey: assignmentKeys.detail(id),
-    queryFn: () => assignmentsApi.get(id),
+    queryFn: () => {
+      if (isStudent) {
+        return studentAssignmentsApi.get(id);
+      }
+      return assignmentsApi.get(id);
+    },
     enabled: !!id,
   });
 };

@@ -903,7 +903,7 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/reports/saved/${id}/`,
   },
 
-  // Assignments Module
+  // Assignments Module (Teacher)
   assignments: {
     list: "/api/v1/teachers/assignments/",
     create: "/api/v1/teachers/assignments/",
@@ -912,6 +912,12 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/teachers/assignments/${id}/`,
     delete: (id: number) => `/api/v1/teachers/assignments/${id}/`,
     myAssignments: "/api/v1/teachers/assignments/my-assignments/",
+  },
+
+  // Student Assignments Module
+  studentAssignments: {
+    list: "/api/v1/students/assignments/",
+    detail: (id: number) => `/api/v1/students/assignments/${id}/`,
   },
 
   // Assignment Submissions Module
