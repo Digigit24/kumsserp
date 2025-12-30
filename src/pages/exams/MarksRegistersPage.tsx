@@ -19,6 +19,9 @@ const MarksRegistersPage = () => {
 
   // Fetch marks registers using real API
   const { data, isLoading, error, refetch } = useMarksRegisters(filters);
+
+  // Debug: log the actual data structure
+  console.log('Marks Registers Data:', data);
   const createMutation = useCreateMarksRegister();
   const updateMutation = useUpdateMarksRegister();
   const deleteMutation = useDeleteMarksRegister();
