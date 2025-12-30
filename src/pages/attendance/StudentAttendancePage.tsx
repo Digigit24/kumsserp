@@ -3,13 +3,24 @@
  */
 
 import { useState } from 'react';
-import { useStudentAttendance } from '../../hooks/useAttendance';
+import { useStudentAttendance, useBulkMarkAttendance, useMarkStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
+import { useClasses, useSections } from '../../hooks/useAcademic';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
 import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
+import { Card, CardContent } from '../../components/ui/card';
+import { Label } from '../../components/ui/label';
+import { Input } from '../../components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 import { Calendar, Users, Check, X, Save } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
@@ -26,12 +37,36 @@ const StudentAttendancePage = () => {
   const [bulkFormOpen, setBulkFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null);
 
+  // Attendance form fields
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedClass, setSelectedClass] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+
   // Track attendance status for each student
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch students for marking attendance
-  const { data, isLoading, error, refetch } = useStudents(filters);
+  const { data, isLoading, error, refetch } = useStudents({
+    ...filters,
+    class_obj: selectedClass || undefined,
+    section: selectedSection || undefined,
+  });
+
+  // Fetch classes and sections
+  const { data: classesData } = useClasses({ page_size: 100, is_active: true });
+  const { data: sectionsData } = useSections({
+    page_size: 100,
+    class_id: selectedClass || undefined,
+    is_active: true
+  });
+
+  const classes = classesData?.results || [];
+  const sections = sectionsData?.results || [];
+
+  // Attendance mutations
+  const bulkMarkMutation = useBulkMarkAttendance();
+  const markSingleMutation = useMarkStudentAttendance();
 
   const handleMarkPresent = (studentId: number) => {
     setAttendanceMap(prev => ({
@@ -55,18 +90,61 @@ const StudentAttendancePage = () => {
       return;
     }
 
+    if (!selectedClass || !selectedSection) {
+      toast.error('Please select class and section');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // TODO: Implement API call to submit attendance
       console.log('Submitting attendance:', attendanceMap);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Group students by status
+      const groupedByStatus: Record<string, number[]> = {};
+      markedStudents.forEach(([studentId, status]) => {
+        if (status && !groupedByStatus[status]) {
+          groupedByStatus[status] = [];
+        }
+        if (status) {
+          groupedByStatus[status].push(Number(studentId));
+        }
+      });
 
-      toast.success(`Attendance submitted for ${markedStudents.length} student(s)`);
+      // Call API for each status group
+      const promises = Object.entries(groupedByStatus).map(async ([status, studentIds]) => {
+        // If only one student with this status, use single student API
+        if (studentIds.length === 1) {
+          return await markSingleMutation.mutateAsync({
+            student: studentIds[0],
+            class_obj: selectedClass,
+            section: selectedSection,
+            date: selectedDate,
+            status: status as 'present' | 'absent',
+            subject: null,
+            period: null,
+            remarks: null,
+          });
+        } else {
+          // Multiple students with same status, use bulk API
+          return await bulkMarkMutation.mutateAsync({
+            student_ids: studentIds,
+            class_obj: selectedClass,
+            section: selectedSection,
+            date: selectedDate,
+            status: status,
+            subject: null,
+            remarks: null,
+          });
+        }
+      });
+
+      await Promise.all(promises);
+
+      toast.success(`Attendance submitted successfully for ${markedStudents.length} student(s)`);
       setAttendanceMap({});
-    } catch (err) {
-      toast.error('Failed to submit attendance');
+      refetch(); // Refresh the student list
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to submit attendance');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -195,7 +273,7 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('present')}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !selectedClass || !selectedSection}
           >
             <Check className="h-4 w-4 mr-2" />
             Select All Present
@@ -204,21 +282,84 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('absent')}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !selectedClass || !selectedSection}
           >
             <X className="h-4 w-4 mr-2" />
             Select All Absent
           </Button>
           <Button
             onClick={handleSubmitAttendance}
-            disabled={markedCount === 0 || isSubmitting}
+            disabled={markedCount === 0 || isSubmitting || !selectedClass || !selectedSection || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
             className="bg-primary"
           >
             <Save className="h-4 w-4 mr-2" />
-            {isSubmitting ? 'Submitting...' : `Submit Attendance (${markedCount})`}
+            {(isSubmitting || bulkMarkMutation.isPending || markSingleMutation.isPending) ? 'Submitting...' : `Submit Attendance (${markedCount})`}
           </Button>
         </div>
       </div>
+
+      {/* Date, Class, and Section Selectors */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="class">Class *</Label>
+              <Select
+                value={selectedClass ? String(selectedClass) : undefined}
+                onValueChange={(value) => {
+                  setSelectedClass(Number(value));
+                  setSelectedSection(null); // Reset section
+                  setAttendanceMap({}); // Clear attendance map
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map(cls => (
+                    <SelectItem key={cls.id} value={String(cls.id)}>
+                      {cls.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="section">Section *</Label>
+              <Select
+                value={selectedSection ? String(selectedSection) : undefined}
+                onValueChange={(value) => {
+                  setSelectedSection(Number(value));
+                  setAttendanceMap({}); // Clear attendance map
+                }}
+                disabled={!selectedClass}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select section" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sections.map(section => (
+                    <SelectItem key={section.id} value={String(section.id)}>
+                      {section.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <StudentAttendanceForm
         open={formOpen}
