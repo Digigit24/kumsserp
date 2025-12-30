@@ -86,16 +86,22 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('Form submitted with data:', formData);
+
     if (!validateForm()) {
+      console.log('Validation failed');
       return;
     }
 
+    console.log('Validation passed, submitting...');
     setIsSubmitting(true);
     setError(null);
 
     try {
       if (mode === 'create') {
-        await bookCategoriesApi.create(formData);
+        console.log('Creating category with data:', formData);
+        const result = await bookCategoriesApi.create(formData);
+        console.log('Category created successfully:', result);
       } else if (category) {
         const updateData: BookCategoryUpdateInput = {
           name: formData.name,
@@ -103,12 +109,20 @@ export const BookCategoryForm = ({ mode, category, onSuccess, onCancel }: BookCa
           description: formData.description,
           is_active: formData.is_active,
         };
-        await bookCategoriesApi.update(category.id, updateData);
+        console.log('Updating category with data:', updateData);
+        const result = await bookCategoriesApi.update(category.id, updateData);
+        console.log('Category updated successfully:', result);
       }
 
       onSuccess();
     } catch (err: any) {
       console.error('Form submission error:', err);
+      console.error('Error details:', {
+        message: err.message,
+        errors: err.errors,
+        response: err.response,
+        status: err.status,
+      });
       setError(err.message || 'Failed to save category');
 
       // Handle field-specific errors from backend
