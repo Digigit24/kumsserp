@@ -905,13 +905,13 @@ export const API_ENDPOINTS = {
 
   // Assignments Module
   assignments: {
-    list: "/api/v1/assignments/",
-    create: "/api/v1/assignments/",
-    detail: (id: number) => `/api/v1/assignments/${id}/`,
-    update: (id: number) => `/api/v1/assignments/${id}/`,
-    patch: (id: number) => `/api/v1/assignments/${id}/`,
-    delete: (id: number) => `/api/v1/assignments/${id}/`,
-    myAssignments: "/api/v1/assignments/my-assignments/",
+    list: "/api/v1/teachers/assignments/",
+    create: "/api/v1/teachers/assignments/",
+    detail: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    update: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    patch: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    delete: (id: number) => `/api/v1/teachers/assignments/${id}/`,
+    myAssignments: "/api/v1/teachers/assignments/my-assignments/",
   },
 
   // Assignment Submissions Module
