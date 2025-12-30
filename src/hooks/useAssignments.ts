@@ -82,13 +82,14 @@ export const useAssignment = (id: number): UseQueryResult<Assignment, Error> => 
 
 /**
  * Fetch my assignments (teacher)
+ * Note: Uses the regular list endpoint as the API filters by authenticated user
  */
 export const useMyAssignments = (
   params?: AssignmentListParams
 ): UseQueryResult<PaginatedAssignments, Error> => {
   return useQuery({
     queryKey: assignmentKeys.myAssignments(params),
-    queryFn: () => assignmentsApi.myAssignments(params),
+    queryFn: () => assignmentsApi.list(params),
   });
 };
 

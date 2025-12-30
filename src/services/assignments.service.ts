@@ -124,16 +124,6 @@ export const assignmentsApi = {
       method: 'DELETE',
     });
   },
-
-  /**
-   * Get my assignments (teacher's assignments)
-   */
-  myAssignments: async (params?: AssignmentListParams): Promise<PaginatedAssignments> => {
-    const queryString = params ? buildQueryString(params) : '';
-    return fetchApi<PaginatedAssignments>(
-      buildApiUrl(`${API_ENDPOINTS.assignments.myAssignments}${queryString}`)
-    );
-  },
 };
 
 // ===========================================

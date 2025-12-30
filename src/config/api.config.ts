@@ -911,7 +911,6 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/teachers/assignments/${id}/`,
     patch: (id: number) => `/api/v1/teachers/assignments/${id}/`,
     delete: (id: number) => `/api/v1/teachers/assignments/${id}/`,
-    myAssignments: "/api/v1/teachers/assignments/my-assignments/",
   },
 
   // Student Assignments Module
