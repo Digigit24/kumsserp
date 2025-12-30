@@ -166,19 +166,6 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="college">College ID</Label>
-        <Input
-          id="college"
-          type="number"
-          value={formData.college}
-          onChange={(e) => setFormData({ ...formData, college: parseInt(e.target.value) || 0 })}
-          placeholder="College ID"
-          disabled={!!feeMaster}
-          min="1"
-        />
-      </div>
-
       <div className="flex gap-2 pt-4">
         <Button type="submit" className="flex-1">
           {feeMaster ? 'Update' : 'Create'}
