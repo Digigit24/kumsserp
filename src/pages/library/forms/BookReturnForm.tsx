@@ -29,21 +29,22 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
     is_active: true,
   });
 
-  // Fetch book issues that haven't been returned yet (status: issued)
-  const { data: issuesData } = useBookIssues({ page_size: 1000, status: 'issued' });
+  // Fetch all book issues
+  const { data: issuesData } = useBookIssues({ page_size: 1000 });
   const { data: booksData } = useBooks({ page_size: 1000 });
   const { data: membersData } = useLibraryMembers({ page_size: 1000 });
   const { data: usersData } = useUsers({ page_size: 1000 });
 
   // Create enriched book issues options
   const bookIssueOptions: SearchableSelectOption[] = useMemo(() => {
-    if (!issuesData?.results || !booksData?.results || !membersData?.results || !usersData?.results) {
+    if (!issuesData?.results) {
       return [];
     }
 
-    const booksMap = new Map(booksData.results.map(b => [b.id, b]));
-    const membersMap = new Map(membersData.results.map(m => [m.id, m]));
-    const usersMap = new Map(usersData.results.map(u => [u.id, u]));
+    // Create lookup maps for available data
+    const booksMap = booksData?.results ? new Map(booksData.results.map(b => [b.id, b])) : new Map();
+    const membersMap = membersData?.results ? new Map(membersData.results.map(m => [m.id, m])) : new Map();
+    const usersMap = usersData?.results ? new Map(usersData.results.map(u => [u.id, u])) : new Map();
 
     return issuesData.results.map((issue) => {
       const bookId = typeof issue.book === 'number' ? issue.book : issue.book.id;
@@ -54,10 +55,12 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
 
       // Get member name
       let memberName = `Member #${memberId}`;
-      if (member) {
+      if (member && usersMap.size > 0) {
         const userId = typeof member.user === 'number' ? member.user : member.user?.id;
         const user = usersMap.get(userId);
         memberName = user?.full_name || user?.username || member.member_id || memberName;
+      } else if (member) {
+        memberName = member.member_id || memberName;
       }
 
       const bookTitle = book?.title || `Book #${bookId}`;
