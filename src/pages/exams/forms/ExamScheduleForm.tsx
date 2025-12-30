@@ -9,16 +9,31 @@ import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { ExamSchedule, mockExams } from '../../../data/examinationMockData';
+import { useExams } from '../../../hooks/useExamination';
+import { useSubjects } from '../../../hooks/useAcademic';
+import { useClassrooms } from '../../../hooks/useAcademic';
+import { Loader2 } from 'lucide-react';
+
+interface ExamScheduleFormData {
+  date: string;
+  start_time: string;
+  end_time: string;
+  max_marks: number;
+  is_active: boolean;
+  exam?: number;
+  subject?: number;
+  classroom?: number | null;
+  invigilator?: number | null;
+}
 
 interface ExamScheduleFormProps {
-  schedule?: ExamSchedule | null;
-  onSubmit: (data: Partial<ExamSchedule>) => void;
+  schedule?: any | null;
+  onSubmit: (data: ExamScheduleFormData) => void;
   onCancel: () => void;
 }
 
 export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleFormProps) => {
-  const [formData, setFormData] = useState<Partial<ExamSchedule>>({
+  const [formData, setFormData] = useState<ExamScheduleFormData>({
     date: '',
     start_time: '',
     end_time: '',
@@ -26,13 +41,32 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
     is_active: true,
     exam: undefined,
     subject: undefined,
-    classroom: undefined,
-    invigilator: undefined,
+    classroom: null,
+    invigilator: null,
   });
+
+  // Fetch real data from API
+  const { data: examsData, isLoading: isLoadingExams } = useExams({ page_size: 100, is_active: true });
+  const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects({ page_size: 100, is_active: true });
+  const { data: classroomsData, isLoading: isLoadingClassrooms } = useClassrooms({ page_size: 100, is_active: true });
+
+  const exams = examsData?.results || [];
+  const subjects = subjectsData?.results || [];
+  const classrooms = classroomsData?.results || [];
 
   useEffect(() => {
     if (schedule) {
-      setFormData(schedule);
+      setFormData({
+        date: schedule.date || '',
+        start_time: schedule.start_time || '',
+        end_time: schedule.end_time || '',
+        max_marks: schedule.max_marks || 100,
+        is_active: schedule.is_active ?? true,
+        exam: schedule.exam,
+        subject: schedule.subject,
+        classroom: schedule.classroom,
+        invigilator: schedule.invigilator,
+      });
     }
   }, [schedule]);
 
@@ -41,9 +75,11 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
     onSubmit(formData);
   };
 
-  const handleChange = (field: keyof ExamSchedule, value: any) => {
+  const handleChange = (field: keyof ExamScheduleFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const isLoading = isLoadingExams || isLoadingSubjects || isLoadingClassrooms;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -52,12 +88,16 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
         <Select
           value={formData.exam?.toString()}
           onValueChange={(value) => handleChange('exam', parseInt(value))}
+          disabled={isLoadingExams}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select exam" />
+            <SelectValue placeholder={isLoadingExams ? "Loading exams..." : "Select exam"} />
           </SelectTrigger>
           <SelectContent>
-            {mockExams.map((exam) => (
+            {exams.length === 0 && !isLoadingExams && (
+              <div className="p-2 text-sm text-muted-foreground">No exams available</div>
+            )}
+            {exams.map((exam) => (
               <SelectItem key={exam.id} value={exam.id.toString()}>
                 {exam.name}
               </SelectItem>
@@ -71,15 +111,20 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
         <Select
           value={formData.subject?.toString()}
           onValueChange={(value) => handleChange('subject', parseInt(value))}
+          disabled={isLoadingSubjects}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select subject" />
+            <SelectValue placeholder={isLoadingSubjects ? "Loading subjects..." : "Select subject"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Mathematics</SelectItem>
-            <SelectItem value="2">Physics</SelectItem>
-            <SelectItem value="3">Chemistry</SelectItem>
-            <SelectItem value="4">Biology</SelectItem>
+            {subjects.length === 0 && !isLoadingSubjects && (
+              <div className="p-2 text-sm text-muted-foreground">No subjects available</div>
+            )}
+            {subjects.map((subject) => (
+              <SelectItem key={subject.id} value={subject.id.toString()}>
+                {subject.name} ({subject.code})
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -134,35 +179,38 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
       <div className="space-y-2">
         <Label htmlFor="classroom">Classroom</Label>
         <Select
-          value={formData.classroom?.toString()}
-          onValueChange={(value) => handleChange('classroom', parseInt(value))}
+          value={formData.classroom?.toString() || ''}
+          onValueChange={(value) => handleChange('classroom', value ? parseInt(value) : null)}
+          disabled={isLoadingClassrooms}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select classroom" />
+            <SelectValue placeholder={isLoadingClassrooms ? "Loading classrooms..." : "Select classroom (optional)"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Room 101</SelectItem>
-            <SelectItem value="2">Room 102</SelectItem>
-            <SelectItem value="3">Lab A</SelectItem>
+            {classrooms.length === 0 && !isLoadingClassrooms && (
+              <div className="p-2 text-sm text-muted-foreground">No classrooms available</div>
+            )}
+            {classrooms.map((classroom) => (
+              <SelectItem key={classroom.id} value={classroom.id.toString()}>
+                {classroom.room_number} - {classroom.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="invigilator">Invigilator</Label>
-        <Select
-          value={formData.invigilator?.toString()}
-          onValueChange={(value) => handleChange('invigilator', parseInt(value))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select invigilator" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">Dr. John Smith</SelectItem>
-            <SelectItem value="2">Prof. Jane Doe</SelectItem>
-            <SelectItem value="3">Mr. Robert Johnson</SelectItem>
-          </SelectContent>
-        </Select>
+        <Input
+          id="invigilator"
+          type="number"
+          placeholder="Enter invigilator ID (optional)"
+          value={formData.invigilator || ''}
+          onChange={(e) => handleChange('invigilator', e.target.value ? parseInt(e.target.value) : null)}
+        />
+        <p className="text-xs text-muted-foreground">
+          Note: Invigilator selection needs to be implemented
+        </p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -178,7 +226,8 @@ export const ExamScheduleForm = ({ schedule, onSubmit, onCancel }: ExamScheduleF
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {schedule ? 'Update' : 'Create'}
         </Button>
       </div>
