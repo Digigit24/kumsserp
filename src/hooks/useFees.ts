@@ -10,6 +10,7 @@ import {
   feeDiscountsApi,
   feeFinesApi,
   feeCollectionsApi,
+  feeTypesApi,
 } from '../services/fees.service';
 
 // ============================================================================
@@ -268,5 +269,55 @@ export const useStudentFeeStatus = (studentId: number | null) => {
     queryFn: () => feeCollectionsApi.studentStatus(studentId!),
     enabled: !!studentId,
     staleTime: 2 * 60 * 1000,
+  });
+};
+
+// ============================================================================
+// FEE TYPES HOOKS
+// ============================================================================
+
+export const useFeeTypes = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-types', filters],
+    queryFn: () => feeTypesApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeTypeDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-type-detail', id],
+    queryFn: () => feeTypesApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeType = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeTypesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-types'] });
+    },
+  });
+};
+
+export const useUpdateFeeType = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeTypesApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-types'] });
+    },
+  });
+};
+
+export const useDeleteFeeType = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeTypesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-types'] });
+    },
   });
 };

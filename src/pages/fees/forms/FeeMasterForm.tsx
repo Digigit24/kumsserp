@@ -11,6 +11,7 @@ import { SearchableSelect, SearchableSelectOption } from '../../../components/ui
 import { FeeMaster, FeeMasterCreateInput } from '../../../types/fees.types';
 import { usePrograms } from '../../../hooks/useAcademic';
 import { useAcademicSessions } from '../../../hooks/useCore';
+import { useFeeTypes } from '../../../hooks/useFees';
 
 interface FeeMasterFormProps {
   feeMaster: FeeMaster | null;
@@ -32,6 +33,7 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
   // Fetch dropdowns data
   const { data: programsData } = usePrograms({ page_size: 1000 });
   const { data: academicSessionsData } = useAcademicSessions({ page_size: 1000 });
+  const { data: feeTypesData } = useFeeTypes({ page_size: 1000 });
 
   // Create options for dropdowns
   const programOptions: SearchableSelectOption[] = useMemo(() => {
@@ -51,6 +53,15 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
       subtitle: `${session.start_date} to ${session.end_date}`,
     }));
   }, [academicSessionsData]);
+
+  const feeTypeOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!feeTypesData?.results) return [];
+    return feeTypesData.results.map((feeType: any) => ({
+      value: feeType.id,
+      label: feeType.name || feeType.type_name || `Fee Type ${feeType.id}`,
+      subtitle: feeType.description || feeType.code || '',
+    }));
+  }, [feeTypesData]);
 
   useEffect(() => {
     if (feeMaster) {
@@ -126,16 +137,14 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
 
       <div className="space-y-2">
         <Label htmlFor="fee_type">Fee Type *</Label>
-        <Input
-          id="fee_type"
-          type="number"
+        <SearchableSelect
+          options={feeTypeOptions}
           value={formData.fee_type}
-          onChange={(e) => setFormData({ ...formData, fee_type: parseInt(e.target.value) || 0 })}
-          placeholder="Fee Type ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, fee_type: Number(value) })}
+          placeholder="Select fee type"
+          searchPlaceholder="Search fee types..."
+          emptyText="No fee types available"
         />
-        <p className="text-xs text-muted-foreground">Note: Fee type dropdown will be available once API is implemented</p>
       </div>
 
       <div className="space-y-2">
