@@ -3,11 +3,14 @@
  * Create/Edit form for fee masters
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { FeeMaster, FeeMasterCreateInput } from '../../../types/fees.types';
+import { usePrograms } from '../../../hooks/useAcademic';
+import { useAcademicSessions } from '../../../hooks/useCore';
 
 interface FeeMasterFormProps {
   feeMaster: FeeMaster | null;
@@ -25,6 +28,29 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
     fee_type: 0,
     is_active: true,
   });
+
+  // Fetch dropdowns data
+  const { data: programsData } = usePrograms({ page_size: 1000 });
+  const { data: academicSessionsData } = useAcademicSessions({ page_size: 1000 });
+
+  // Create options for dropdowns
+  const programOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!programsData?.results) return [];
+    return programsData.results.map((program) => ({
+      value: program.id,
+      label: program.name,
+      subtitle: `${program.code || ''} • ${program.department_name || ''}`,
+    }));
+  }, [programsData]);
+
+  const academicYearOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!academicSessionsData?.results) return [];
+    return academicSessionsData.results.map((session) => ({
+      value: session.id,
+      label: session.name,
+      subtitle: `${session.start_date} to ${session.end_date}`,
+    }));
+  }, [academicSessionsData]);
 
   useEffect(() => {
     if (feeMaster) {
@@ -75,27 +101,26 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="program">Program *</Label>
-        <Input
-          id="program"
-          type="number"
+        <SearchableSelect
+          options={programOptions}
           value={formData.program}
-          onChange={(e) => setFormData({ ...formData, program: parseInt(e.target.value) || 0 })}
-          placeholder="Program ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, program: Number(value) })}
+          placeholder="Select program"
+          searchPlaceholder="Search programs..."
+          emptyText="No programs available"
+          disabled={!!feeMaster}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="academic_year">Academic Year *</Label>
-        <Input
-          id="academic_year"
-          type="number"
+        <SearchableSelect
+          options={academicYearOptions}
           value={formData.academic_year}
-          onChange={(e) => setFormData({ ...formData, academic_year: parseInt(e.target.value) || 0 })}
-          placeholder="Academic Year ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, academic_year: Number(value) })}
+          placeholder="Select academic year"
+          searchPlaceholder="Search academic years..."
+          emptyText="No academic years available"
         />
       </div>
 
@@ -110,6 +135,7 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
           required
           min="1"
         />
+        <p className="text-xs text-muted-foreground">Note: Fee type dropdown will be available once API is implemented</p>
       </div>
 
       <div className="space-y-2">
