@@ -1,9 +1,11 @@
-import React, { createContext, useContext } from "react"
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
 import ReactDOM from "react-dom"
-import { X } from "lucide-react"
+import { X, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
 
-type SideDrawerSize = "sm" | "md" | "lg" | "xl" | "full"
+type SideDrawerSize = "sm" | "md" | "lg" | "xl" | "2xl" | "full"
 
 interface SideDrawerContextValue {
     open: boolean
@@ -18,6 +20,16 @@ export interface SideDrawerProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     children: React.ReactNode
+}
+
+// Size to pixel mapping
+const SIZE_MAP: Record<SideDrawerSize, number> = {
+    sm: 384,
+    md: 512,
+    lg: 672,
+    xl: 768,
+    "2xl": 896,
+    full: 1200,
 }
 
 export const SideDrawer: React.FC<SideDrawerProps> = ({
@@ -62,7 +74,7 @@ export const SideDrawerOverlay = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            "fixed inset-0 z-40 bg-background/80 backdrop-blur-sm transition-opacity data-[state=open]:animate-in data-[state=closed]:animate-out",
+            "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity data-[state=open]:animate-in data-[state=closed]:animate-out",
             className
         )}
         {...props}
@@ -78,14 +90,12 @@ export interface SideDrawerContentProps
     size?: SideDrawerSize
     side?: "right" | "left"
     hideClose?: boolean
-}
-
-const sizeClassMap: Record<SideDrawerSize, string> = {
-    sm: "sm:max-w-md",
-    md: "sm:max-w-xl",
-    lg: "sm:max-w-2xl",
-    xl: "sm:max-w-4xl",
-    full: "sm:max-w-5xl",
+    resizable?: boolean
+    minWidth?: number
+    maxWidth?: number
+    storageKey?: string
+    showBackButton?: boolean
+    mode?: "view" | "edit" | "create"
 }
 
 export const SideDrawerContent = React.forwardRef<
@@ -99,21 +109,96 @@ export const SideDrawerContent = React.forwardRef<
             title,
             description,
             footer,
-            size = "md",
+            size = "lg",
             side = "right",
             hideClose,
+            resizable = true,
+            minWidth = 320,
+            maxWidth = 1200,
+            storageKey,
+            showBackButton = true,
+            mode,
             ...props
         },
         ref
     ) => {
         const { open, onOpenChange } = useContext(SideDrawerContext)
 
+        // Get storage key with fallback
+        const effectiveStorageKey = storageKey || `sidedrawer-width-${title?.toLowerCase().replace(/\s+/g, '-') || 'default'}`
+
+        // Initialize width from localStorage or default size
+        const [drawerWidth, setDrawerWidth] = useState<number>(() => {
+            if (typeof window === "undefined") return SIZE_MAP[size]
+
+            try {
+                const saved = localStorage.getItem(effectiveStorageKey)
+                if (saved) {
+                    const parsed = parseInt(saved, 10)
+                    if (parsed >= minWidth && parsed <= maxWidth) {
+                        return parsed
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to load drawer width from localStorage:", e)
+            }
+
+            return SIZE_MAP[size]
+        })
+
+        const [isResizing, setIsResizing] = useState(false)
+        const [isMobile, setIsMobile] = useState(false)
+
+        // Detect mobile
+        useEffect(() => {
+            const checkMobile = () => {
+                setIsMobile(window.innerWidth < 640)
+            }
+
+            checkMobile()
+            window.addEventListener("resize", checkMobile)
+            return () => window.removeEventListener("resize", checkMobile)
+        }, [])
+
+        // Save width to localStorage
+        const saveWidth = useCallback((width: number) => {
+            try {
+                localStorage.setItem(effectiveStorageKey, width.toString())
+            } catch (e) {
+                console.warn("Failed to save drawer width to localStorage:", e)
+            }
+        }, [effectiveStorageKey])
+
+        // Handle resize
+        const handleMouseDown = useCallback((e: React.MouseEvent) => {
+            if (!resizable || isMobile) return
+
+            e.preventDefault()
+            setIsResizing(true)
+
+            const startX = e.clientX
+            const startWidth = drawerWidth
+
+            const handleMouseMove = (e: MouseEvent) => {
+                const delta = startX - e.clientX
+                const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + delta))
+                setDrawerWidth(newWidth)
+            }
+
+            const handleMouseUp = () => {
+                setIsResizing(false)
+                saveWidth(drawerWidth)
+                document.removeEventListener("mousemove", handleMouseMove)
+                document.removeEventListener("mouseup", handleMouseUp)
+            }
+
+            document.addEventListener("mousemove", handleMouseMove)
+            document.addEventListener("mouseup", handleMouseUp)
+        }, [resizable, isMobile, drawerWidth, minWidth, maxWidth, saveWidth])
+
         if (!open) return null
 
-        const sideClass =
-            side === "right"
-                ? "right-0 translate-x-0"
-                : "left-0 translate-x-0"
+        const sideClass = side === "right" ? "right-0" : "left-0"
 
         return (
             <SideDrawerPortal>
@@ -123,57 +208,143 @@ export const SideDrawerContent = React.forwardRef<
                 />
                 <div
                     className={cn(
-                        "fixed inset-y-0 z-50 flex w-full justify-end",
-                        side === "left" && "justify-start"
+                        "fixed inset-y-0 z-50 flex w-full",
+                        side === "right" ? "justify-end" : "justify-start"
                     )}
                 >
                     <div
                         ref={ref}
                         data-state={open ? "open" : "closed"}
                         className={cn(
-                            "pointer-events-auto relative flex h-full w-full transform flex-col border-l bg-background shadow-2xl transition-transform duration-300 ease-in-out sm:rounded-l-2xl",
-                            sizeClassMap[size],
-                            side === "left"
-                                ? "border-l-0 border-r sm:rounded-l-none sm:rounded-r-2xl"
-                                : "",
+                            "pointer-events-auto relative flex h-full transform flex-col",
+                            "bg-white/95 dark:bg-gray-950/95",
+                            "backdrop-blur-xl backdrop-saturate-200",
+                            "border-l border-white/20 dark:border-white/10",
+                            "shadow-2xl shadow-black/10",
+                            "transition-transform duration-300 ease-out",
+                            side === "left" && "border-l-0 border-r border-white/20 dark:border-white/10",
                             sideClass,
                             className
                         )}
+                        style={{
+                            width: isMobile ? "100%" : `${drawerWidth}px`,
+                            maxWidth: isMobile ? "100%" : `${drawerWidth}px`,
+                            transition: isResizing ? "none" : "transform 0.3s ease-out",
+                        }}
                         {...props}
                     >
-                        {(title || description || !hideClose) && (
-                            <div className="flex items-start justify-between gap-3 border-b p-4">
-                                <div className="space-y-1">
-                                    {title && (
-                                        <h3 className="text-lg font-semibold leading-6">
-                                            {title}
-                                        </h3>
-                                    )}
-                                    {description && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {description}
-                                        </p>
-                                    )}
-                                </div>
-                                {!hideClose && (
-                                    <button
-                                        className="rounded-md p-2 text-muted-foreground transition hover:bg-muted"
-                                        onClick={() => onOpenChange?.(false)}
-                                    >
-                                        <X className="h-4 w-4" />
-                                        <span className="sr-only">Close</span>
-                                    </button>
+                        {/* Resize Handle */}
+                        {resizable && !isMobile && (
+                            <div
+                                className={cn(
+                                    "absolute top-0 bottom-0 w-1.5 cursor-col-resize z-50",
+                                    "hover:bg-primary/30 active:bg-primary/50",
+                                    "transition-colors duration-200",
+                                    "group",
+                                    side === "right" ? "left-0" : "right-0",
+                                    isResizing && "bg-primary/50"
                                 )}
+                                onMouseDown={handleMouseDown}
+                            >
+                                <div className={cn(
+                                    "absolute top-1/2 -translate-y-1/2 w-1.5 h-20",
+                                    "bg-gradient-to-b from-primary/60 to-primary/40",
+                                    "rounded-full opacity-0 group-hover:opacity-100",
+                                    "transition-opacity duration-200",
+                                    side === "right" ? "left-0" : "right-0"
+                                )} />
                             </div>
                         )}
 
-                        <div className="flex-1 overflow-y-auto p-4">
-                            {children}
-                        </div>
+                        {/* Enhanced Header */}
+                        {(title || description || !hideClose) && (
+                            <div className={cn(
+                                "flex-shrink-0 border-b border-white/20 dark:border-white/10",
+                                "bg-gradient-to-r from-white/60 to-white/40",
+                                "dark:from-gray-950/60 dark:to-gray-900/40",
+                                "backdrop-blur-sm"
+                            )}>
+                                <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-start justify-between gap-3">
+                                    {/* Left Side: Back/Close + Title */}
+                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                        {/* Close/Back Button */}
+                                        {!hideClose && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => onOpenChange?.(false)}
+                                                className={cn(
+                                                    "h-8 w-8 flex-shrink-0 rounded-xl",
+                                                    "hover:bg-gradient-to-br hover:from-primary/10 hover:to-purple-500/10",
+                                                    "dark:hover:from-primary/20 dark:hover:to-purple-500/20",
+                                                    "hover:shadow-lg hover:shadow-primary/20",
+                                                    "transition-all duration-300 hover:scale-110 active:scale-95"
+                                                )}
+                                            >
+                                                {showBackButton && isMobile ? (
+                                                    <ChevronLeft className="h-4 w-4" />
+                                                ) : (
+                                                    <X className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        )}
 
+                                        {/* Title Section */}
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {title && (
+                                                    <h3 className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                                                        {title}
+                                                    </h3>
+                                                )}
+
+                                                {mode && (
+                                                    <span
+                                                        className={cn(
+                                                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                                                            "ring-1 ring-inset backdrop-blur-sm",
+                                                            mode === "create" &&
+                                                                "bg-green-50/80 text-green-700 ring-green-600/30 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/30",
+                                                            mode === "edit" &&
+                                                                "bg-blue-50/80 text-blue-700 ring-blue-600/30 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/30",
+                                                            mode === "view" &&
+                                                                "bg-gray-50/80 text-gray-700 ring-gray-600/30 dark:bg-gray-500/10 dark:text-gray-400 dark:ring-gray-500/30"
+                                                        )}
+                                                    >
+                                                        {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {description && (
+                                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                                    {description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Content Area with ScrollArea */}
+                        <ScrollArea className="flex-1">
+                            <div className="px-4 sm:px-6 py-4 sm:py-6">
+                                {children}
+                            </div>
+                        </ScrollArea>
+
+                        {/* Enhanced Footer */}
                         {footer && (
-                            <div className="border-t bg-muted/40 p-4">
-                                {footer}
+                            <div className={cn(
+                                "flex-shrink-0 border-t border-white/20 dark:border-white/10",
+                                "bg-gradient-to-r from-white/60 to-white/40",
+                                "dark:from-gray-950/60 dark:to-gray-900/40",
+                                "backdrop-blur-sm"
+                            )}>
+                                <div className="px-4 sm:px-6 py-3 sm:py-4">
+                                    {footer}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -201,109 +372,3 @@ export const SideDrawerClose = React.forwardRef<
     )
 })
 SideDrawerClose.displayName = "SideDrawerClose"
-
-/**
- * Updated Sidebar Component with Role-Based Filtering
- * Works with your existing SideDrawer and sidebar config
- */
-
-import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { getFilteredSidebarGroups } from '../../config/sidebar.config';
-
-export function Sidebar() {
-    const location = useLocation();
-    const [expandedGroups, setExpandedGroups] = useState<string[]>(['Dashboard']);
-
-    // Get user type from localStorage
-    const getUserType = () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('kumss_user') || '{}');
-            return user.user_type || user.userType || 'student';
-        } catch {
-            return 'student';
-        }
-    };
-
-    const userType = getUserType();
-
-    // Get filtered sidebar based on role
-    const sidebarGroups = getFilteredSidebarGroups(userType);
-
-    const toggleGroup = (groupName: string) => {
-        setExpandedGroups(prev =>
-            prev.includes(groupName)
-                ? prev.filter(g => g !== groupName)
-                : [...prev, groupName]
-        );
-    };
-
-    return (
-        <aside className="w-64 bg-card border-r h-full overflow-y-auto">
-            {/* Logo */}
-            <div className="p-6 border-b">
-                <h2 className="text-xl font-bold">KUMSS ERP</h2>
-                <p className="text-xs text-muted-foreground mt-1 capitalize">
-                    {userType.replace('_', ' ')} Portal
-                </p>
-            </div>
-
-            {/* Navigation */}
-            <nav className="p-3">
-                {sidebarGroups.map((group) => (
-                    <div key={group.group} className="mb-2">
-                        {/* Group Header */}
-                        <button
-                            onClick={() => toggleGroup(group.group)}
-                            className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-md transition-colors"
-                        >
-                            <div className="flex items-center gap-2">
-                                <group.icon className="h-4 w-4" />
-                                <span>{group.group}</span>
-                            </div>
-                            <ChevronDown
-                                className={cn(
-                                    'h-4 w-4 transition-transform',
-                                    expandedGroups.includes(group.group) ? 'rotate-180' : ''
-                                )}
-                            />
-                        </button>
-
-                        {/* Group Items */}
-                        {expandedGroups.includes(group.group) && (
-                            <div className="mt-1 ml-4 space-y-1">
-                                {group.items.map((item) => {
-                                    const isActive = location.pathname === item.href;
-
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            to={item.href}
-                                            className={cn(
-                                                'flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors',
-                                                isActive
-                                                    ? 'bg-primary text-primary-foreground font-medium'
-                                                    : 'hover:bg-accent'
-                                            )}
-                                        >
-                                            <item.icon className="h-4 w-4" />
-                                            <span>{item.name}</span>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </nav>
-
-            {/* User Info at Bottom */}
-            <div className="p-4 border-t mt-auto">
-                <div className="text-xs text-muted-foreground">
-                    Logged in as: <span className="font-medium capitalize">{userType.replace('_', ' ')}</span>
-                </div>
-            </div>
-        </aside>
-    );
-}
