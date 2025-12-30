@@ -902,6 +902,29 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/reports/saved/${id}/`,
     delete: (id: number) => `/api/v1/reports/saved/${id}/`,
   },
+
+  // Assignments Module
+  assignments: {
+    list: "/api/v1/assignments/",
+    create: "/api/v1/assignments/",
+    detail: (id: number) => `/api/v1/assignments/${id}/`,
+    update: (id: number) => `/api/v1/assignments/${id}/`,
+    patch: (id: number) => `/api/v1/assignments/${id}/`,
+    delete: (id: number) => `/api/v1/assignments/${id}/`,
+    myAssignments: "/api/v1/assignments/my-assignments/",
+  },
+
+  // Assignment Submissions Module
+  assignmentSubmissions: {
+    list: "/api/v1/assignment-submissions/",
+    create: "/api/v1/assignment-submissions/",
+    detail: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    update: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    patch: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    delete: (id: number) => `/api/v1/assignment-submissions/${id}/`,
+    grade: (id: number) => `/api/v1/assignment-submissions/${id}/grade/`,
+    mySubmissions: "/api/v1/assignment-submissions/my-submissions/",
+  },
 };
 
 /**
