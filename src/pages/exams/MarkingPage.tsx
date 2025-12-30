@@ -9,60 +9,84 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { CheckCircle, Clock, FileText, Users } from 'lucide-react';
-import { useExamSchedules, useMarksRegisters, useStudentMarks } from '../../hooks/useExamination';
+import { useMarksRegisters, useStudentMarks, useExams } from '../../hooks/useExamination';
+import { useSubjects, useSections } from '../../hooks/useAcademic';
 
 const MarkingPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 100 });
 
-  // Fetch real API data
-  const { data: schedulesData, isLoading: isLoadingSchedules, refetch } = useExamSchedules(filters);
-  const { data: registersData } = useMarksRegisters({ page_size: 1000 });
+  // Fetch marks registers as primary data source
+  const { data: registersData, isLoading: isLoadingRegisters, refetch } = useMarksRegisters(filters);
   const { data: marksData } = useStudentMarks({ page_size: 1000 });
 
-  // Enrich exam schedules with marking statistics
+  // Fetch related data for ID-to-name mapping
+  const { data: examsData } = useExams({ page_size: 1000 });
+  const { data: subjectsData } = useSubjects({ page_size: 1000 });
+  const { data: sectionsData } = useSections({ page_size: 1000 });
+
+  // Create lookup maps for IDs to names
+  const examMap = useMemo(() => {
+    if (!examsData?.results) return {};
+    return Object.fromEntries(
+      examsData.results.map((exam: any) => [exam.id, exam])
+    );
+  }, [examsData]);
+
+  const subjectMap = useMemo(() => {
+    if (!subjectsData?.results) return {};
+    return Object.fromEntries(
+      subjectsData.results.map((subject: any) => [subject.id, subject])
+    );
+  }, [subjectsData]);
+
+  const sectionMap = useMemo(() => {
+    if (!sectionsData?.results) return {};
+    return Object.fromEntries(
+      sectionsData.results.map((section: any) => [section.id, section])
+    );
+  }, [sectionsData]);
+
+  // Enrich marks registers with display names and statistics
   const enrichedData = useMemo(() => {
-    if (!schedulesData?.results) return [];
+    if (!registersData?.results) return [];
 
-    return schedulesData.results.map((schedule: any) => {
-      // Find related marks register
-      const register = registersData?.results?.find(
-        (r: any) => r.exam === schedule.exam && r.subject === schedule.subject
-      );
-
-      if (!register) {
-        return {
-          ...schedule,
-          stats: null,
-        };
-      }
+    return registersData.results.map((register: any) => {
+      const exam = examMap[register.exam];
+      const subject = subjectMap[register.subject];
+      const section = sectionMap[register.section];
 
       // Calculate marking statistics
       const studentMarksForRegister = marksData?.results?.filter(
         (mark: any) => mark.marks_register === register.id
       ) || [];
 
-      const totalStudents = schedule.total_students || 0;
+      // Estimate total students from section (this could be enhanced with actual enrollment data)
+      const totalStudents = section?.total_students || 100; // Default estimate if not available
       const markedStudents = studentMarksForRegister.length;
       const markingProgress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
 
       return {
-        ...schedule,
-        max_marks: register.max_marks,
+        ...register,
+        id: register.id,
+        exam_name: exam?.name || '-',
+        subject_name: subject?.name || '-',
+        class_name: section?.class_name || '-',
+        date: exam?.start_date || exam?.date || null,
         stats: {
-          question_paper_id: schedule.id,
+          question_paper_id: register.id,
           total_students: totalStudents,
           marked_students: markedStudents,
           marking_progress: markingProgress,
         },
       };
     });
-  }, [schedulesData, registersData, marksData]);
+  }, [registersData, examMap, subjectMap, sectionMap, marksData]);
 
   const enrichedPaginated = {
-    count: schedulesData?.count || 0,
-    next: schedulesData?.next || null,
-    previous: schedulesData?.previous || null,
+    count: registersData?.count || 0,
+    next: registersData?.next || null,
+    previous: registersData?.previous || null,
     results: enrichedData,
   };
 
@@ -75,8 +99,8 @@ const MarkingPage = () => {
       sortable: true,
       render: (paper) => (
         <div>
-          <p className="font-semibold">{paper.exam_name || '-'}</p>
-          <p className="text-xs text-muted-foreground">{paper.subject_name || '-'}</p>
+          <p className="font-semibold">{paper.exam_name}</p>
+          <p className="text-xs text-muted-foreground">{paper.subject_name}</p>
         </div>
       ),
     },
@@ -84,7 +108,6 @@ const MarkingPage = () => {
       key: 'class_name',
       label: 'Class',
       sortable: true,
-      render: (paper) => paper.class_name || paper.classroom_name || '-',
     },
     {
       key: 'date',
@@ -223,7 +246,7 @@ const MarkingPage = () => {
         description="Select a question paper to start marking"
         columns={columns}
         data={enrichedPaginated}
-        isLoading={isLoadingSchedules}
+        isLoading={isLoadingRegisters}
         error={null}
         onRefresh={refetch}
         filters={filters}
