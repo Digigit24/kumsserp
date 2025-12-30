@@ -47,11 +47,14 @@ const MarksRegistersPage = () => {
     {
       key: 'pass_percentage',
       label: 'Pass %',
-      render: (register) => (
-        <Badge variant={register.pass_percentage >= 75 ? 'success' : 'warning'}>
-          {register.pass_percentage.toFixed(1)}%
-        </Badge>
-      ),
+      render: (register) => {
+        const percentage = register.pass_percentage ?? 0;
+        return (
+          <Badge variant={percentage >= 75 ? 'success' : 'warning'}>
+            {percentage.toFixed(1)}%
+          </Badge>
+        );
+      },
       sortable: true,
     },
     {

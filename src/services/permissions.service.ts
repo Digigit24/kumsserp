@@ -29,7 +29,7 @@ import type {
  */
 export async function fetchUserPermissions(): Promise<PermissionsResponse> {
   try {
-    const response = await apiClient.get<PermissionsResponse>('/api/permissions/');
+    const response = await apiClient.get<PermissionsResponse>('/api/v1/core/permissions/');
     return response.data;
   } catch (error: any) {
     // Fallback: construct from existing user data if endpoint doesn't exist yet
@@ -62,13 +62,13 @@ export async function fetchUserPermissions(): Promise<PermissionsResponse> {
 export async function fetchContextColleges(): Promise<ContextOptionsResponse<CollegeOption>> {
   try {
     const response = await apiClient.get<ContextOptionsResponse<CollegeOption>>(
-      '/api/context/colleges/'
+      '/api/v1/context/colleges/'
     );
     return response.data;
   } catch (error: any) {
     // Fallback: use existing colleges endpoint
     console.warn('Context colleges endpoint not found, using fallback');
-    const response = await apiClient.get('/api/core/colleges/?page_size=100&is_active=true');
+    const response = await apiClient.get('/api/v1/core/colleges/?page_size=100&is_active=true');
     return {
       count: response.data.count || 0,
       results: response.data.results || [],
@@ -90,7 +90,7 @@ export async function fetchContextClasses(
     params.append('is_active', 'true');
 
     const response = await apiClient.get<ContextOptionsResponse<ClassOption>>(
-      `/api/context/classes/?${params.toString()}`
+      `/api/v1/context/classes/?${params.toString()}`
     );
     return response.data;
   } catch (error: any) {
@@ -101,7 +101,7 @@ export async function fetchContextClasses(
     params.append('page_size', '100');
     params.append('is_active', 'true');
 
-    const response = await apiClient.get(`/api/academic/classes/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/academic/classes/?${params.toString()}`);
     return {
       count: response.data.count || 0,
       results: response.data.results || [],
@@ -123,7 +123,7 @@ export async function fetchContextSections(
     params.append('is_active', 'true');
 
     const response = await apiClient.get<ContextOptionsResponse<SectionOption>>(
-      `/api/context/sections/?${params.toString()}`
+      `/api/v1/context/sections/?${params.toString()}`
     );
     return response.data;
   } catch (error: any) {
@@ -134,7 +134,7 @@ export async function fetchContextSections(
     params.append('page_size', '100');
     params.append('is_active', 'true');
 
-    const response = await apiClient.get(`/api/academic/sections/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/academic/sections/?${params.toString()}`);
     return {
       count: response.data.count || 0,
       results: response.data.results || [],
