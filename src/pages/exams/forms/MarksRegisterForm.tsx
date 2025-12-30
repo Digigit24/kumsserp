@@ -9,27 +9,54 @@ import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { MarksRegister, mockExams } from '../../../data/examinationMockData';
+import { useExams } from '../../../hooks/useExamination';
+import { useSubjects, useSections } from '../../../hooks/useAcademic';
+import { Loader2 } from 'lucide-react';
+
+interface MarksRegisterFormData {
+  max_marks: number;
+  pass_marks: number;
+  is_active: boolean;
+  exam?: number;
+  subject?: number;
+  section?: number | null;
+}
 
 interface MarksRegisterFormProps {
-  register?: MarksRegister | null;
-  onSubmit: (data: Partial<MarksRegister>) => void;
+  register?: any | null;
+  onSubmit: (data: MarksRegisterFormData) => void;
   onCancel: () => void;
 }
 
 export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegisterFormProps) => {
-  const [formData, setFormData] = useState<Partial<MarksRegister>>({
+  const [formData, setFormData] = useState<MarksRegisterFormData>({
     max_marks: 100,
     pass_marks: 40,
     is_active: true,
     exam: undefined,
     subject: undefined,
-    section: undefined,
+    section: null,
   });
+
+  // Fetch real data from API
+  const { data: examsData, isLoading: isLoadingExams } = useExams({ page_size: 100, is_active: true });
+  const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects({ page_size: 100, is_active: true });
+  const { data: sectionsData, isLoading: isLoadingSections } = useSections({ page_size: 100, is_active: true });
+
+  const exams = examsData?.results || [];
+  const subjects = subjectsData?.results || [];
+  const sections = sectionsData?.results || [];
 
   useEffect(() => {
     if (register) {
-      setFormData(register);
+      setFormData({
+        max_marks: register.max_marks || 100,
+        pass_marks: register.pass_marks || 40,
+        is_active: register.is_active ?? true,
+        exam: register.exam,
+        subject: register.subject,
+        section: register.section,
+      });
     }
   }, [register]);
 
@@ -38,9 +65,11 @@ export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegiste
     onSubmit(formData);
   };
 
-  const handleChange = (field: keyof MarksRegister, value: any) => {
+  const handleChange = (field: keyof MarksRegisterFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const isLoading = isLoadingExams || isLoadingSubjects || isLoadingSections;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -49,12 +78,16 @@ export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegiste
         <Select
           value={formData.exam?.toString()}
           onValueChange={(value) => handleChange('exam', parseInt(value))}
+          disabled={isLoadingExams}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select exam" />
+            <SelectValue placeholder={isLoadingExams ? "Loading exams..." : "Select exam"} />
           </SelectTrigger>
           <SelectContent>
-            {mockExams.map((exam) => (
+            {exams.length === 0 && !isLoadingExams && (
+              <div className="p-2 text-sm text-muted-foreground">No exams available</div>
+            )}
+            {exams.map((exam) => (
               <SelectItem key={exam.id} value={exam.id.toString()}>
                 {exam.name}
               </SelectItem>
@@ -68,15 +101,20 @@ export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegiste
         <Select
           value={formData.subject?.toString()}
           onValueChange={(value) => handleChange('subject', parseInt(value))}
+          disabled={isLoadingSubjects}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select subject" />
+            <SelectValue placeholder={isLoadingSubjects ? "Loading subjects..." : "Select subject"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Mathematics</SelectItem>
-            <SelectItem value="2">Physics</SelectItem>
-            <SelectItem value="3">Chemistry</SelectItem>
-            <SelectItem value="4">Biology</SelectItem>
+            {subjects.length === 0 && !isLoadingSubjects && (
+              <div className="p-2 text-sm text-muted-foreground">No subjects available</div>
+            )}
+            {subjects.map((subject) => (
+              <SelectItem key={subject.id} value={subject.id.toString()}>
+                {subject.name} ({subject.code})
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -86,14 +124,20 @@ export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegiste
         <Select
           value={formData.section?.toString() || ''}
           onValueChange={(value) => handleChange('section', value ? parseInt(value) : null)}
+          disabled={isLoadingSections}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select section (optional)" />
+            <SelectValue placeholder={isLoadingSections ? "Loading sections..." : "Select section (optional)"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Section A</SelectItem>
-            <SelectItem value="2">Section B</SelectItem>
-            <SelectItem value="3">Section C</SelectItem>
+            {sections.length === 0 && !isLoadingSections && (
+              <div className="p-2 text-sm text-muted-foreground">No sections available</div>
+            )}
+            {sections.map((section) => (
+              <SelectItem key={section.id} value={section.id.toString()}>
+                {section.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -137,7 +181,8 @@ export const MarksRegisterForm = ({ register, onSubmit, onCancel }: MarksRegiste
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {register ? 'Update' : 'Create'}
         </Button>
       </div>
