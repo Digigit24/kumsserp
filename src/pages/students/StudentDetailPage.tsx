@@ -315,7 +315,8 @@ export const StudentDetailPage = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full md:w-auto scrollbar-hide">
+          <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide pb-1">
+            <TabsList className="inline-flex w-auto min-w-full md:min-w-0">
             <TabsTrigger value="personal">
               <User className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Personal Info</span>
@@ -372,6 +373,7 @@ export const StudentDetailPage = () => {
               <span className="sm:hidden">Fees</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* Personal Info Tab - WITH EDIT MODE */}
           <TabsContent value="personal">

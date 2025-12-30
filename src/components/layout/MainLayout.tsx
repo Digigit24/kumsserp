@@ -12,8 +12,25 @@ export const MainLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      {/* Desktop Sidebar - Always visible on lg+ */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar - Overlay with glassmorphic backdrop */}
+      {sidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* Sidebar */}
+          <div className="fixed inset-y-0 left-0 z-50 lg:hidden">
+            <Sidebar />
+          </div>
+        </>
+      )}
 
       {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">
