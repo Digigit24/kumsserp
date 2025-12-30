@@ -11,6 +11,14 @@ import {
   feeFinesApi,
   feeCollectionsApi,
   feeTypesApi,
+  feeGroupsApi,
+  feeInstallmentsApi,
+  feeReceiptsApi,
+  studentDiscountsApi,
+  feeRefundsApi,
+  feeRemindersApi,
+  bankPaymentsApi,
+  onlinePaymentsApi,
 } from '../services/fees.service';
 
 // ============================================================================
@@ -318,6 +326,406 @@ export const useDeleteFeeType = () => {
     mutationFn: (id: number) => feeTypesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fee-types'] });
+    },
+  });
+};
+
+// ============================================================================
+// FEE GROUPS HOOKS
+// ============================================================================
+
+export const useFeeGroups = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-groups', filters],
+    queryFn: () => feeGroupsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeGroupDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-group-detail', id],
+    queryFn: () => feeGroupsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeGroupsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-groups'] });
+    },
+  });
+};
+
+export const useUpdateFeeGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeGroupsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-groups'] });
+    },
+  });
+};
+
+export const useDeleteFeeGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeGroupsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-groups'] });
+    },
+  });
+};
+
+// ============================================================================
+// FEE INSTALLMENTS HOOKS
+// ============================================================================
+
+export const useFeeInstallments = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-installments', filters],
+    queryFn: () => feeInstallmentsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeInstallmentDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-installment-detail', id],
+    queryFn: () => feeInstallmentsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeInstallment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeInstallmentsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-installments'] });
+    },
+  });
+};
+
+export const useUpdateFeeInstallment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeInstallmentsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-installments'] });
+    },
+  });
+};
+
+export const useDeleteFeeInstallment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeInstallmentsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-installments'] });
+    },
+  });
+};
+
+// ============================================================================
+// FEE RECEIPTS HOOKS
+// ============================================================================
+
+export const useFeeReceipts = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-receipts', filters],
+    queryFn: () => feeReceiptsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeReceiptDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-receipt-detail', id],
+    queryFn: () => feeReceiptsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeReceipt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeReceiptsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-receipts'] });
+    },
+  });
+};
+
+export const useUpdateFeeReceipt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeReceiptsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-receipts'] });
+    },
+  });
+};
+
+export const useDeleteFeeReceipt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeReceiptsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-receipts'] });
+    },
+  });
+};
+
+// ============================================================================
+// STUDENT DISCOUNTS HOOKS
+// ============================================================================
+
+export const useStudentDiscounts = (filters?: any) => {
+  return useQuery({
+    queryKey: ['student-discounts', filters],
+    queryFn: () => studentDiscountsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useStudentDiscountDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['student-discount-detail', id],
+    queryFn: () => studentDiscountsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateStudentDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => studentDiscountsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+    },
+  });
+};
+
+export const useUpdateStudentDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => studentDiscountsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+    },
+  });
+};
+
+export const useDeleteStudentDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => studentDiscountsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+    },
+  });
+};
+
+// ============================================================================
+// FEE REFUNDS HOOKS
+// ============================================================================
+
+export const useFeeRefunds = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-refunds', filters],
+    queryFn: () => feeRefundsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeRefundDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-refund-detail', id],
+    queryFn: () => feeRefundsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeRefundsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-refunds'] });
+    },
+  });
+};
+
+export const useUpdateFeeRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeRefundsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-refunds'] });
+    },
+  });
+};
+
+export const useDeleteFeeRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeRefundsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-refunds'] });
+    },
+  });
+};
+
+// ============================================================================
+// FEE REMINDERS HOOKS
+// ============================================================================
+
+export const useFeeReminders = (filters?: any) => {
+  return useQuery({
+    queryKey: ['fee-reminders', filters],
+    queryFn: () => feeRemindersApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFeeReminderDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['fee-reminder-detail', id],
+    queryFn: () => feeRemindersApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateFeeReminder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => feeRemindersApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-reminders'] });
+    },
+  });
+};
+
+export const useUpdateFeeReminder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => feeRemindersApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-reminders'] });
+    },
+  });
+};
+
+export const useDeleteFeeReminder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeRemindersApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-reminders'] });
+    },
+  });
+};
+
+// ============================================================================
+// BANK PAYMENTS HOOKS
+// ============================================================================
+
+export const useBankPayments = (filters?: any) => {
+  return useQuery({
+    queryKey: ['bank-payments', filters],
+    queryFn: () => bankPaymentsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useBankPaymentDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['bank-payment-detail', id],
+    queryFn: () => bankPaymentsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateBankPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => bankPaymentsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-payments'] });
+    },
+  });
+};
+
+export const useUpdateBankPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => bankPaymentsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-payments'] });
+    },
+  });
+};
+
+export const useDeleteBankPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => bankPaymentsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-payments'] });
+    },
+  });
+};
+
+// ============================================================================
+// ONLINE PAYMENTS HOOKS
+// ============================================================================
+
+export const useOnlinePayments = (filters?: any) => {
+  return useQuery({
+    queryKey: ['online-payments', filters],
+    queryFn: () => onlinePaymentsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useOnlinePaymentDetail = (id: number | null) => {
+  return useQuery({
+    queryKey: ['online-payment-detail', id],
+    queryFn: () => onlinePaymentsApi.get(id!),
+    enabled: !!id,
+  });
+};
+
+export const useCreateOnlinePayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => onlinePaymentsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['online-payments'] });
+    },
+  });
+};
+
+export const useUpdateOnlinePayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => onlinePaymentsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['online-payments'] });
+    },
+  });
+};
+
+export const useDeleteOnlinePayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => onlinePaymentsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['online-payments'] });
     },
   });
 };

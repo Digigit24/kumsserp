@@ -119,8 +119,11 @@ const AttendanceMarkingPage = lazy(() => import("../pages/attendance/AttendanceM
 const MyAttendancePage = lazy(() => import("../pages/attendance/MyAttendancePage"));
 
 // Fees Module
+const FeeTypesPage = lazy(() => import("../pages/fees/FeeTypesPage"));
+const FeeGroupsPage = lazy(() => import("../pages/fees/FeeGroupsPage"));
 const FeeMastersPage = lazy(() => import("../pages/fees/FeeMastersPage"));
 const FeeStructuresPage = lazy(() => import("../pages/fees/FeeStructuresPage"));
+const FeeInstallmentsPage = lazy(() => import("../pages/fees/FeeInstallmentsPage"));
 const FeeCollectionsPage = lazy(() => import("../pages/fees/FeeCollectionsPage"));
 const FeeDiscountsPage = lazy(() => import("../pages/fees/FeeDiscountsPage"));
 const FeeFinesPage = lazy(() => import("../pages/fees/FeeFinesPage"));
@@ -266,8 +269,11 @@ export default function AppRoutes() {
                     <Route path="attendance/my-attendance" element={<LazyRoute component={MyAttendancePage} />} />
 
                     {/* Fees Module */}
+                    <Route path="fees/types" element={<LazyRoute component={FeeTypesPage} />} />
                     <Route path="fees/masters" element={<LazyRoute component={FeeMastersPage} />} />
+                    <Route path="fees/groups" element={<LazyRoute component={FeeGroupsPage} />} />
                     <Route path="fees/structures" element={<LazyRoute component={FeeStructuresPage} />} />
+                    <Route path="fees/installments" element={<LazyRoute component={FeeInstallmentsPage} />} />
                     <Route path="fees/collections" element={<LazyRoute component={FeeCollectionsPage} />} />
                     <Route path="fees/discounts" element={<LazyRoute component={FeeDiscountsPage} />} />
                     <Route path="fees/fines" element={<LazyRoute component={FeeFinesPage} />} />

@@ -1,0 +1,175 @@
+/**
+ * Fee Types Page
+ */
+
+import { useState } from 'react';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { useFeeTypes, useCreateFeeType, useUpdateFeeType, useDeleteFeeType } from '../../hooks/useFees';
+import { FeeType } from '../../types/fees.types';
+import { FeeTypeForm } from './forms/FeeTypeForm';
+import { toast } from 'sonner';
+
+const FeeTypesPage = () => {
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedFeeType, setSelectedFeeType] = useState<FeeType | null>(null);
+
+  const { data, isLoading, error, refetch } = useFeeTypes(filters);
+  const createFeeType = useCreateFeeType();
+  const updateFeeType = useUpdateFeeType();
+  const deleteFeeType = useDeleteFeeType();
+
+  const columns: Column<FeeType>[] = [
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'code', label: 'Code', sortable: true },
+    { key: 'description', label: 'Description', sortable: false },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (feeType) => (
+        <Badge variant={feeType.is_active ? 'success' : 'destructive'}>
+          {feeType.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
+
+  const filterConfig: FilterConfig[] = [
+    {
+      name: 'is_active',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+  ];
+
+  const handleAddNew = () => {
+    setSelectedFeeType(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleRowClick = (feeType: FeeType) => {
+    setSelectedFeeType(feeType);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSidebarMode('edit');
+  };
+
+  const handleFormSubmit = async (data: Partial<FeeType>) => {
+    try {
+      if (sidebarMode === 'create') {
+        await createFeeType.mutateAsync(data);
+        toast.success('Fee type created successfully');
+      } else if (sidebarMode === 'edit' && selectedFeeType) {
+        await updateFeeType.mutateAsync({ id: selectedFeeType.id, data });
+        toast.success('Fee type updated successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedFeeType(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.message || 'An error occurred');
+      console.error('Form submission error:', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedFeeType) return;
+
+    if (confirm('Are you sure you want to delete this fee type?')) {
+      try {
+        await deleteFeeType.mutateAsync(selectedFeeType.id);
+        toast.success('Fee type deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedFeeType(null);
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete fee type');
+      }
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedFeeType(null);
+  };
+
+  return (
+    <div className="">
+      <DataTable
+        title="Fee Types List"
+        description="View and manage all fee types"
+        columns={columns}
+        data={data}
+        isLoading={isLoading}
+        error={error?.message}
+        onRefresh={refetch}
+        onAdd={handleAddNew}
+        onRowClick={handleRowClick}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterConfig={filterConfig}
+        searchPlaceholder="Search fee types..."
+        addButtonLabel="Add Fee Type"
+      />
+
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        title={sidebarMode === 'create' ? 'Create Fee Type' : selectedFeeType?.name || 'Fee Type'}
+        mode={sidebarMode}
+      >
+        {sidebarMode === 'view' && selectedFeeType ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
+              <p className="mt-1 text-lg font-semibold">{selectedFeeType.name}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Code</h3>
+              <p className="mt-1 text-lg">{selectedFeeType.code}</p>
+            </div>
+            {selectedFeeType.description && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
+                <p className="mt-1">{selectedFeeType.description}</p>
+              </div>
+            )}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <p className="mt-1">
+                <Badge variant={selectedFeeType.is_active ? 'success' : 'destructive'}>
+                  {selectedFeeType.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </p>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleEdit} className="flex-1">Edit</Button>
+              <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
+            </div>
+          </div>
+        ) : (
+          <FeeTypeForm
+            feeType={sidebarMode === 'edit' ? selectedFeeType : null}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseSidebar}
+          />
+        )}
+      </DetailSidebar>
+    </div>
+  );
+};
+
+export default FeeTypesPage;

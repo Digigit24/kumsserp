@@ -342,3 +342,355 @@ export const feeTypesApi = {
     });
   },
 };
+
+// ============================================================================
+// FEE GROUPS API
+// ============================================================================
+
+export const feeGroupsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.feeGroups.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeGroups.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeGroups.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeGroups.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeGroups.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.feeGroups.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// FEE INSTALLMENTS API
+// ============================================================================
+
+export const feeInstallmentsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.feeInstallments.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeInstallments.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeInstallments.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeInstallments.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeInstallments.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.feeInstallments.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// FEE RECEIPTS API
+// ============================================================================
+
+export const feeReceiptsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.feeReceipts.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReceipts.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReceipts.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReceipts.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReceipts.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.feeReceipts.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// STUDENT DISCOUNTS API
+// ============================================================================
+
+export const studentDiscountsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.studentDiscounts.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.studentDiscounts.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// FEE REFUNDS API
+// ============================================================================
+
+export const feeRefundsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.feeRefunds.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeRefunds.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeRefunds.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeRefunds.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeRefunds.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.feeRefunds.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// FEE REMINDERS API
+// ============================================================================
+
+export const feeRemindersApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.feeReminders.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReminders.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReminders.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReminders.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.feeReminders.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.feeReminders.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// BANK PAYMENTS API
+// ============================================================================
+
+export const bankPaymentsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.bankPayments.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.bankPayments.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.bankPayments.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.bankPayments.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.bankPayments.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.bankPayments.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// ONLINE PAYMENTS API
+// ============================================================================
+
+export const onlinePaymentsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.onlinePayments.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.onlinePayments.detail(id)));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.onlinePayments.create), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.onlinePayments.update(id)), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.onlinePayments.patch(id)), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.onlinePayments.delete(id)), {
+      method: 'DELETE',
+    });
+  },
+};

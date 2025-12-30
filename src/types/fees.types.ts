@@ -17,6 +17,56 @@ export interface AuditFields {
 }
 
 // ============================================================================
+// FEE TYPE TYPES
+// ============================================================================
+
+export interface FeeType extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  name: string;
+  code: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+export interface FeeTypeCreateInput {
+  college: number;
+  name: string;
+  code: string;
+  description?: string | null;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeTypeUpdateInput extends Partial<FeeTypeCreateInput> {}
+
+// ============================================================================
+// FEE GROUP TYPES
+// ============================================================================
+
+export interface FeeGroup extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+export interface FeeGroupCreateInput {
+  college: number;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeGroupUpdateInput extends Partial<FeeGroupCreateInput> {}
+
+// ============================================================================
 // FEE MASTER TYPES
 // ============================================================================
 
@@ -291,6 +341,242 @@ export interface FeeCollectionCreateInput {
 }
 
 export interface FeeCollectionUpdateInput extends Partial<FeeCollectionCreateInput> {}
+
+// ============================================================================
+// FEE INSTALLMENT TYPES
+// ============================================================================
+
+export interface FeeInstallment extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  fee_structure: number;
+  fee_structure_name?: string;
+  installment_number: number;
+  installment_name: string;
+  amount: string;
+  due_date: string;
+  is_active: boolean;
+}
+
+export interface FeeInstallmentCreateInput {
+  college: number;
+  fee_structure: number;
+  installment_number: number;
+  installment_name: string;
+  amount: string;
+  due_date: string;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeInstallmentUpdateInput extends Partial<FeeInstallmentCreateInput> {}
+
+// ============================================================================
+// FEE RECEIPT TYPES
+// ============================================================================
+
+export interface FeeReceipt extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  receipt_number: string;
+  fee_collection: number;
+  student: number;
+  student_name?: string;
+  amount: string;
+  payment_date: string;
+  payment_mode: string;
+  is_active: boolean;
+}
+
+export interface FeeReceiptCreateInput {
+  college: number;
+  receipt_number: string;
+  fee_collection: number;
+  student: number;
+  amount: string;
+  payment_date: string;
+  payment_mode: string;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeReceiptUpdateInput extends Partial<FeeReceiptCreateInput> {}
+
+// ============================================================================
+// STUDENT DISCOUNT TYPES
+// ============================================================================
+
+export interface StudentDiscount extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  student: number;
+  student_name?: string;
+  fee_discount: number;
+  fee_discount_name?: string;
+  academic_year: number;
+  academic_year_name?: string;
+  discount_amount: string;
+  reason: string | null;
+  approved_by: number | null;
+  approved_by_name?: string;
+  is_active: boolean;
+}
+
+export interface StudentDiscountCreateInput {
+  college: number;
+  student: number;
+  fee_discount: number;
+  academic_year: number;
+  discount_amount: string;
+  reason?: string | null;
+  approved_by?: number | null;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface StudentDiscountUpdateInput extends Partial<StudentDiscountCreateInput> {}
+
+// ============================================================================
+// FEE REFUND TYPES
+// ============================================================================
+
+export interface FeeRefund extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  fee_collection: number;
+  student: number;
+  student_name?: string;
+  refund_amount: string;
+  refund_date: string;
+  refund_mode: string;
+  reason: string | null;
+  approved_by: number | null;
+  approved_by_name?: string;
+  is_active: boolean;
+}
+
+export interface FeeRefundCreateInput {
+  college: number;
+  fee_collection: number;
+  student: number;
+  refund_amount: string;
+  refund_date: string;
+  refund_mode: string;
+  reason?: string | null;
+  approved_by?: number | null;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeRefundUpdateInput extends Partial<FeeRefundCreateInput> {}
+
+// ============================================================================
+// FEE REMINDER TYPES
+// ============================================================================
+
+export interface FeeReminder extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  student: number;
+  student_name?: string;
+  reminder_date: string;
+  reminder_type: string;
+  message: string;
+  sent_by: number | null;
+  sent_by_name?: string;
+  is_sent: boolean;
+  is_active: boolean;
+}
+
+export interface FeeReminderCreateInput {
+  college: number;
+  student: number;
+  reminder_date: string;
+  reminder_type: string;
+  message: string;
+  sent_by?: number | null;
+  is_sent?: boolean;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface FeeReminderUpdateInput extends Partial<FeeReminderCreateInput> {}
+
+// ============================================================================
+// BANK PAYMENT TYPES
+// ============================================================================
+
+export interface BankPayment extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  fee_collection: number;
+  bank_name: string;
+  account_number: string;
+  transaction_id: string;
+  payment_date: string;
+  amount: string;
+  status: string;
+  is_active: boolean;
+}
+
+export interface BankPaymentCreateInput {
+  college: number;
+  fee_collection: number;
+  bank_name: string;
+  account_number: string;
+  transaction_id: string;
+  payment_date: string;
+  amount: string;
+  status: string;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface BankPaymentUpdateInput extends Partial<BankPaymentCreateInput> {}
+
+// ============================================================================
+// ONLINE PAYMENT TYPES
+// ============================================================================
+
+export interface OnlinePayment extends AuditFields {
+  id: number;
+  college: number;
+  college_name?: string;
+  fee_collection: number;
+  payment_gateway: string;
+  transaction_id: string;
+  payment_date: string;
+  amount: string;
+  status: string;
+  is_active: boolean;
+}
+
+export interface OnlinePaymentCreateInput {
+  college: number;
+  fee_collection: number;
+  payment_gateway: string;
+  transaction_id: string;
+  payment_date: string;
+  amount: string;
+  status: string;
+  is_active?: boolean;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface OnlinePaymentUpdateInput extends Partial<OnlinePaymentCreateInput> {}
 
 // ============================================================================
 // STUDENT FEE STATUS TYPES
