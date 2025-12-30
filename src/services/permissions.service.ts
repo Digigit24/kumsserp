@@ -90,30 +90,15 @@ export async function fetchContextColleges(): Promise<ContextOptionsResponse<Col
 export async function fetchContextClasses(
   collegeId?: number
 ): Promise<ContextOptionsResponse<ClassOption>> {
-  try {
-    const params = new URLSearchParams();
-    if (collegeId) params.append('college', String(collegeId));
-    params.append('page_size', '100');
-    params.append('is_active', 'true');
+  const params = new URLSearchParams();
+  if (collegeId) params.append('college', String(collegeId));
+  params.append('page_size', '100');
+  params.append('is_active', 'true');
 
-    const response = await apiClient.get<ContextOptionsResponse<ClassOption>>(
-      `/api/v1/context/classes/?${params.toString()}`
-    );
-    return response.data;
-  } catch (error: any) {
-    // Fallback: use existing classes endpoint
-    console.warn('Context classes endpoint not found, using fallback');
-    const params = new URLSearchParams();
-    if (collegeId) params.append('college', String(collegeId));
-    params.append('page_size', '100');
-    params.append('is_active', 'true');
-
-    const response = await apiClient.get(`/api/v1/academic/classes/?${params.toString()}`);
-    return {
-      count: response.data.count || 0,
-      results: response.data.results || [],
-    };
-  }
+  const response = await apiClient.get<ContextOptionsResponse<ClassOption>>(
+    `/api/v1/academic/classes/?${params.toString()}`
+  );
+  return response.data;
 }
 
 /**
@@ -123,30 +108,15 @@ export async function fetchContextClasses(
 export async function fetchContextSections(
   classId?: number
 ): Promise<ContextOptionsResponse<SectionOption>> {
-  try {
-    const params = new URLSearchParams();
-    if (classId) params.append('class_id', String(classId));
-    params.append('page_size', '100');
-    params.append('is_active', 'true');
+  const params = new URLSearchParams();
+  if (classId) params.append('class_obj', String(classId));
+  params.append('page_size', '100');
+  params.append('is_active', 'true');
 
-    const response = await apiClient.get<ContextOptionsResponse<SectionOption>>(
-      `/api/v1/context/sections/?${params.toString()}`
-    );
-    return response.data;
-  } catch (error: any) {
-    // Fallback: use existing sections endpoint
-    console.warn('Context sections endpoint not found, using fallback');
-    const params = new URLSearchParams();
-    if (classId) params.append('class_obj', String(classId));
-    params.append('page_size', '100');
-    params.append('is_active', 'true');
-
-    const response = await apiClient.get(`/api/v1/academic/sections/?${params.toString()}`);
-    return {
-      count: response.data.count || 0,
-      results: response.data.results || [],
-    };
-  }
+  const response = await apiClient.get<ContextOptionsResponse<SectionOption>>(
+    `/api/v1/academic/sections/?${params.toString()}`
+  );
+  return response.data;
 }
 
 // ============================================================================
