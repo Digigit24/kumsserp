@@ -101,51 +101,13 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
     }
   }, [students, existingAttendance, selectedDate]);
 
-  const handleMarkAttendance = async (studentId: number, status: 'present' | 'absent' | 'late' | 'excused') => {
-    if (!selectedClass || !selectedSection) {
-      toast.error('Please select class and section');
-      return;
-    }
-
-    // Update local state immediately for UI feedback
+  const handleMarkAttendance = (studentId: number, status: 'present' | 'absent' | 'late' | 'excused') => {
+    // Only update local state, don't call API yet
     setAttendanceRecords(prev =>
       prev.map(record =>
         record.student_id === studentId ? { ...record, status } : record
       )
     );
-
-    // Call single student attendance API
-    try {
-      await markSingleMutation.mutateAsync({
-        student: studentId,
-        class_obj: selectedClass,
-        section: selectedSection,
-        date: selectedDate,
-        status: status,
-        subject: selectedSubject || null,
-        period: null,
-        remarks: null,
-      });
-
-      toast.success('Attendance marked successfully');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to mark attendance');
-      console.error('Mark attendance error:', error);
-
-      // Revert local state on error
-      setAttendanceRecords(prev =>
-        prev.map(record => {
-          if (record.student_id === studentId) {
-            // Find the original status from existing attendance
-            const existing = existingAttendance?.results?.find(
-              a => a.student === studentId && a.date === selectedDate
-            );
-            return { ...record, status: existing?.status as any || 'present' };
-          }
-          return record;
-        })
-      );
-    }
   };
 
   const handleMarkAllPresent = () => {
@@ -168,7 +130,7 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
     }
 
     try {
-      // Group students by status for bulk API
+      // Group students by status for optimized API calls
       const groupedByStatus: Record<string, number[]> = {};
       attendanceRecords.forEach(record => {
         if (!groupedByStatus[record.status]) {
@@ -177,11 +139,11 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
         groupedByStatus[record.status].push(record.student_id);
       });
 
-      // Call bulk API for each status group
-      const promises = Object.entries(groupedByStatus).map(([status, studentIds]) => {
-        // If only one student with this status, use single API
+      // Call API for each status group
+      const promises = Object.entries(groupedByStatus).map(async ([status, studentIds]) => {
+        // If only one student with this status, use single student API
         if (studentIds.length === 1) {
-          return markSingleMutation.mutateAsync({
+          return await markSingleMutation.mutateAsync({
             student: studentIds[0],
             class_obj: selectedClass,
             section: selectedSection,
@@ -193,7 +155,7 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
           });
         } else {
           // Multiple students with same status, use bulk API
-          return bulkMarkMutation.mutateAsync({
+          return await bulkMarkMutation.mutateAsync({
             student_ids: studentIds,
             class_obj: selectedClass,
             section: selectedSection,
@@ -207,8 +169,12 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
 
       await Promise.all(promises);
 
-      toast.success(`Attendance saved for ${attendanceRecords.length} students!`);
-      navigate('/dashboard');
+      toast.success(`Attendance saved successfully for ${attendanceRecords.length} students!`);
+
+      // Reload attendance data to show updated records
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (error: any) {
       toast.error(error?.message || 'Failed to save attendance');
       console.error('Save attendance error:', error);
@@ -478,44 +444,30 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
                           size="sm"
                           variant={record.status === 'present' ? 'default' : 'outline'}
                           onClick={() => handleMarkAttendance(record.student_id, 'present')}
-                          disabled={markSingleMutation.isPending}
                         >
-                          {markSingleMutation.isPending ? (
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          ) : (
-                            <Check className="h-4 w-4 mr-1" />
-                          )}
+                          <Check className="h-4 w-4 mr-1" />
                           Present
                         </Button>
                         <Button
                           size="sm"
                           variant={record.status === 'absent' ? 'destructive' : 'outline'}
                           onClick={() => handleMarkAttendance(record.student_id, 'absent')}
-                          disabled={markSingleMutation.isPending}
                         >
-                          {markSingleMutation.isPending ? (
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          ) : (
-                            <X className="h-4 w-4 mr-1" />
-                          )}
+                          <X className="h-4 w-4 mr-1" />
                           Absent
                         </Button>
                         <Button
                           size="sm"
                           variant={record.status === 'late' ? 'default' : 'outline'}
                           onClick={() => handleMarkAttendance(record.student_id, 'late')}
-                          disabled={markSingleMutation.isPending}
                         >
-                          {markSingleMutation.isPending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                           Late
                         </Button>
                         <Button
                           size="sm"
                           variant={record.status === 'excused' ? 'default' : 'outline'}
                           onClick={() => handleMarkAttendance(record.student_id, 'excused')}
-                          disabled={markSingleMutation.isPending}
                         >
-                          {markSingleMutation.isPending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                           Excused
                         </Button>
                       </div>
