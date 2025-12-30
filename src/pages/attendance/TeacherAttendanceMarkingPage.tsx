@@ -25,7 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useClasses, useSections, useSubjects } from '@/hooks/useAcademic';
+import { ContextSelectorToolbar } from '@/components/context';
+import { useHierarchicalContext } from '@/contexts/HierarchicalContext';
+import { usePermissions } from '@/contexts/PermissionsContext';
+import { useSubjects } from '@/hooks/useAcademic';
 import { useStudents } from '@/hooks/useStudents';
 import { useBulkMarkAttendance, useStudentAttendance, useMarkStudentAttendance } from '@/hooks/useAttendance';
 import { toast } from 'sonner';
@@ -41,9 +44,9 @@ interface AttendanceRecord {
 export const TeacherAttendanceMarkingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { selectedClass, selectedSection } = useHierarchicalContext();
+  const { permissions } = usePermissions();
 
-  const [selectedClass, setSelectedClass] = useState<number | null>(null);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,12 +54,6 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<'all' | 'present' | 'absent' | 'unmarked'>('all');
 
   // Fetch data
-  const { data: classesData } = useClasses({ page_size: 100, is_active: true });
-  const { data: sectionsData } = useSections({
-    page_size: 100,
-    class_id: selectedClass || undefined,
-    is_active: true
-  });
   const { data: subjectsData } = useSubjects({ page_size: 100, is_active: true });
   const { data: studentsData, isLoading: studentsLoading } = useStudents({
     page_size: 200,
@@ -76,8 +73,6 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
   const bulkMarkMutation = useBulkMarkAttendance();
   const markSingleMutation = useMarkStudentAttendance();
 
-  const classes = classesData?.results || [];
-  const sections = sectionsData?.results || [];
   const subjects = subjectsData?.results || [];
   const students = studentsData?.results || [];
 
@@ -119,6 +114,11 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
   };
 
   const handleSaveAttendance = async () => {
+    if (!permissions?.canMarkAttendance) {
+      toast.error('You do not have permission to mark attendance');
+      return;
+    }
+
     if (!selectedClass || !selectedSection) {
       toast.error('Please select class and section');
       return;
@@ -224,13 +224,16 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Context Selectors - Permission-driven */}
+      <ContextSelectorToolbar />
+
+      {/* Date and Subject Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Class and Details</CardTitle>
+          <CardTitle>Additional Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">Date *</Label>
               <Input
@@ -239,48 +242,6 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="class">Class *</Label>
-              <Select
-                value={selectedClass ? String(selectedClass) : undefined}
-                onValueChange={(value) => {
-                  setSelectedClass(Number(value));
-                  setSelectedSection(null); // Reset section
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes.map(cls => (
-                    <SelectItem key={cls.id} value={String(cls.id)}>
-                      {cls.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="section">Section *</Label>
-              <Select
-                value={selectedSection ? String(selectedSection) : undefined}
-                onValueChange={(value) => setSelectedSection(Number(value))}
-                disabled={!selectedClass}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select section" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sections.map(section => (
-                    <SelectItem key={section.id} value={String(section.id)}>
-                      {section.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="space-y-2">
@@ -393,7 +354,7 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleSaveAttendance}
-                  disabled={bulkMarkMutation.isPending || markSingleMutation.isPending || attendanceRecords.length === 0}
+                  disabled={bulkMarkMutation.isPending || markSingleMutation.isPending || attendanceRecords.length === 0 || !permissions?.canMarkAttendance}
                 >
                   {(bulkMarkMutation.isPending || markSingleMutation.isPending) ? (
                     <>

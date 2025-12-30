@@ -3,7 +3,7 @@
  * Uses DataTable and DetailSidebar for CRUD operations
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudents } from '../../hooks/useStudents';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
@@ -11,15 +11,33 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { StudentForm } from './components/StudentForm';
+import { ContextSelectorToolbar } from '../../components/context';
+import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
 
 export const StudentsPage = () => {
     const navigate = useNavigate();
+    const { selectedClass, selectedSection } = useHierarchicalContext();
+    const { permissions } = usePermissions();
+
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
-    const { data, isLoading, error, refetch } = useStudents(filters);
+    const { data, isLoading, error, refetch } = useStudents({
+        ...filters,
+        class_obj: selectedClass || undefined,
+        section: selectedSection || undefined,
+    });
 
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Update filters when context changes
+    useEffect(() => {
+        setFilters((prev) => ({
+            ...prev,
+            page: 1, // Reset to first page
+        }));
+    }, [selectedClass, selectedSection]);
 
     const getInitials = (name: string) => {
         return name
@@ -72,14 +90,18 @@ export const StudentsPage = () => {
         {
             key: 'email',
             label: 'Email',
-            render: (student) => (
+            render: (student) => permissions?.canViewStudentSensitiveFields ? (
                 <span className="text-sm">{student.email}</span>
+            ) : (
+                <span className="text-sm text-muted-foreground">Hidden</span>
             ),
         },
         {
             key: 'phone',
             label: 'Phone',
-            render: (student) => student.phone || '-',
+            render: (student) => permissions?.canViewStudentSensitiveFields
+                ? student.phone || '-'
+                : 'Hidden',
         },
         {
             key: 'is_active',
@@ -139,6 +161,9 @@ export const StudentsPage = () => {
     };
 
     const handleAdd = () => {
+        if (!permissions?.canCreateStudents) {
+            return;
+        }
         setSidebarMode('create');
         setIsSidebarOpen(true);
     };
@@ -153,7 +178,10 @@ export const StudentsPage = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 animate-fade-in">
+        <div className="p-4 md:p-6 animate-fade-in space-y-6">
+            {/* Context Selectors - Permission-driven */}
+            <ContextSelectorToolbar />
+
             <DataTable
                 title="Students"
                 description="Manage all student records, admissions, and information"
@@ -162,7 +190,7 @@ export const StudentsPage = () => {
                 isLoading={isLoading}
                 error={error || null}
                 onRefresh={refetch}
-                onAdd={handleAdd}
+                onAdd={permissions?.canCreateStudents ? handleAdd : undefined}
                 onRowClick={handleRowClick}
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -172,19 +200,21 @@ export const StudentsPage = () => {
             />
 
             {/* Create Sidebar */}
-            <DetailSidebar
-                isOpen={isSidebarOpen}
-                onClose={handleCloseSidebar}
-                title={sidebarMode === 'create' ? 'Add New Student' : 'Edit Student'}
-                mode={sidebarMode}
-                width="2xl"
-            >
-                <StudentForm
+            {permissions?.canCreateStudents && (
+                <DetailSidebar
+                    isOpen={isSidebarOpen}
+                    onClose={handleCloseSidebar}
+                    title={sidebarMode === 'create' ? 'Add New Student' : 'Edit Student'}
                     mode={sidebarMode}
-                    onSuccess={handleFormSuccess}
-                    onCancel={handleCloseSidebar}
-                />
-            </DetailSidebar>
+                    width="2xl"
+                >
+                    <StudentForm
+                        mode={sidebarMode}
+                        onSuccess={handleFormSuccess}
+                        onCancel={handleCloseSidebar}
+                    />
+                </DetailSidebar>
+            )}
         </div>
     );
 };
