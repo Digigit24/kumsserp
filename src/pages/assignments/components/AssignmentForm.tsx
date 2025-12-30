@@ -41,9 +41,10 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
     section: null,
     due_date: '',
     max_marks: 100,
-    attachments: null,
+    assignment_file: null,
+    allow_late_submission: false,
+    late_submission_penalty: 0,
     is_active: true,
-    status: 'active',
   });
 
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
@@ -72,8 +73,9 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
         section: assignment.section || null,
         due_date: assignment.due_date.split('T')[0], // Format date for input
         max_marks: assignment.max_marks,
+        allow_late_submission: assignment.allow_late_submission || false,
+        late_submission_penalty: assignment.late_submission_penalty || 0,
         is_active: assignment.is_active,
-        status: assignment.status || 'active',
       });
     }
   }, [assignment]);
@@ -91,7 +93,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent, isDraft: boolean = false) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // If there's a file attachment, use FormData
@@ -106,22 +108,20 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
       }
       formDataWithFile.append('due_date', formData.due_date);
       formDataWithFile.append('max_marks', String(formData.max_marks));
+      formDataWithFile.append('allow_late_submission', String(formData.allow_late_submission));
+      formDataWithFile.append('late_submission_penalty', String(formData.late_submission_penalty));
       formDataWithFile.append('is_active', String(formData.is_active));
-      formDataWithFile.append('status', isDraft ? 'draft' : 'active');
-      formDataWithFile.append('attachments', attachmentFile);
+      formDataWithFile.append('assignment_file', attachmentFile);
 
       onSubmit(formDataWithFile);
     } else {
       // No file, use JSON
-      onSubmit({
-        ...formData,
-        status: isDraft ? 'draft' : 'active',
-      });
+      onSubmit(formData);
     }
   };
 
   return (
-    <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="title">Title *</Label>
@@ -238,9 +238,43 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
         </div>
       </div>
 
-      {/* Attachments */}
+      {/* Late Submission Settings */}
+      <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="allow_late_submission"
+            checked={formData.allow_late_submission}
+            onChange={(e) => handleChange('allow_late_submission', e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300"
+          />
+          <Label htmlFor="allow_late_submission" className="cursor-pointer">
+            Allow late submissions
+          </Label>
+        </div>
+
+        {formData.allow_late_submission && (
+          <div className="space-y-2">
+            <Label htmlFor="late_submission_penalty">Late Submission Penalty (%)</Label>
+            <Input
+              id="late_submission_penalty"
+              type="number"
+              value={formData.late_submission_penalty}
+              onChange={(e) => handleChange('late_submission_penalty', Number(e.target.value))}
+              placeholder="0"
+              min="0"
+              max="100"
+            />
+            <p className="text-xs text-muted-foreground">
+              Percentage of marks to deduct for late submissions
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Assignment File */}
       <div className="space-y-2">
-        <Label htmlFor="attachments">Attachments (Optional)</Label>
+        <Label htmlFor="assignment_file">Assignment File (Optional)</Label>
         <div className="border-2 border-dashed border-input rounded-lg p-6">
           <div className="flex flex-col items-center justify-center text-center">
             <FileText className="h-8 w-8 text-muted-foreground mb-2" />
@@ -250,7 +284,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
                 : 'Upload assignment files, documents, or resources'}
             </p>
             <Input
-              id="attachments"
+              id="assignment_file"
               type="file"
               onChange={handleFileChange}
               className="max-w-xs"
@@ -268,27 +302,11 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
           Cancel
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={(e) => handleSubmit(e, true)}
-          disabled={isSubmitting}
-          className="flex-1"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save as Draft'
-          )}
-        </Button>
         <Button type="submit" disabled={isSubmitting} className="flex-1">
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
+              {assignment ? 'Updating...' : 'Creating...'}
             </>
           ) : (
             assignment ? 'Update Assignment' : 'Create Assignment'

@@ -12,11 +12,13 @@ export interface Assignment {
   class_name?: string;
   section?: number | null;
   section_name?: string;
-  teacher: string; // UUID
+  teacher: number;
   teacher_name?: string;
   due_date: string; // ISO date string
   max_marks: number;
-  attachments?: string; // File URL
+  assignment_file?: string; // File URL
+  allow_late_submission?: boolean;
+  late_submission_penalty?: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -33,9 +35,10 @@ export interface AssignmentCreateInput {
   section?: number | null;
   due_date: string;
   max_marks: number;
-  attachments?: File | null;
+  assignment_file?: File | null;
+  allow_late_submission?: boolean;
+  late_submission_penalty?: number;
   is_active?: boolean;
-  status?: 'draft' | 'active';
 }
 
 export interface AssignmentUpdateInput extends Partial<AssignmentCreateInput> {}
