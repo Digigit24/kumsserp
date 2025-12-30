@@ -743,6 +743,16 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/fees/online-payments/${id}/`,
   },
 
+  // Library Module - Book Categories
+  bookCategories: {
+    list: "/api/v1/library/categories/",
+    create: "/api/v1/library/categories/",
+    detail: (id: number) => `/api/v1/library/categories/${id}/`,
+    update: (id: number) => `/api/v1/library/categories/${id}/`,
+    patch: (id: number) => `/api/v1/library/categories/${id}/`,
+    delete: (id: number) => `/api/v1/library/categories/${id}/`,
+  },
+
   // Library Module - Books
   books: {
     list: "/api/v1/library/books/",

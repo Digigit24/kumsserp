@@ -35,6 +35,10 @@ const StudentAttendancePage = () => {
   // Attendance form fields
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
+  // Track attendance status for each student
+  const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Use hierarchical context for class and section
   const { selectedClass, selectedSection } = useHierarchicalContext();
   const { permissions } = usePermissions();
@@ -52,10 +56,6 @@ const StudentAttendancePage = () => {
     noClass: !selectedClass,
     needsSection: permissions?.canChooseSection && !selectedSection,
   });
-
-  // Track attendance status for each student
-  const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch students for marking attendance
   const { data, isLoading, error, refetch } = useStudents({
