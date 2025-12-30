@@ -2,13 +2,15 @@
  * Book Issue Form Component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { BookIssue, BookIssueCreateInput } from '../../../types/library.types';
+import { useBooks, useLibraryMembers } from '../../../hooks/useLibrary';
 
 interface BookIssueFormProps {
   issue: BookIssue | null;
@@ -17,6 +19,10 @@ interface BookIssueFormProps {
 }
 
 export const BookIssueForm = ({ issue, onSubmit, onCancel }: BookIssueFormProps) => {
+  // Fetch books and members
+  const { data: booksData, isLoading: loadingBooks } = useBooks({ page_size: 1000 });
+  const { data: membersData, isLoading: loadingMembers } = useLibraryMembers({ page_size: 1000 });
+
   const [formData, setFormData] = useState<Partial<BookIssueCreateInput>>({
     book: 0,
     member: 0,
@@ -26,6 +32,26 @@ export const BookIssueForm = ({ issue, onSubmit, onCancel }: BookIssueFormProps)
     remarks: '',
     is_active: true,
   });
+
+  // Transform books data for SearchableSelect
+  const bookOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!booksData?.results) return [];
+    return booksData.results.map((book) => ({
+      value: book.id,
+      label: book.title,
+      subtitle: `${book.author}${book.isbn ? ' • ISBN: ' + book.isbn : ''} • Available: ${book.available_quantity}/${book.quantity}`,
+    }));
+  }, [booksData]);
+
+  // Transform members data for SearchableSelect
+  const memberOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!membersData?.results) return [];
+    return membersData.results.map((member) => ({
+      value: member.id,
+      label: member.user_name || member.user,
+      subtitle: `${member.member_id} • ${member.member_type}`,
+    }));
+  }, [membersData]);
 
   useEffect(() => {
     if (issue) {
@@ -64,28 +90,28 @@ export const BookIssueForm = ({ issue, onSubmit, onCancel }: BookIssueFormProps)
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="book">Book ID *</Label>
-        <Input
-          id="book"
-          type="number"
+        <Label htmlFor="book">Book *</Label>
+        <SearchableSelect
+          options={bookOptions}
           value={formData.book}
-          onChange={(e) => setFormData({ ...formData, book: parseInt(e.target.value) })}
-          placeholder="Book ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, book: Number(value) })}
+          placeholder="Select a book..."
+          searchPlaceholder="Search by title, author, or ISBN..."
+          emptyText={loadingBooks ? 'Loading books...' : 'No books found.'}
+          disabled={loadingBooks}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="member">Member ID *</Label>
-        <Input
-          id="member"
-          type="number"
+        <Label htmlFor="member">Member *</Label>
+        <SearchableSelect
+          options={memberOptions}
           value={formData.member}
-          onChange={(e) => setFormData({ ...formData, member: parseInt(e.target.value) })}
-          placeholder="Member ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, member: Number(value) })}
+          placeholder="Select a member..."
+          searchPlaceholder="Search by name or member ID..."
+          emptyText={loadingMembers ? 'Loading members...' : 'No members found.'}
+          disabled={loadingMembers}
         />
       </div>
 
