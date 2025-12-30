@@ -2,32 +2,67 @@
  * Marking Page - Shows all exams with question papers for marking
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { CheckCircle, Clock, FileText, Users } from 'lucide-react';
-import {
-  QuestionPaper,
-  MarkingStatistics,
-  mockQuestionPapersPaginated,
-  mockMarkingStatistics,
-} from '../../data/markingMockData';
+import { useExamSchedules, useMarksRegisters, useStudentMarks } from '../../hooks/useExamination';
 
 const MarkingPage = () => {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 100 });
 
-  // Merge question papers with statistics
-  const enrichedData = mockQuestionPapersPaginated.results.map(paper => {
-    const stats = mockMarkingStatistics.find(s => s.question_paper_id === paper.id);
-    return { ...paper, stats };
-  });
+  // Fetch real API data
+  const { data: schedulesData, isLoading: isLoadingSchedules, refetch } = useExamSchedules(filters);
+  const { data: registersData } = useMarksRegisters({ page_size: 1000 });
+  const { data: marksData } = useStudentMarks({ page_size: 1000 });
+
+  // Enrich exam schedules with marking statistics
+  const enrichedData = useMemo(() => {
+    if (!schedulesData?.results) return [];
+
+    return schedulesData.results.map((schedule: any) => {
+      // Find related marks register
+      const register = registersData?.results?.find(
+        (r: any) => r.exam === schedule.exam && r.subject === schedule.subject
+      );
+
+      if (!register) {
+        return {
+          ...schedule,
+          stats: null,
+        };
+      }
+
+      // Calculate marking statistics
+      const studentMarksForRegister = marksData?.results?.filter(
+        (mark: any) => mark.marks_register === register.id
+      ) || [];
+
+      const totalStudents = schedule.total_students || 0;
+      const markedStudents = studentMarksForRegister.length;
+      const markingProgress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
+
+      return {
+        ...schedule,
+        max_marks: register.max_marks,
+        stats: {
+          question_paper_id: schedule.id,
+          total_students: totalStudents,
+          marked_students: markedStudents,
+          marking_progress: markingProgress,
+        },
+      };
+    });
+  }, [schedulesData, registersData, marksData]);
 
   const enrichedPaginated = {
-    ...mockQuestionPapersPaginated,
+    count: schedulesData?.count || 0,
+    next: schedulesData?.next || null,
+    previous: schedulesData?.previous || null,
     results: enrichedData,
   };
 
@@ -40,8 +75,8 @@ const MarkingPage = () => {
       sortable: true,
       render: (paper) => (
         <div>
-          <p className="font-semibold">{paper.exam_name}</p>
-          <p className="text-xs text-muted-foreground">{paper.subject_name}</p>
+          <p className="font-semibold">{paper.exam_name || '-'}</p>
+          <p className="text-xs text-muted-foreground">{paper.subject_name || '-'}</p>
         </div>
       ),
     },
@@ -49,17 +84,18 @@ const MarkingPage = () => {
       key: 'class_name',
       label: 'Class',
       sortable: true,
+      render: (paper) => paper.class_name || paper.classroom_name || '-',
     },
     {
       key: 'date',
       label: 'Exam Date',
       sortable: true,
-      render: (paper) => new Date(paper.date).toLocaleDateString(),
+      render: (paper) => paper.date ? new Date(paper.date).toLocaleDateString() : '-',
     },
     {
       key: 'max_marks',
       label: 'Max Marks',
-      render: (paper) => <Badge variant="outline">{paper.max_marks}</Badge>,
+      render: (paper) => <Badge variant="outline">{paper.max_marks || '-'}</Badge>,
       sortable: true,
     },
     {
@@ -110,9 +146,9 @@ const MarkingPage = () => {
   ];
 
   // Calculate overall statistics
-  const totalPapers = mockQuestionPapersPaginated.count;
-  const totalStudentsToMark = mockMarkingStatistics.reduce((sum, stat) => sum + stat.total_students, 0);
-  const totalMarked = mockMarkingStatistics.reduce((sum, stat) => sum + stat.marked_students, 0);
+  const totalPapers = enrichedPaginated.count;
+  const totalStudentsToMark = enrichedData.reduce((sum, paper) => sum + (paper.stats?.total_students || 0), 0);
+  const totalMarked = enrichedData.reduce((sum, paper) => sum + (paper.stats?.marked_students || 0), 0);
   const overallProgress = totalStudentsToMark > 0 ? (totalMarked / totalStudentsToMark) * 100 : 0;
 
   return (
@@ -187,9 +223,9 @@ const MarkingPage = () => {
         description="Select a question paper to start marking"
         columns={columns}
         data={enrichedPaginated}
-        isLoading={false}
+        isLoading={isLoadingSchedules}
         error={null}
-        onRefresh={() => {}}
+        onRefresh={refetch}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search exams..."
