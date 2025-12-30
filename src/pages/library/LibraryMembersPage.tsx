@@ -28,7 +28,7 @@ const LibraryMembersPage = () => {
     { key: 'user_name', label: 'Name', sortable: true },
     { key: 'member_type', label: 'Type', sortable: true },
     { key: 'max_books_allowed', label: 'Max Books', sortable: false },
-    { key: 'joined_date', label: 'Joined Date', sortable: true },
+    { key: 'joining_date', label: 'Joining Date', sortable: true },
     {
       key: 'is_blocked',
       label: 'Blocked',
@@ -181,8 +181,8 @@ const LibraryMembersPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Joined Date</h3>
-                <p className="mt-1">{selectedMember.joined_date}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Joining Date</h3>
+                <p className="mt-1">{selectedMember.joining_date}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Expiry Date</h3>

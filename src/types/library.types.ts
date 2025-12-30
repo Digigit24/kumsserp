@@ -133,7 +133,7 @@ export interface LibraryMember extends AuditFields {
   member_type: 'student' | 'teacher' | 'staff';
   max_books_allowed: number;
   max_days_allowed: number;
-  joined_date: string;
+  joining_date: string;
   expiry_date: string | null;
   is_blocked: boolean;
   block_reason: string | null;
@@ -147,7 +147,7 @@ export interface LibraryMemberListItem {
   user_name: string;
   member_type: string;
   max_books_allowed: number;
-  joined_date: string;
+  joining_date: string;
   is_blocked: boolean;
   is_active: boolean;
 }
@@ -159,7 +159,7 @@ export interface LibraryMemberCreateInput {
   member_type: 'student' | 'teacher' | 'staff';
   max_books_allowed: number;
   max_days_allowed: number;
-  joined_date: string;
+  joining_date: string;
   expiry_date?: string | null;
   created_by?: string;
   updated_by?: string;

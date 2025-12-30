@@ -29,7 +29,7 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
     member_type: 'student',
     max_books_allowed: 3,
     max_days_allowed: 14,
-    joined_date: new Date().toISOString().split('T')[0],
+    joining_date: new Date().toISOString().split('T')[0],
     expiry_date: null,
     college: 1,
     is_active: true,
@@ -53,7 +53,7 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
         member_type: member.member_type,
         max_books_allowed: member.max_books_allowed,
         max_days_allowed: member.max_days_allowed,
-        joined_date: member.joined_date,
+        joining_date: member.joining_date,
         expiry_date: member.expiry_date,
         college: member.college,
         is_active: member.is_active,
@@ -176,12 +176,12 @@ export const LibraryMemberForm = ({ member, onSubmit, onCancel }: LibraryMemberF
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="joined_date">Joined Date *</Label>
+          <Label htmlFor="joining_date">Joining Date *</Label>
           <Input
-            id="joined_date"
+            id="joining_date"
             type="date"
-            value={formData.joined_date}
-            onChange={(e) => setFormData({ ...formData, joined_date: e.target.value })}
+            value={formData.joining_date}
+            onChange={(e) => setFormData({ ...formData, joining_date: e.target.value })}
             required
           />
         </div>
