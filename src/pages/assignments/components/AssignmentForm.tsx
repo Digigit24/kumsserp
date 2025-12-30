@@ -182,14 +182,13 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
       <div className="space-y-2">
         <Label htmlFor="section">Section (Optional)</Label>
         <Select
-          value={String(formData.section || '')}
+          value={formData.section ? String(formData.section) : undefined}
           onValueChange={(value) => handleChange('section', value ? Number(value) : null)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select section (optional)" />
+            <SelectValue placeholder="All sections (no specific section)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No specific section</SelectItem>
             {sections.map((section) => (
               <SelectItem key={section.id} value={String(section.id)}>
                 {section.name}
