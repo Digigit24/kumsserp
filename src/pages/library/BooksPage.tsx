@@ -11,12 +11,17 @@ import { useBooks, useCreateBook, useUpdateBook, useDeleteBook } from '../../hoo
 import { Book } from '../../types/library.types';
 import { BookForm } from './forms/BookForm';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
 
 const BooksPage = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+
+  // Check if user is student (students can only view, not add/edit/delete)
+  const isStudent = user?.userType === 'student';
 
   // Fetch books using real API
   const { data, isLoading, error, refetch } = useBooks(filters);
@@ -135,7 +140,7 @@ const BooksPage = () => {
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
-        onAdd={handleAddNew}
+        onAdd={isStudent ? undefined : handleAddNew}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -234,10 +239,12 @@ const BooksPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleEdit} className="flex-1">Edit</Button>
-              <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
-            </div>
+            {!isStudent && (
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleEdit} className="flex-1">Edit</Button>
+                <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
+              </div>
+            )}
           </div>
         ) : (
           <BookForm

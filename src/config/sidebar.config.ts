@@ -89,6 +89,48 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= MY EXAMINATIONS (STUDENT ONLY) =================
+  {
+    group: "My Examinations",
+    icon: PenTool,
+    roles: ["student"],
+    items: [
+      {
+        name: "Exam Schedules",
+        href: "/exams/schedules",
+        icon: Calendar,
+        roles: ["student"],
+      },
+      {
+        name: "My Results",
+        href: "/student/examinations/results",
+        icon: FileText,
+        roles: ["student"],
+      },
+    ],
+  },
+
+  // ================= MY LIBRARY (STUDENT ONLY) =================
+  {
+    group: "My Library",
+    icon: Library,
+    roles: ["student"],
+    items: [
+      {
+        name: "Browse Books",
+        href: "/library/books",
+        icon: BookOpen,
+        roles: ["student"],
+      },
+      {
+        name: "My Books",
+        href: "/library/my-books",
+        icon: BookOpen,
+        roles: ["student"],
+      },
+    ],
+  },
+
   // ================= MY CLASSES (TEACHER ONLY) =================
   {
     group: "My Classes",
@@ -416,11 +458,11 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= EXAMINATIONS (ADMIN + TEACHER + STUDENT) =================
+  // ================= EXAMINATIONS (ADMIN + TEACHER) =================
   {
     group: "Examinations",
     icon: PenTool,
-    roles: ["super_admin", "college_admin", "teacher", "student"],
+    roles: ["super_admin", "college_admin", "teacher"],
     items: [
       {
         name: "Exams",
@@ -438,7 +480,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Exam Schedules",
         href: "/exams/schedules",
         icon: Calendar,
-        roles: ["super_admin", "college_admin", "teacher", "student"], // All can view
+        roles: ["super_admin", "college_admin", "teacher"],
       },
       {
         name: "Marks Entry",
@@ -475,12 +517,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/exams/tabulation-sheets",
         icon: FileText,
         roles: ["super_admin", "college_admin"],
-      },
-      {
-        name: "My Results", // NEW for students
-        href: "/exams/my-results",
-        icon: FileText,
-        roles: ["student"],
       },
     ],
   },
@@ -530,17 +566,17 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= LIBRARY (ADMIN + TEACHER + STUDENT) =================
+  // ================= LIBRARY (ADMIN + TEACHER) =================
   {
     group: "Library Management",
     icon: Library,
-    roles: ["super_admin", "college_admin", "teacher", "student"],
+    roles: ["super_admin", "college_admin", "teacher"],
     items: [
       {
         name: "Books",
         href: "/library/books",
         icon: BookOpen,
-        roles: ["super_admin", "college_admin", "teacher", "student"], // All can view
+        roles: ["super_admin", "college_admin", "teacher"],
       },
       {
         name: "Book Issues",
@@ -561,16 +597,10 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
-        name: "My Books", // NEW for students
+        name: "My Books",
         href: "/library/my-books",
         icon: BookOpen,
-        roles: ["student", "teacher"],
-      },
-      {
-        name: "Student Library", // Comprehensive library page for students
-        href: "/library/student",
-        icon: Library,
-        roles: ["student"],
+        roles: ["teacher"],
       },
     ],
   },
