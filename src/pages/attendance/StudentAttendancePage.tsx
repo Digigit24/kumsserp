@@ -39,11 +39,19 @@ const StudentAttendancePage = () => {
   const { selectedClass, selectedSection } = useHierarchicalContext();
   const { permissions } = usePermissions();
 
-  // Debug permissions
+  // Debug permissions and context
+  console.log('=== ATTENDANCE DEBUG ===');
   console.log('Permissions:', permissions);
+  console.log('canChooseClass:', permissions?.canChooseClass);
   console.log('canChooseSection:', permissions?.canChooseSection);
   console.log('selectedClass:', selectedClass);
   console.log('selectedSection:', selectedSection);
+  console.log('Button will be disabled:', {
+    markedCount: Object.values(attendanceMap).filter(status => status !== null).length,
+    isSubmitting,
+    noClass: !selectedClass,
+    needsSection: permissions?.canChooseSection && !selectedSection,
+  });
 
   // Track attendance status for each student
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
@@ -87,17 +95,13 @@ const StudentAttendancePage = () => {
       return;
     }
 
-    // Only require class (section is optional if user doesn't have permission)
+    // Only require class (section is always optional)
     if (!selectedClass) {
       toast.error('Please select class');
       return;
     }
 
-    // Check if section is required based on permissions
-    if (permissions?.canChooseSection && !selectedSection) {
-      toast.error('Please select section');
-      return;
-    }
+    // Section is optional - no validation needed
 
     setIsSubmitting(true);
     try {
@@ -277,7 +281,7 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('present')}
-            disabled={isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection)}
+            disabled={isSubmitting || !selectedClass}
           >
             <Check className="h-4 w-4 mr-2" />
             Select All Present
@@ -286,14 +290,14 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('absent')}
-            disabled={isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection)}
+            disabled={isSubmitting || !selectedClass}
           >
             <X className="h-4 w-4 mr-2" />
             Select All Absent
           </Button>
           <Button
             onClick={handleSubmitAttendance}
-            disabled={markedCount === 0 || isSubmitting || !selectedClass || (permissions?.canChooseSection && !selectedSection) || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
+            disabled={markedCount === 0 || isSubmitting || !selectedClass || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
             className="bg-primary"
           >
             <Save className="h-4 w-4 mr-2" />
