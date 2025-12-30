@@ -22,40 +22,43 @@ export interface AuditFields {
 
 export interface FeeMaster extends AuditFields {
   id: number;
-  college: number;
-  college_name: string;
-  fee_type: string;
-  name: string;
-  code: string;
-  description: string | null;
-  is_mandatory: boolean;
-  is_refundable: boolean;
-  display_order: number;
   is_active: boolean;
+  semester: number;
+  amount: string;
+  college: number;
+  college_name?: string;
+  program: number;
+  program_name?: string;
+  academic_year: number;
+  academic_year_name?: string;
+  fee_type: number;
+  fee_type_name?: string;
 }
 
 export interface FeeMasterListItem {
   id: number;
-  name: string;
-  code: string;
+  semester: number;
+  amount: string;
   college: number;
   college_name: string;
-  fee_type: string;
-  is_mandatory: boolean;
-  is_refundable: boolean;
+  program: number;
+  program_name: string;
+  academic_year: number;
+  fee_type: number;
+  fee_type_name: string;
   is_active: boolean;
 }
 
 export interface FeeMasterCreateInput {
-  college: number;
-  fee_type: string;
-  name: string;
-  code: string;
-  description?: string | null;
-  is_mandatory?: boolean;
-  is_refundable?: boolean;
-  display_order?: number;
   is_active?: boolean;
+  semester: number;
+  amount: string;
+  college: number;
+  program: number;
+  academic_year: number;
+  fee_type: number;
+  created_by?: string;
+  updated_by?: string;
 }
 
 export interface FeeMasterUpdateInput extends Partial<FeeMasterCreateInput> {}

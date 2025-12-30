@@ -7,8 +7,10 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeMasters } from '../../hooks/useFees';
+import { useFeeMasters, useCreateFeeMaster, useUpdateFeeMaster, useDeleteFeeMaster } from '../../hooks/useFees';
+import { FeeMaster } from '../../types/fees.types';
 import { FeeMasterForm } from './forms';
+import { toast } from 'sonner';
 
 const FeeMastersPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -18,21 +20,16 @@ const FeeMastersPage = () => {
 
   // Fetch fee masters using real API
   const { data, isLoading, error, refetch } = useFeeMasters(filters);
+  const createFeeMaster = useCreateFeeMaster();
+  const updateFeeMaster = useUpdateFeeMaster();
+  const deleteFeeMaster = useDeleteFeeMaster();
 
   const columns: Column<FeeMaster>[] = [
-    { key: 'code', label: 'Code', sortable: true },
-    { key: 'name', label: 'Fee Name', sortable: true },
-    { key: 'fee_type', label: 'Type', sortable: true },
-    {
-      key: 'is_mandatory',
-      label: 'Mandatory',
-      render: (fee) => <Badge variant={fee.is_mandatory ? 'default' : 'outline'}>{fee.is_mandatory ? 'Yes' : 'No'}</Badge>,
-    },
-    {
-      key: 'is_refundable',
-      label: 'Refundable',
-      render: (fee) => <Badge variant={fee.is_refundable ? 'success' : 'secondary'}>{fee.is_refundable ? 'Yes' : 'No'}</Badge>,
-    },
+    { key: 'program_name', label: 'Program', sortable: false },
+    { key: 'academic_year_name', label: 'Academic Year', sortable: false },
+    { key: 'fee_type_name', label: 'Fee Type', sortable: false },
+    { key: 'semester', label: 'Semester', sortable: true },
+    { key: 'amount', label: 'Amount', render: (fee) => `₹${fee.amount}` },
     {
       key: 'is_active',
       label: 'Status',
@@ -41,16 +38,6 @@ const FeeMastersPage = () => {
   ];
 
   const filterConfig: FilterConfig[] = [
-    {
-      name: 'is_mandatory',
-      label: 'Mandatory',
-      type: 'select',
-      options: [
-        { value: '', label: 'All' },
-        { value: 'true', label: 'Mandatory' },
-        { value: 'false', label: 'Optional' },
-      ],
-    },
     {
       name: 'is_active',
       label: 'Status',
@@ -79,9 +66,38 @@ const FeeMastersPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<FeeMaster>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: Partial<FeeMaster>) => {
+    try {
+      if (sidebarMode === 'create') {
+        await createFeeMaster.mutateAsync(data);
+        toast.success('Fee master created successfully');
+      } else if (sidebarMode === 'edit' && selectedFeeMaster) {
+        await updateFeeMaster.mutateAsync({ id: selectedFeeMaster.id, data });
+        toast.success('Fee master updated successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedFeeMaster(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.message || 'An error occurred');
+      console.error('Form submission error:', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedFeeMaster) return;
+
+    if (confirm('Are you sure you want to delete this fee master?')) {
+      try {
+        await deleteFeeMaster.mutateAsync(selectedFeeMaster.id);
+        toast.success('Fee master deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedFeeMaster(null);
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete fee master');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -118,58 +134,39 @@ const FeeMastersPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Code</h3>
-                <p className="mt-1 text-lg">{selectedFeeMaster.code}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Program</h3>
+                <p className="mt-1 text-lg">{selectedFeeMaster.program_name || `ID: ${selectedFeeMaster.program}`}</p>
               </div>
               <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Academic Year</h3>
+                <p className="mt-1 text-lg">{selectedFeeMaster.academic_year_name || `ID: ${selectedFeeMaster.academic_year}`}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Fee Type</h3>
-                <p className="mt-1 text-lg">{selectedFeeMaster.fee_type}</p>
+                <p className="mt-1 text-lg">{selectedFeeMaster.fee_type_name || `ID: ${selectedFeeMaster.fee_type}`}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Semester</h3>
+                <p className="mt-1 text-lg font-semibold">{selectedFeeMaster.semester}</p>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
-              <p className="mt-1 text-lg font-semibold">{selectedFeeMaster.name}</p>
+              <h3 className="text-sm font-medium text-muted-foreground">Amount</h3>
+              <p className="mt-1 text-2xl font-bold text-primary">₹{selectedFeeMaster.amount}</p>
             </div>
-            {selectedFeeMaster.description && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-                <p className="mt-1">{selectedFeeMaster.description}</p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Mandatory</h3>
-                <p className="mt-1">
-                  <Badge variant={selectedFeeMaster.is_mandatory ? 'default' : 'outline'}>
-                    {selectedFeeMaster.is_mandatory ? 'Yes' : 'No'}
-                  </Badge>
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Refundable</h3>
-                <p className="mt-1">
-                  <Badge variant={selectedFeeMaster.is_refundable ? 'success' : 'secondary'}>
-                    {selectedFeeMaster.is_refundable ? 'Yes' : 'No'}
-                  </Badge>
-                </p>
-              </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <p className="mt-1">
+                <Badge variant={selectedFeeMaster.is_active ? 'success' : 'destructive'}>
+                  {selectedFeeMaster.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Display Order</h3>
-                <p className="mt-1">{selectedFeeMaster.display_order}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
-                <p className="mt-1">
-                  <Badge variant={selectedFeeMaster.is_active ? 'success' : 'destructive'}>
-                    {selectedFeeMaster.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </p>
-              </div>
-            </div>
-            <div className="pt-4">
-              <Button onClick={handleEdit}>Edit</Button>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleEdit} className="flex-1">Edit</Button>
+              <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
             </div>
           </div>
         ) : (
