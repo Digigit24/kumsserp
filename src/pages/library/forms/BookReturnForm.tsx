@@ -2,12 +2,15 @@
  * Book Return Form Component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
+import { useBookIssues, useBooks, useLibraryMembers } from '../../../hooks/useLibrary';
+import { useUsers } from '../../../hooks/useAccounts';
 import { BookReturn, BookReturnCreateInput } from '../../../types/library.types';
 
 interface BookReturnFormProps {
@@ -25,6 +28,48 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
     remarks: '',
     is_active: true,
   });
+
+  // Fetch book issues that haven't been returned yet (status: issued)
+  const { data: issuesData } = useBookIssues({ page_size: 1000, status: 'issued' });
+  const { data: booksData } = useBooks({ page_size: 1000 });
+  const { data: membersData } = useLibraryMembers({ page_size: 1000 });
+  const { data: usersData } = useUsers({ page_size: 1000 });
+
+  // Create enriched book issues options
+  const bookIssueOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!issuesData?.results || !booksData?.results || !membersData?.results || !usersData?.results) {
+      return [];
+    }
+
+    const booksMap = new Map(booksData.results.map(b => [b.id, b]));
+    const membersMap = new Map(membersData.results.map(m => [m.id, m]));
+    const usersMap = new Map(usersData.results.map(u => [u.id, u]));
+
+    return issuesData.results.map((issue) => {
+      const bookId = typeof issue.book === 'number' ? issue.book : issue.book.id;
+      const memberId = typeof issue.member === 'number' ? issue.member : issue.member.id;
+
+      const book = booksMap.get(bookId);
+      const member = membersMap.get(memberId);
+
+      // Get member name
+      let memberName = `Member #${memberId}`;
+      if (member) {
+        const userId = typeof member.user === 'number' ? member.user : member.user?.id;
+        const user = usersMap.get(userId);
+        memberName = user?.full_name || user?.username || member.member_id || memberName;
+      }
+
+      const bookTitle = book?.title || `Book #${bookId}`;
+      const issueDate = new Date(issue.issue_date).toLocaleDateString();
+
+      return {
+        value: issue.id,
+        label: `${bookTitle} - ${memberName}`,
+        subtitle: `Issued: ${issueDate} • Due: ${new Date(issue.due_date).toLocaleDateString()}`,
+      };
+    });
+  }, [issuesData, booksData, membersData, usersData]);
 
   useEffect(() => {
     if (bookReturn) {
@@ -59,15 +104,15 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="book_issue">Book Issue ID *</Label>
-        <Input
-          id="book_issue"
-          type="number"
+        <Label htmlFor="book_issue">Book Issue *</Label>
+        <SearchableSelect
+          options={bookIssueOptions}
           value={formData.book_issue}
-          onChange={(e) => setFormData({ ...formData, book_issue: parseInt(e.target.value) })}
-          placeholder="Book issue ID"
-          required
-          min="1"
+          onChange={(value) => setFormData({ ...formData, book_issue: Number(value) })}
+          placeholder="Select book issue to return"
+          searchPlaceholder="Search by book title or member name..."
+          emptyText="No issued books available for return"
+          disabled={!!bookReturn}
         />
       </div>
 

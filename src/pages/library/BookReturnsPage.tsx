@@ -2,12 +2,13 @@
  * Book Returns Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useBookReturns, useCreateBookReturn, useUpdateBookReturn, useDeleteBookReturn } from '../../hooks/useLibrary';
+import { useBookReturns, useCreateBookReturn, useUpdateBookReturn, useDeleteBookReturn, useBookIssues, useBooks, useLibraryMembers } from '../../hooks/useLibrary';
+import { useUsers } from '../../hooks/useAccounts';
 import { BookReturn } from '../../types/library.types';
 import { BookReturnForm } from './forms/BookReturnForm';
 import { toast } from 'sonner';
@@ -19,9 +20,58 @@ const BookReturnsPage = () => {
   const [selectedReturn, setSelectedReturn] = useState<BookReturn | null>(null);
 
   const { data, isLoading, error, refetch } = useBookReturns(filters);
+  const { data: issuesData } = useBookIssues({ page_size: 1000 });
+  const { data: booksData } = useBooks({ page_size: 1000 });
+  const { data: membersData } = useLibraryMembers({ page_size: 1000 });
+  const { data: usersData } = useUsers({ page_size: 1000 });
   const createReturn = useCreateBookReturn();
   const updateReturn = useUpdateBookReturn();
   const deleteReturn = useDeleteBookReturn();
+
+  // Enrich returns data with book and member names
+  const enrichedData = useMemo(() => {
+    if (!data?.results) {
+      return data;
+    }
+
+    // Create lookup maps for available data
+    const issuesMap = issuesData?.results ? new Map(issuesData.results.map(i => [i.id, i])) : new Map();
+    const booksMap = booksData?.results ? new Map(booksData.results.map(b => [b.id, b])) : new Map();
+    const membersMap = membersData?.results ? new Map(membersData.results.map(m => [m.id, m])) : new Map();
+    const usersMap = usersData?.results ? new Map(usersData.results.map(u => [u.id, u])) : new Map();
+
+    const enrichedResults = data.results.map(returnRecord => {
+      const issueId = typeof returnRecord.book_issue === 'number' ? returnRecord.book_issue : returnRecord.book_issue?.id;
+      const issue = issuesMap.get(issueId);
+
+      // Get book and member from the issue
+      const bookId = issue ? (typeof issue.book === 'number' ? issue.book : issue.book.id) : null;
+      const memberId = issue ? (typeof issue.member === 'number' ? issue.member : issue.member.id) : null;
+
+      const book = bookId ? booksMap.get(bookId) : null;
+      const member = memberId ? membersMap.get(memberId) : null;
+
+      // Get member name
+      let memberName = memberId ? `Member #${memberId}` : 'Unknown';
+      if (member && usersMap.size > 0) {
+        const userId = typeof member.user === 'number' ? member.user : member.user?.id;
+        const user = usersMap.get(userId);
+        memberName = user?.full_name || user?.username || member.member_id || memberName;
+      } else if (member) {
+        memberName = member.member_id || memberName;
+      }
+
+      return {
+        ...returnRecord,
+        book_title: book?.title || (bookId ? `Book #${bookId}` : 'Unknown'),
+        book_author: book?.author,
+        member_name: memberName,
+        member_id_display: member?.member_id,
+      };
+    });
+
+    return { ...data, results: enrichedResults };
+  }, [data, issuesData, booksData, membersData, usersData]);
 
   const columns: Column<BookReturn>[] = [
     { key: 'book_title', label: 'Book', sortable: false },
@@ -114,7 +164,7 @@ const BookReturnsPage = () => {
         title="Book Returns List"
         description="View and manage all book returns"
         columns={columns}
-        data={data}
+        data={enrichedData}
         isLoading={isLoading}
         error={error?.message}
         onRefresh={refetch}
