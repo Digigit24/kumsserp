@@ -127,6 +127,7 @@ const FeeFinesPage = lazy(() => import("../pages/fees/FeeFinesPage"));
 
 // Library Module
 const BooksPage = lazy(() => import("../pages/library/BooksPage"));
+const BookCategoriesPage = lazy(() => import("../pages/library/BookCategoriesPage"));
 const LibraryMembersPage = lazy(() => import("../pages/library/LibraryMembersPage"));
 const BookIssuesPage = lazy(() => import("../pages/library/BookIssuesPage"));
 const BookReturnsPage = lazy(() => import("../pages/library/BookReturnsPage"));
@@ -274,6 +275,7 @@ export default function AppRoutes() {
 
                     {/* Library Module */}
                     <Route path="library/books" element={<LazyRoute component={BooksPage} />} />
+                    <Route path="library/categories" element={<LazyRoute component={BookCategoriesPage} />} />
                     <Route path="library/members" element={<LazyRoute component={LibraryMembersPage} />} />
                     <Route path="library/issues" element={<LazyRoute component={BookIssuesPage} />} />
                     <Route path="library/returns" element={<LazyRoute component={BookReturnsPage} />} />

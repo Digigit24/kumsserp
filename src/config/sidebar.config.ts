@@ -281,9 +281,9 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= ACADEMIC MANAGEMENT (ADMIN + TEACHER) =================
+  // ================= ACADEMIC (ADMIN + TEACHER) =================
   {
-    group: "Academic Management",
+    group: "Academic",
     icon: School,
     roles: ["super_admin", "college_admin", "teacher"],
     items: [
@@ -364,7 +364,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 
   // ================= STUDENTS (ADMIN + TEACHER) =================
   {
-    group: "Student Management",
+    group: "Students",
     icon: GraduationCap,
     roles: ["super_admin", "college_admin", "teacher"],
     items: [
@@ -427,7 +427,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 
   // ================= ATTENDANCE (ADMIN + TEACHER) =================
   {
-    group: "Attendance Management",
+    group: "Attendance",
     icon: ClipboardList,
     roles: ["super_admin", "college_admin", "teacher"],
     items: [
@@ -568,7 +568,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 
   // ================= LIBRARY (ADMIN + TEACHER) =================
   {
-    group: "Library Management",
+    group: "Library",
     icon: Library,
     roles: ["super_admin", "college_admin", "teacher"],
     items: [
@@ -577,6 +577,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/library/books",
         icon: BookOpen,
         roles: ["super_admin", "college_admin", "teacher"],
+      },
+      {
+        name: "Book Categories",
+        href: "/library/categories",
+        icon: FileText,
+        roles: ["super_admin", "college_admin"],
       },
       {
         name: "Book Issues",
@@ -607,7 +613,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 
   // ================= HR (ADMIN ONLY) =================
   {
-    group: "HR Management",
+    group: "HR",
     icon: Briefcase,
     roles: ["super_admin", "college_admin"],
     items: [
@@ -667,7 +673,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
 
   // ================= STORE (ADMIN ONLY) =================
   {
-    group: "Store Management",
+    group: "Store",
     icon: Store,
     roles: ["super_admin", "college_admin"],
     items: [
