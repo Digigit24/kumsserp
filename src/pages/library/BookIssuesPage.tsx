@@ -33,14 +33,10 @@ const BookIssuesPage = () => {
       return data;
     }
 
-    // Return original data if we don't have the lookup data yet
-    if (!booksData?.results || !membersData?.results || !usersData?.results) {
-      return data;
-    }
-
-    const booksMap = new Map(booksData.results.map(b => [b.id, b]));
-    const membersMap = new Map(membersData.results.map(m => [m.id, m]));
-    const usersMap = new Map(usersData.results.map(u => [u.id, u]));
+    // Create lookup maps for available data
+    const booksMap = booksData?.results ? new Map(booksData.results.map(b => [b.id, b])) : new Map();
+    const membersMap = membersData?.results ? new Map(membersData.results.map(m => [m.id, m])) : new Map();
+    const usersMap = usersData?.results ? new Map(usersData.results.map(u => [u.id, u])) : new Map();
 
     const enrichedResults = data.results.map(issue => {
       const bookId = typeof issue.book === 'number' ? issue.book : issue.book.id;
@@ -51,10 +47,12 @@ const BookIssuesPage = () => {
 
       // Get the user name from the member's user ID
       let memberName = `Member #${memberId}`;
-      if (member) {
+      if (member && usersMap.size > 0) {
         const userId = typeof member.user === 'number' ? member.user : member.user?.id;
         const user = usersMap.get(userId);
         memberName = user?.full_name || user?.username || member.member_id || memberName;
+      } else if (member) {
+        memberName = member.member_id || memberName;
       }
 
       return {
