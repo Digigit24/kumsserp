@@ -8,8 +8,10 @@ import {
   Calendar,
   CheckSquare,
   ClipboardList,
+  Coins,
   CreditCard,
   FileText,
+  Folder,
   GraduationCap,
   Home,
   Library,
@@ -18,6 +20,7 @@ import {
   School,
   Settings,
   Shield,
+  ShoppingCart,
   Store,
   Users,
 } from "lucide-react";
@@ -735,6 +738,24 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Store Items",
         href: "/store/items",
         icon: Store,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Categories",
+        href: "/store/categories",
+        icon: Folder,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Credits",
+        href: "/store/credits",
+        icon: Coins,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Sale Items",
+        href: "/store/sale-items",
+        icon: ShoppingCart,
         roles: ["super_admin", "college_admin"],
       },
       {
