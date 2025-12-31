@@ -242,6 +242,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         icon: FileText,
         roles: ["super_admin", "college_admin"],
       },
+      {
+        name: "Permissions",
+        href: "/core/permissions",
+        icon: Shield,
+        roles: ["super_admin", "college_admin"],
+      },
     ],
   },
 

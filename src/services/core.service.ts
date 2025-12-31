@@ -599,3 +599,55 @@ export const activityLogApi = {
     return fetchApi<ActivityLog>(buildApiUrl(API_ENDPOINTS.activityLogs.detail(id)));
   },
 };
+
+// ============================================================================
+// PERMISSIONS API
+// ============================================================================
+
+export const permissionsApi = {
+  /**
+   * Get permissions for a role
+   */
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/core/permissions/${queryString}`)
+    );
+  },
+
+  /**
+   * Get permission by ID
+   */
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/core/permissions/${id}/`));
+  },
+
+  /**
+   * Create or update permissions for a role
+   */
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/core/permissions/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update permissions
+   */
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/core/permissions/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete permissions
+   */
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/core/permissions/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
