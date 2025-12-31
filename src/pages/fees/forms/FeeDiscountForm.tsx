@@ -49,12 +49,23 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
 
     const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
+
+    // Validate college ID is available
+    if (!collegeId) {
+      alert('College ID is not set. Please ensure you are logged in properly.');
+      return;
+    }
+
+    const parsedCollegeId = parseInt(collegeId);
+    if (isNaN(parsedCollegeId)) {
+      alert('Invalid college ID format. Please contact support.');
+      return;
+    }
+
     const submitData: any = { ...formData };
 
     // Auto-populate college ID
-    if (collegeId) {
-      submitData.college = parseInt(collegeId);
-    }
+    submitData.college = parsedCollegeId;
 
     // Auto-populate user IDs
     if (!feeDiscount && userId) {
