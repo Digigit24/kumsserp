@@ -24,47 +24,49 @@ const FeeFinesPage = () => {
   const deleteFeeFine = useDeleteFeeFine();
 
   const columns: Column<any>[] = [
-    { key: 'name', label: 'Fine Name', sortable: true },
     {
-      key: 'fine_type',
-      label: 'Type',
-      render: (fine) => (
-        <Badge variant="secondary">
-          {fine.fine_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        </Badge>
-      ),
+      key: 'student',
+      label: 'Student',
+      render: (fine) => fine.student_name || `Student #${fine.student}`,
       sortable: true,
     },
     {
-      key: 'calculation_type',
-      label: 'Calculation',
-      render: (fine) => (
-        <Badge variant="outline">
-          {fine.calculation_type === 'per_day' ? 'Per Day' : fine.calculation_type.replace(/\b\w/g, l => l.toUpperCase())}
-        </Badge>
-      ),
-    },
-    {
       key: 'amount',
-      label: 'Amount',
+      label: 'Fine Amount',
       render: (fine) => (
-        <span className="font-semibold">
-          {fine.calculation_type === 'percentage' ? `${fine.amount}%` : `₹${fine.amount}`}
+        <span className="font-semibold text-red-600">
+          ₹{parseFloat(fine.amount).toLocaleString()}
         </span>
       ),
       sortable: true,
     },
     {
-      key: 'grace_period_days',
-      label: 'Grace Period',
-      render: (fine) => `${fine.grace_period_days} days`,
+      key: 'reason',
+      label: 'Reason',
+      render: (fine) => (
+        <span className="max-w-xs truncate">{fine.reason || 'N/A'}</span>
+      ),
+    },
+    {
+      key: 'fine_date',
+      label: 'Fine Date',
+      render: (fine) => new Date(fine.fine_date).toLocaleDateString(),
       sortable: true,
+    },
+    {
+      key: 'is_paid',
+      label: 'Payment Status',
+      render: (fine) => (
+        <Badge variant={fine.is_paid ? 'success' : 'destructive'}>
+          {fine.is_paid ? 'Paid' : 'Unpaid'}
+        </Badge>
+      ),
     },
     {
       key: 'is_active',
       label: 'Status',
       render: (fine) => (
-        <Badge variant={fine.is_active ? 'success' : 'destructive'}>
+        <Badge variant={fine.is_active ? 'default' : 'secondary'}>
           {fine.is_active ? 'Active' : 'Inactive'}
         </Badge>
       ),
@@ -73,15 +75,13 @@ const FeeFinesPage = () => {
 
   const filterConfig: FilterConfig[] = [
     {
-      name: 'fine_type',
-      label: 'Fine Type',
+      name: 'is_paid',
+      label: 'Payment Status',
       type: 'select',
       options: [
         { value: '', label: 'All' },
-        { value: 'late_payment', label: 'Late Payment' },
-        { value: 'damage', label: 'Damage' },
-        { value: 'library', label: 'Library' },
-        { value: 'other', label: 'Other' },
+        { value: 'true', label: 'Paid' },
+        { value: 'false', label: 'Unpaid' },
       ],
     },
     {
@@ -178,63 +178,55 @@ const FeeFinesPage = () => {
       <DetailSidebar
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        title={sidebarMode === 'create' ? 'Create Fee Fine' : selectedFine?.name || 'Fee Fine'}
+        title={sidebarMode === 'create' ? 'Create Fee Fine' : `Fine #${selectedFine?.id}` || 'Fee Fine'}
         mode={sidebarMode}
       >
         {sidebarMode === 'view' && selectedFine ? (
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
-              <p className="mt-1 text-lg font-semibold">{selectedFine.name}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Fine Type</h3>
-                <p className="mt-1">
-                  <Badge variant="secondary">
-                    {selectedFine.fine_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Calculation Type</h3>
-                <p className="mt-1">
-                  <Badge variant="outline">
-                    {selectedFine.calculation_type === 'per_day' ? 'Per Day' : selectedFine.calculation_type.replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
-                </p>
-              </div>
+              <h3 className="text-sm font-medium text-muted-foreground">Student</h3>
+              <p className="mt-1 text-lg font-semibold">{selectedFine.student_name || `Student #${selectedFine.student}`}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Fine Amount</h3>
               <p className="mt-1 text-2xl font-bold text-red-600">
-                {selectedFine.calculation_type === 'percentage'
-                  ? `${selectedFine.amount}%`
-                  : `₹${selectedFine.amount}`}
+                ₹{parseFloat(selectedFine.amount).toLocaleString()}
               </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Reason</h3>
+              <p className="mt-1">{selectedFine.reason || 'N/A'}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Grace Period</h3>
-                <p className="mt-1">{selectedFine.grace_period_days} days</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Fine Date</h3>
+                <p className="mt-1">{new Date(selectedFine.fine_date).toLocaleDateString()}</p>
               </div>
-              {selectedFine.max_fine_amount && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Max Fine Amount</h3>
-                  <p className="mt-1">₹{selectedFine.max_fine_amount.toLocaleString()}</p>
-                </div>
-              )}
-            </div>
-            {selectedFine.description && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-                <p className="mt-1">{selectedFine.description}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Payment Status</h3>
+                <p className="mt-1">
+                  <Badge variant={selectedFine.is_paid ? 'success' : 'destructive'}>
+                    {selectedFine.is_paid ? 'Paid' : 'Unpaid'}
+                  </Badge>
+                </p>
+              </div>
+            </div>
+            {selectedFine.is_paid && selectedFine.paid_date && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Paid Date</h3>
+                <p className="mt-1">{new Date(selectedFine.paid_date).toLocaleDateString()}</p>
+              </div>
+            )}
+            {selectedFine.fee_structure_name && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Fee Structure</h3>
+                <p className="mt-1">{selectedFine.fee_structure_name}</p>
               </div>
             )}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
               <p className="mt-1">
-                <Badge variant={selectedFine.is_active ? 'success' : 'destructive'}>
+                <Badge variant={selectedFine.is_active ? 'default' : 'secondary'}>
                   {selectedFine.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </p>
