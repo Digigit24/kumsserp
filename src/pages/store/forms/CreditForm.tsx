@@ -61,7 +61,9 @@ export const CreditForm = ({ credit, onSubmit, onCancel }: CreditFormProps) => {
 
   const studentsOptions = studentsData?.results?.map((student: any) => ({
     value: student.id,
-    label: `${student.first_name || ''} ${student.last_name || ''} (${student.student_id || student.id})`.trim(),
+    label: student.full_name
+      ? `${student.full_name} (${student.admission_number || student.id})`
+      : `${student.first_name || ''} ${student.last_name || ''} (${student.admission_number || student.id})`.trim(),
   })) || [];
 
   return (
