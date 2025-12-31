@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { storeItemsApi, saleItemsApi, salesApi, categoriesApi, creditsApi } from '../services/store.service';
+import { storeItemsApi, saleItemsApi, salesApi, categoriesApi, creditsApi, printJobsApi } from '../services/store.service';
 
 // ============================================================================
 // CATEGORIES
@@ -372,6 +372,132 @@ export const useDeleteCredit = () => {
     mutationFn: (id: number) => creditsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-credits'] });
+    },
+  });
+};
+
+// ============================================================================
+// PRINT JOBS
+// ============================================================================
+
+/**
+ * Fetch print jobs with optional filters
+ */
+export const usePrintJobs = (filters?: any) => {
+  return useQuery({
+    queryKey: ['store-print-jobs', filters],
+    queryFn: () => printJobsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Fetch a single print job
+ */
+export const usePrintJob = (id: number) => {
+  return useQuery({
+    queryKey: ['store-print-jobs', id],
+    queryFn: () => printJobsApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Create a new print job
+ */
+export const useCreatePrintJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+      const collegeId = localStorage.getItem('kumss_college_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      if (collegeId) {
+        submitData.college = parseInt(collegeId);
+      }
+
+      return printJobsApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-print-jobs'] });
+    },
+  });
+};
+
+/**
+ * Update a print job
+ */
+export const useUpdatePrintJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return printJobsApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-print-jobs'] });
+    },
+  });
+};
+
+/**
+ * Partially update a print job (PATCH)
+ */
+export const usePartialUpdatePrintJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return printJobsApi.partialUpdate(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-print-jobs'] });
+    },
+  });
+};
+
+/**
+ * Delete a print job
+ */
+export const useDeletePrintJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => printJobsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-print-jobs'] });
     },
   });
 };

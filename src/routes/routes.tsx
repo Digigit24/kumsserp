@@ -29,6 +29,9 @@ const Dashboard = lazy(() => import("../pages/Dashboard").then(m => ({ default: 
 const Settings = lazy(() => import("../pages/Settings"));
 const DebugPage = lazy(() => import("../pages/debug/DebugPage").then(m => ({ default: m.DebugPage })));
 
+// System Module
+const PermissionsPage = lazy(() => import("../pages/system/PermissionsPage").then(m => ({ default: m.PermissionsPage })));
+
 // Core Module
 const CollegesPage = lazy(() => import("../pages/core/CollegesPage"));
 const AcademicYearsPage = lazy(() => import("../pages/core/AcademicYearsPage"));
@@ -188,6 +191,9 @@ export default function AppRoutes() {
                     <Route path="dashboard" element={<LazyRoute component={Dashboard} />} />
                     <Route path="settings" element={<LazyRoute component={Settings} />} />
                     <Route path="debug" element={<LazyRoute component={DebugPage} />} />
+
+                    {/* System Module */}
+                    <Route path="system/permissions" element={<LazyRoute component={PermissionsPage} />} />
 
                     {/* Core Module */}
                     <Route path="core/colleges" element={<LazyRoute component={CollegesPage} />} />
