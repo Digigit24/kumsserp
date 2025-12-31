@@ -73,8 +73,14 @@ export const FeeInstallmentForm = ({ feeInstallment, onSubmit, onCancel }: FeeIn
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
     const submitData: any = { ...formData };
+
+    // Auto-populate college ID if not already set
+    if (collegeId && !submitData.college) {
+      submitData.college = parseInt(collegeId);
+    }
 
     if (!feeInstallment && userId) {
       submitData.created_by = userId;

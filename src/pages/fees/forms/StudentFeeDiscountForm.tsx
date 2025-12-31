@@ -76,8 +76,14 @@ export const StudentFeeDiscountForm = ({ studentFeeDiscount, onSubmit, onCancel 
       return;
     }
 
+    const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
     const submitData: any = { ...formData };
+
+    // Auto-populate college ID
+    if (collegeId) {
+      submitData.college = parseInt(collegeId);
+    }
 
     if (!studentFeeDiscount && userId) {
       submitData.created_by = userId;

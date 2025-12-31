@@ -71,8 +71,14 @@ export const FeeReminderForm = ({ feeReminder, onSubmit, onCancel }: FeeReminder
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
     const submitData: any = { ...formData };
+
+    // Auto-populate college ID
+    if (collegeId) {
+      submitData.college = parseInt(collegeId);
+    }
 
     if (!feeReminder && userId) {
       submitData.created_by = userId;
