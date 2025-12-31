@@ -25,6 +25,7 @@ const FeeTypesPage = () => {
 
   const columns: Column<FeeType>[] = [
     { key: 'name', label: 'Name', sortable: true },
+    { key: 'fee_group_name', label: 'Fee Group', sortable: false },
     { key: 'code', label: 'Code', sortable: true },
     { key: 'description', label: 'Description', sortable: false },
     {
@@ -136,6 +137,10 @@ const FeeTypesPage = () => {
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
               <p className="mt-1 text-lg font-semibold">{selectedFeeType.name}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Fee Group</h3>
+              <p className="mt-1 text-lg">{selectedFeeType.fee_group_name || `ID: ${selectedFeeType.fee_group}`}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Code</h3>

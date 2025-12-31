@@ -24,6 +24,8 @@ export interface FeeType extends AuditFields {
   id: number;
   college: number;
   college_name?: string;
+  fee_group: number;
+  fee_group_name?: string;
   name: string;
   code: string;
   description: string | null;
@@ -32,6 +34,7 @@ export interface FeeType extends AuditFields {
 
 export interface FeeTypeCreateInput {
   college: number;
+  fee_group: number;
   name: string;
   code: string;
   description?: string | null;

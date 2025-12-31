@@ -3,12 +3,14 @@
  * Create/Edit form for fee types
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { FeeType, FeeTypeCreateInput } from '../../../types/fees.types';
+import { useFeeGroups } from '../../../hooks/useFees';
 
 interface FeeTypeFormProps {
   feeType: FeeType | null;
@@ -22,8 +24,22 @@ export const FeeTypeForm = ({ feeType, onSubmit, onCancel }: FeeTypeFormProps) =
     code: '',
     description: '',
     college: 0,
+    fee_group: 0,
     is_active: true,
   });
+
+  // Fetch fee groups for dropdown
+  const { data: feeGroupsData } = useFeeGroups({ page_size: 1000 });
+
+  // Create options for fee groups dropdown
+  const feeGroupOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!feeGroupsData?.results) return [];
+    return feeGroupsData.results.map((group) => ({
+      value: group.id,
+      label: group.name,
+      subtitle: group.description || '',
+    }));
+  }, [feeGroupsData]);
 
   useEffect(() => {
     if (feeType) {
@@ -32,6 +48,7 @@ export const FeeTypeForm = ({ feeType, onSubmit, onCancel }: FeeTypeFormProps) =
         code: feeType.code,
         description: feeType.description || '',
         college: feeType.college,
+        fee_group: feeType.fee_group,
         is_active: feeType.is_active,
       });
     } else {
@@ -78,6 +95,18 @@ export const FeeTypeForm = ({ feeType, onSubmit, onCancel }: FeeTypeFormProps) =
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="Enter fee type name"
           required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="fee_group">Fee Group *</Label>
+        <SearchableSelect
+          options={feeGroupOptions}
+          value={formData.fee_group}
+          onChange={(value) => setFormData({ ...formData, fee_group: Number(value) })}
+          placeholder="Select fee group"
+          searchPlaceholder="Search fee groups..."
+          emptyText="No fee groups available"
         />
       </div>
 
