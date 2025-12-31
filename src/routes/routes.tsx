@@ -131,6 +131,8 @@ const FeeReceiptsPage = lazy(() => import("../pages/fees/FeeReceiptsPage"));
 const StudentFeeDiscountsPage = lazy(() => import("../pages/fees/StudentFeeDiscountsPage"));
 const FeeRefundsPage = lazy(() => import("../pages/fees/FeeRefundsPage"));
 const FeeRemindersPage = lazy(() => import("../pages/fees/FeeRemindersPage"));
+const BankPaymentsPage = lazy(() => import("../pages/fees/BankPaymentsPage"));
+const OnlinePaymentsPage = lazy(() => import("../pages/fees/OnlinePaymentsPage"));
 
 // Library Module
 const BooksPage = lazy(() => import("../pages/library/BooksPage"));
@@ -285,6 +287,8 @@ export default function AppRoutes() {
                     <Route path="fees/student-fee-discounts" element={<LazyRoute component={StudentFeeDiscountsPage} />} />
                     <Route path="fees/refunds" element={<LazyRoute component={FeeRefundsPage} />} />
                     <Route path="fees/reminders" element={<LazyRoute component={FeeRemindersPage} />} />
+                    <Route path="fees/bank-payments" element={<LazyRoute component={BankPaymentsPage} />} />
+                    <Route path="fees/online-payments" element={<LazyRoute component={OnlinePaymentsPage} />} />
                     <Route path="fees/my-fees" element={<LazyRoute component={Fees} />} />
 
                     {/* Library Module */}

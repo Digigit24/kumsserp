@@ -15,3 +15,5 @@ export { FeeReceiptForm } from './FeeReceiptForm';
 export { StudentFeeDiscountForm } from './StudentFeeDiscountForm';
 export { FeeRefundForm } from './FeeRefundForm';
 export { FeeReminderForm } from './FeeReminderForm';
+export { BankPaymentForm } from './BankPaymentForm';
+export { OnlinePaymentForm } from './OnlinePaymentForm';
