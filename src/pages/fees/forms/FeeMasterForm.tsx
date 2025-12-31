@@ -10,7 +10,7 @@ import { Label } from '../../../components/ui/label';
 import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { FeeMaster, FeeMasterCreateInput } from '../../../types/fees.types';
 import { usePrograms } from '../../../hooks/useAcademic';
-import { useAcademicSessions } from '../../../hooks/useCore';
+import { useAcademicYears } from '../../../hooks/useCore';
 import { useFeeTypes } from '../../../hooks/useFees';
 
 interface FeeMasterFormProps {
@@ -32,7 +32,7 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
 
   // Fetch dropdowns data
   const { data: programsData } = usePrograms({ page_size: 1000 });
-  const { data: academicSessionsData } = useAcademicSessions({ page_size: 1000 });
+  const { data: academicYearsData } = useAcademicYears({ page_size: 1000 });
   const { data: feeTypesData } = useFeeTypes({ page_size: 1000 });
 
   // Create options for dropdowns
@@ -46,13 +46,13 @@ export const FeeMasterForm = ({ feeMaster, onSubmit, onCancel }: FeeMasterFormPr
   }, [programsData]);
 
   const academicYearOptions: SearchableSelectOption[] = useMemo(() => {
-    if (!academicSessionsData?.results) return [];
-    return academicSessionsData.results.map((session) => ({
-      value: session.id,
-      label: session.name,
-      subtitle: `${session.start_date} to ${session.end_date}`,
+    if (!academicYearsData?.results) return [];
+    return academicYearsData.results.map((year) => ({
+      value: year.id,
+      label: year.year || `Academic Year ${year.id}`,
+      subtitle: year.description || `${year.start_date || ''} - ${year.end_date || ''}`,
     }));
-  }, [academicSessionsData]);
+  }, [academicYearsData]);
 
   const feeTypeOptions: SearchableSelectOption[] = useMemo(() => {
     if (!feeTypesData?.results) return [];
