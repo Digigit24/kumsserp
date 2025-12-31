@@ -245,71 +245,33 @@ export interface FeeFineUpdateInput extends Partial<FeeFineCreateInput> {}
 // FEE COLLECTION TYPES
 // ============================================================================
 
-export interface FeeCollectionItem {
-  fee_master: number;
-  fee_master_name: string;
-  amount: number;
-  discount_amount: number;
-  fine_amount: number;
-  net_amount: number;
-}
-
 export interface FeeCollection extends AuditFields {
   id: number;
-  college: number;
-  college_name: string;
   student: number;
-  student_name: string;
-  student_roll_number: string;
-  academic_session: number;
-  session_name: string;
-  receipt_number: string;
+  student_name?: string;
+  amount: string;
+  payment_method: string;
   payment_date: string;
-  fee_items: FeeCollectionItem[];
-  total_amount: number;
-  discount_amount: number;
-  fine_amount: number;
-  net_amount: number;
-  amount_paid: number;
-  payment_mode: 'cash' | 'card' | 'upi' | 'net_banking' | 'cheque' | 'demand_draft';
+  status: string;
   transaction_id: string | null;
   remarks: string | null;
-  collected_by: UserBasic | null;
-  is_cancelled: boolean;
-  cancelled_at: string | null;
-  cancelled_by: UserBasic | null;
-  cancellation_reason: string | null;
-}
-
-export interface FeeCollectionListItem {
-  id: number;
-  receipt_number: string;
-  student: number;
-  student_name: string;
-  student_roll_number: string;
-  payment_date: string;
-  net_amount: number;
-  amount_paid: number;
-  payment_mode: string;
-  collected_by_name: string | null;
-  is_cancelled: boolean;
+  collected_by: string | null;
+  collected_by_name?: string;
+  is_active: boolean;
 }
 
 export interface FeeCollectionCreateInput {
-  college: number;
   student: number;
-  academic_session: number;
+  amount: string;
+  payment_method: string;
   payment_date: string;
-  fee_items: {
-    fee_master: number;
-    amount: number;
-    discount_amount?: number;
-    fine_amount?: number;
-  }[];
-  amount_paid: number;
-  payment_mode: 'cash' | 'card' | 'upi' | 'net_banking' | 'cheque' | 'demand_draft';
+  status: string;
   transaction_id?: string | null;
   remarks?: string | null;
+  collected_by?: string;
+  created_by?: string;
+  updated_by?: string;
+  is_active?: boolean;
 }
 
 export interface FeeCollectionUpdateInput extends Partial<FeeCollectionCreateInput> {}

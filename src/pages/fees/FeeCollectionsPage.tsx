@@ -25,31 +25,38 @@ const FeeCollectionsPage = () => {
   const deleteFeeCollection = useDeleteFeeCollection();
 
   const columns: Column<any>[] = [
-    { key: 'receipt_number', label: 'Receipt No', sortable: true },
-    { key: 'student_name', label: 'Student Name', sortable: true },
-    { key: 'student_roll_number', label: 'Roll No', sortable: true },
+    { key: 'student_name', label: 'Student Name', sortable: false },
     { key: 'payment_date', label: 'Payment Date', sortable: true },
     {
-      key: 'amount_paid',
-      label: 'Amount Paid',
-      render: (collection) => <span className="font-semibold">₹{collection.amount_paid.toLocaleString()}</span>,
+      key: 'amount',
+      label: 'Amount',
+      render: (collection) => <span className="font-semibold">₹{parseFloat(collection.amount).toLocaleString()}</span>,
       sortable: true,
     },
     {
-      key: 'payment_mode',
-      label: 'Payment Mode',
+      key: 'payment_method',
+      label: 'Payment Method',
       render: (collection) => (
         <Badge variant="secondary">
-          {collection.payment_mode.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {collection.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
         </Badge>
       ),
     },
     {
-      key: 'is_cancelled',
+      key: 'status',
       label: 'Status',
       render: (collection) => (
-        <Badge variant={collection.is_cancelled ? 'destructive' : 'success'}>
-          {collection.is_cancelled ? 'Cancelled' : 'Active'}
+        <Badge variant={collection.status === 'completed' ? 'success' : collection.status === 'pending' ? 'secondary' : 'destructive'}>
+          {collection.status.replace(/\b\w/g, l => l.toUpperCase())}
+        </Badge>
+      ),
+    },
+    {
+      key: 'is_active',
+      label: 'Active',
+      render: (collection) => (
+        <Badge variant={collection.is_active ? 'success' : 'destructive'}>
+          {collection.is_active ? 'Active' : 'Inactive'}
         </Badge>
       ),
     },
@@ -57,8 +64,8 @@ const FeeCollectionsPage = () => {
 
   const filterConfig: FilterConfig[] = [
     {
-      name: 'payment_mode',
-      label: 'Payment Mode',
+      name: 'payment_method',
+      label: 'Payment Method',
       type: 'select',
       options: [
         { value: '', label: 'All' },
@@ -71,13 +78,24 @@ const FeeCollectionsPage = () => {
       ],
     },
     {
-      name: 'is_cancelled',
+      name: 'status',
       label: 'Status',
       type: 'select',
       options: [
         { value: '', label: 'All' },
-        { value: 'false', label: 'Active' },
-        { value: 'true', label: 'Cancelled' },
+        { value: 'completed', label: 'Completed' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'failed', label: 'Failed' },
+      ],
+    },
+    {
+      name: 'is_active',
+      label: 'Active',
+      type: 'select',
+      options: [
+        { value: '', label: 'All' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
       ],
     },
   ];
@@ -159,7 +177,7 @@ const FeeCollectionsPage = () => {
       <DetailSidebar
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        title={sidebarMode === 'create' ? 'Collect Fee' : `Receipt ${selectedCollection?.receipt_number || ''}`}
+        title={sidebarMode === 'create' ? 'Collect Fee' : `Fee Collection #${selectedCollection?.id || ''}`}
         mode={sidebarMode}
         width="lg"
       >
@@ -167,70 +185,48 @@ const FeeCollectionsPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Receipt Number</h3>
-                <p className="mt-1 text-lg font-semibold">{selectedCollection.receipt_number}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Student Name</h3>
+                <p className="mt-1 text-lg font-semibold">{selectedCollection.student_name || '-'}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Payment Date</h3>
                 <p className="mt-1">{selectedCollection.payment_date}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Student Name</h3>
-                <p className="mt-1">{selectedCollection.student_name}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Roll Number</h3>
-                <p className="mt-1">{selectedCollection.student_roll_number}</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Academic Session</h3>
-              <p className="mt-1">{selectedCollection.session_name}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-4 p-3 bg-muted rounded">
-              <div>
-                <h3 className="text-xs font-medium text-muted-foreground">Total Amount</h3>
-                <p className="mt-1 text-lg">₹{selectedCollection.total_amount.toLocaleString()}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-medium text-muted-foreground">Discount</h3>
-                <p className="mt-1 text-lg text-green-600">-₹{selectedCollection.discount_amount.toLocaleString()}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-medium text-muted-foreground">Fine</h3>
-                <p className="mt-1 text-lg text-red-600">+₹{selectedCollection.fine_amount.toLocaleString()}</p>
-              </div>
-            </div>
             <div className="p-3 bg-primary/10 rounded">
-              <h3 className="text-sm font-medium text-muted-foreground">Net Amount</h3>
-              <p className="mt-1 text-2xl font-bold">₹{selectedCollection.net_amount.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-green-50 rounded">
-              <h3 className="text-sm font-medium text-muted-foreground">Amount Paid</h3>
-              <p className="mt-1 text-2xl font-bold text-green-600">₹{selectedCollection.amount_paid.toLocaleString()}</p>
+              <h3 className="text-sm font-medium text-muted-foreground">Amount</h3>
+              <p className="mt-1 text-2xl font-bold">₹{parseFloat(selectedCollection.amount).toLocaleString()}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Payment Mode</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">Payment Method</h3>
                 <p className="mt-1">
                   <Badge variant="secondary">
-                    {selectedCollection.payment_mode.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {selectedCollection.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </Badge>
                 </p>
               </div>
-              {selectedCollection.transaction_id && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Transaction ID</h3>
-                  <p className="mt-1">{selectedCollection.transaction_id}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+                <p className="mt-1">
+                  <Badge variant={selectedCollection.status === 'completed' ? 'success' : selectedCollection.status === 'pending' ? 'secondary' : 'destructive'}>
+                    {selectedCollection.status.replace(/\b\w/g, l => l.toUpperCase())}
+                  </Badge>
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Collected By</h3>
-              <p className="mt-1">{selectedCollection.collected_by}</p>
-            </div>
+            {selectedCollection.transaction_id && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Transaction ID</h3>
+                <p className="mt-1">{selectedCollection.transaction_id}</p>
+              </div>
+            )}
+            {selectedCollection.collected_by && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Collected By</h3>
+                <p className="mt-1">{selectedCollection.collected_by_name || selectedCollection.collected_by}</p>
+              </div>
+            )}
             {selectedCollection.remarks && (
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Remarks</h3>
@@ -238,14 +234,14 @@ const FeeCollectionsPage = () => {
               </div>
             )}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Active Status</h3>
               <p className="mt-1">
-                <Badge variant={selectedCollection.is_cancelled ? 'destructive' : 'success'}>
-                  {selectedCollection.is_cancelled ? 'Cancelled' : 'Active'}
+                <Badge variant={selectedCollection.is_active ? 'success' : 'destructive'}>
+                  {selectedCollection.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </p>
             </div>
-            {!selectedCollection.is_cancelled && (
+            {selectedCollection.is_active && (
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleEdit} className="flex-1">Edit</Button>
                 <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
