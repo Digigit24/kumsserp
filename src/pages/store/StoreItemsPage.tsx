@@ -3,7 +3,7 @@
  * Main inventory management interface
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,48 +33,78 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  mockStoreItems,
-  getStockStatusColor,
-  formatCurrency,
-  getStoreStatistics,
-  type StoreItem,
-  type ItemCategory,
-  type StockStatus,
-} from '@/data/storeMockData';
+import { useStoreItems, useCreateStoreItem, useUpdateStoreItem, useDeleteStoreItem } from '@/hooks/useStore';
+import { toast } from 'sonner';
+
+type ItemCategory = 'stationery' | 'equipment' | 'consumables' | 'books' | 'electronics' | 'furniture' | 'printing';
+type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'overstocked';
+
+const getStockStatusColor = (status: StockStatus): string => {
+  switch (status) {
+    case 'in_stock': return 'success';
+    case 'low_stock': return 'warning';
+    case 'out_of_stock': return 'destructive';
+    case 'overstocked': return 'default';
+    default: return 'default';
+  }
+};
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 export const StoreItemsPage: React.FC = () => {
-  const [items, setItems] = useState<StoreItem[]>(mockStoreItems);
-  const [selectedItem, setSelectedItem] = useState<StoreItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  // API hooks
+  const { data: itemsData, isLoading, error, refetch } = useStoreItems();
+  const createItem = useCreateStoreItem();
+  const updateItem = useUpdateStoreItem();
+  const deleteItem = useDeleteStoreItem();
+
+  const items = itemsData?.results || [];
+
   // Form state
   const [itemForm, setItemForm] = useState({
-    itemCode: '',
+    item_code: '',
     name: '',
     category: 'stationery' as ItemCategory,
     description: '',
     unit: 'Piece',
-    currentStock: 0,
-    minStockLevel: 10,
-    maxStockLevel: 100,
-    reorderPoint: 20,
-    unitPrice: 0,
+    current_stock: 0,
+    min_stock_level: 10,
+    max_stock_level: 100,
+    reorder_point: 20,
+    unit_price: 0,
     location: '',
     supplier: '',
   });
 
-  const stats = getStoreStatistics();
+  // Calculate statistics
+  const stats = useMemo(() => {
+    return {
+      totalItems: items.length,
+      totalValue: items.reduce((sum: number, item: any) => sum + (parseFloat(item.total_value || 0)), 0),
+      lowStockItems: items.filter((i: any) => i.status === 'low_stock').length,
+      outOfStockItems: items.filter((i: any) => i.status === 'out_of_stock').length,
+    };
+  }, [items]);
 
   // Filter items
-  const filteredItems = items.filter((item) => {
+  const filteredItems = items.filter((item: any) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.item_code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
@@ -82,83 +112,76 @@ export const StoreItemsPage: React.FC = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const handleCreateItem = () => {
-    const totalValue = itemForm.currentStock * itemForm.unitPrice;
-    let status: StockStatus = 'in_stock';
-
-    if (itemForm.currentStock === 0) status = 'out_of_stock';
-    else if (itemForm.currentStock < itemForm.minStockLevel) status = 'low_stock';
-    else if (itemForm.currentStock > itemForm.maxStockLevel) status = 'overstocked';
-
-    const newItem: StoreItem = {
-      id: items.length + 1,
-      ...itemForm,
-      totalValue,
-      status,
-      lastRestocked: new Date().toISOString().split('T')[0],
-    };
-
-    setItems([newItem, ...items]);
-    setIsCreateOpen(false);
-    resetForm();
-  };
-
-  const handleUpdateItem = () => {
-    if (!selectedItem) return;
-
-    const totalValue = itemForm.currentStock * itemForm.unitPrice;
-    let status: StockStatus = 'in_stock';
-
-    if (itemForm.currentStock === 0) status = 'out_of_stock';
-    else if (itemForm.currentStock < itemForm.minStockLevel) status = 'low_stock';
-    else if (itemForm.currentStock > itemForm.maxStockLevel) status = 'overstocked';
-
-    setItems(items.map(item =>
-      item.id === selectedItem.id
-        ? { ...item, ...itemForm, totalValue, status, lastRestocked: new Date().toISOString().split('T')[0] }
-        : item
-    ));
-
-    setSelectedItem(null);
-    resetForm();
-  };
-
-  const handleDeleteItem = (id: number) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      setItems(items.filter(item => item.id !== id));
+  const handleCreateItem = async () => {
+    try {
+      await createItem.mutateAsync(itemForm);
+      toast.success('Item created successfully');
+      setIsCreateOpen(false);
+      resetForm();
+      refetch();
+    } catch (err: any) {
+      console.error('Create item error:', err);
+      toast.error(err?.message || 'Failed to create item');
     }
   };
 
-  const handleEditItem = (item: StoreItem) => {
+  const handleUpdateItem = async () => {
+    if (!selectedItem) return;
+
+    try {
+      await updateItem.mutateAsync({ id: selectedItem.id, data: itemForm });
+      toast.success('Item updated successfully');
+      setSelectedItem(null);
+      resetForm();
+      refetch();
+    } catch (err: any) {
+      console.error('Update item error:', err);
+      toast.error(err?.message || 'Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteItem.mutateAsync(id);
+        toast.success('Item deleted successfully');
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete item');
+      }
+    }
+  };
+
+  const handleEditItem = (item: any) => {
     setSelectedItem(item);
     setItemForm({
-      itemCode: item.itemCode,
-      name: item.name,
-      category: item.category,
-      description: item.description,
-      unit: item.unit,
-      currentStock: item.currentStock,
-      minStockLevel: item.minStockLevel,
-      maxStockLevel: item.maxStockLevel,
-      reorderPoint: item.reorderPoint,
-      unitPrice: item.unitPrice,
-      location: item.location,
+      item_code: item.item_code || '',
+      name: item.name || '',
+      category: item.category || 'stationery',
+      description: item.description || '',
+      unit: item.unit || 'Piece',
+      current_stock: item.current_stock || 0,
+      min_stock_level: item.min_stock_level || 10,
+      max_stock_level: item.max_stock_level || 100,
+      reorder_point: item.reorder_point || 20,
+      unit_price: item.unit_price || 0,
+      location: item.location || '',
       supplier: item.supplier || '',
     });
   };
 
   const resetForm = () => {
     setItemForm({
-      itemCode: '',
+      item_code: '',
       name: '',
       category: 'stationery',
       description: '',
       unit: 'Piece',
-      currentStock: 0,
-      minStockLevel: 10,
-      maxStockLevel: 100,
-      reorderPoint: 20,
-      unitPrice: 0,
+      current_stock: 0,
+      min_stock_level: 10,
+      max_stock_level: 100,
+      reorder_point: 20,
+      unit_price: 0,
       location: '',
       supplier: '',
     });
@@ -173,6 +196,37 @@ export const StoreItemsPage: React.FC = () => {
       default: return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading store items...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-6">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-center mb-2">Error Loading Items</h3>
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              {error?.message || 'Failed to load store items'}
+            </p>
+            <Button onClick={() => refetch()} className="w-full">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 space-y-6 animate-fade-in">
@@ -208,8 +262,8 @@ export const StoreItemsPage: React.FC = () => {
                   <label className="text-sm font-medium mb-2 block">Item Code *</label>
                   <Input
                     placeholder="e.g., ST-001"
-                    value={itemForm.itemCode}
-                    onChange={(e) => setItemForm({ ...itemForm, itemCode: e.target.value })}
+                    value={itemForm.item_code}
+                    onChange={(e) => setItemForm({ ...itemForm, item_code: e.target.value })}
                   />
                 </div>
                 <div>
@@ -281,8 +335,8 @@ export const StoreItemsPage: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={itemForm.unitPrice}
-                    onChange={(e) => setItemForm({ ...itemForm, unitPrice: parseFloat(e.target.value) || 0 })}
+                    value={itemForm.unit_price}
+                    onChange={(e) => setItemForm({ ...itemForm, unit_price: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -293,8 +347,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.currentStock}
-                    onChange={(e) => setItemForm({ ...itemForm, currentStock: parseInt(e.target.value) || 0 })}
+                    value={itemForm.current_stock}
+                    onChange={(e) => setItemForm({ ...itemForm, current_stock: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -302,8 +356,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.minStockLevel}
-                    onChange={(e) => setItemForm({ ...itemForm, minStockLevel: parseInt(e.target.value) || 0 })}
+                    value={itemForm.min_stock_level}
+                    onChange={(e) => setItemForm({ ...itemForm, min_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -311,8 +365,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.maxStockLevel}
-                    onChange={(e) => setItemForm({ ...itemForm, maxStockLevel: parseInt(e.target.value) || 0 })}
+                    value={itemForm.max_stock_level}
+                    onChange={(e) => setItemForm({ ...itemForm, max_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -323,8 +377,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.reorderPoint}
-                    onChange={(e) => setItemForm({ ...itemForm, reorderPoint: parseInt(e.target.value) || 0 })}
+                    value={itemForm.reorder_point}
+                    onChange={(e) => setItemForm({ ...itemForm, reorder_point: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -351,7 +405,7 @@ export const StoreItemsPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total Stock Value:</span>
                   <span className="text-lg font-bold text-primary">
-                    {formatCurrency(itemForm.currentStock * itemForm.unitPrice)}
+                    {formatCurrency(itemForm.current_stock * itemForm.unit_price)}
                   </span>
                 </div>
               </div>
@@ -362,7 +416,7 @@ export const StoreItemsPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleCreateItem}
-                  disabled={!itemForm.itemCode || !itemForm.name || itemForm.unitPrice === 0}
+                  disabled={!itemForm.item_code || !itemForm.name || itemForm.unit_price === 0}
                 >
                   <Package className="h-4 w-4 mr-2" />
                   Add Item
@@ -542,10 +596,10 @@ export const StoreItemsPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredItems.map((item) => (
+                  filteredItems.map((item: any) => (
                     <tr key={item.id} className="border-b hover:bg-accent/50 transition-colors">
                       <td className="py-3 px-4">
-                        <p className="font-medium text-sm">{item.itemCode}</p>
+                        <p className="font-medium text-sm">{item.item_code}</p>
                       </td>
                       <td className="py-3 px-4">
                         <p className="font-medium text-sm">{item.name}</p>
@@ -557,19 +611,19 @@ export const StoreItemsPage: React.FC = () => {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <p className="font-medium">{item.currentStock}</p>
+                        <p className="font-medium">{item.current_stock}</p>
                         <p className="text-xs text-muted-foreground">{item.unit}</p>
                       </td>
                       <td className="py-3 px-4 text-right hidden lg:table-cell">
-                        <p className="text-sm">{formatCurrency(item.unitPrice)}</p>
+                        <p className="text-sm">{formatCurrency(parseFloat(item.unit_price || 0))}</p>
                       </td>
                       <td className="py-3 px-4 text-right hidden lg:table-cell">
-                        <p className="font-medium">{formatCurrency(item.totalValue)}</p>
+                        <p className="font-medium">{formatCurrency(parseFloat(item.total_value || 0))}</p>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Badge variant={getStockStatusColor(item.status) as any} className="gap-1">
                           {getStatusIcon(item.status)}
-                          {item.status.replace('_', ' ')}
+                          {item.status?.replace('_', ' ')}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -608,8 +662,8 @@ export const StoreItemsPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Item Code *</label>
                   <Input
-                    value={itemForm.itemCode}
-                    onChange={(e) => setItemForm({ ...itemForm, itemCode: e.target.value })}
+                    value={itemForm.item_code}
+                    onChange={(e) => setItemForm({ ...itemForm, item_code: e.target.value })}
                   />
                 </div>
                 <div>
@@ -675,8 +729,8 @@ export const StoreItemsPage: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={itemForm.unitPrice}
-                    onChange={(e) => setItemForm({ ...itemForm, unitPrice: parseFloat(e.target.value) || 0 })}
+                    value={itemForm.unit_price}
+                    onChange={(e) => setItemForm({ ...itemForm, unit_price: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -687,8 +741,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.currentStock}
-                    onChange={(e) => setItemForm({ ...itemForm, currentStock: parseInt(e.target.value) || 0 })}
+                    value={itemForm.current_stock}
+                    onChange={(e) => setItemForm({ ...itemForm, current_stock: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -696,8 +750,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.minStockLevel}
-                    onChange={(e) => setItemForm({ ...itemForm, minStockLevel: parseInt(e.target.value) || 0 })}
+                    value={itemForm.min_stock_level}
+                    onChange={(e) => setItemForm({ ...itemForm, min_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -705,8 +759,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.maxStockLevel}
-                    onChange={(e) => setItemForm({ ...itemForm, maxStockLevel: parseInt(e.target.value) || 0 })}
+                    value={itemForm.max_stock_level}
+                    onChange={(e) => setItemForm({ ...itemForm, max_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -717,8 +771,8 @@ export const StoreItemsPage: React.FC = () => {
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.reorderPoint}
-                    onChange={(e) => setItemForm({ ...itemForm, reorderPoint: parseInt(e.target.value) || 0 })}
+                    value={itemForm.reorder_point}
+                    onChange={(e) => setItemForm({ ...itemForm, reorder_point: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -742,7 +796,7 @@ export const StoreItemsPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total Stock Value:</span>
                   <span className="text-lg font-bold text-primary">
-                    {formatCurrency(itemForm.currentStock * itemForm.unitPrice)}
+                    {formatCurrency(itemForm.current_stock * itemForm.unit_price)}
                   </span>
                 </div>
               </div>

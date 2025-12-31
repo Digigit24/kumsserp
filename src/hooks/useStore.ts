@@ -9,6 +9,147 @@ import { fetchWithAuth } from '../utils/fetchInterceptor';
 const API_BASE = '/api/v1/store';
 
 // ============================================================================
+// STORE ITEMS
+// ============================================================================
+
+/**
+ * Fetch store items with optional filters
+ */
+export const useStoreItems = (filters?: any) => {
+  const params = new URLSearchParams();
+
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+  }
+
+  const queryString = params.toString();
+  const url = queryString ? `${API_BASE}/items/?${queryString}` : `${API_BASE}/items/`;
+
+  return useQuery({
+    queryKey: ['store-items', filters],
+    queryFn: async () => {
+      const response = await fetchWithAuth(url);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || error.error || 'Failed to fetch store items');
+      }
+      return response.json();
+    },
+  });
+};
+
+/**
+ * Create a new store item
+ */
+export const useCreateStoreItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+      const collegeId = localStorage.getItem('kumss_college_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      if (collegeId) {
+        submitData.college = parseInt(collegeId);
+      }
+
+      const response = await fetchWithAuth(`${API_BASE}/items/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-items'] });
+    },
+  });
+};
+
+/**
+ * Update a store item
+ */
+export const useUpdateStoreItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      const response = await fetchWithAuth(`${API_BASE}/items/${id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-items'] });
+    },
+  });
+};
+
+/**
+ * Delete a store item
+ */
+export const useDeleteStoreItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetchWithAuth(`${API_BASE}/items/${id}/`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to delete store item');
+      }
+
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-items'] });
+    },
+  });
+};
+
+// ============================================================================
 // SALE ITEMS
 // ============================================================================
 
