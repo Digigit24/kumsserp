@@ -576,8 +576,8 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
-        name: "Student Discounts",
-        href: "/fees/student-discounts",
+        name: "Student Fee Discounts",
+        href: "/fees/student-fee-discounts",
         icon: CreditCard,
         roles: ["super_admin", "college_admin"],
       },

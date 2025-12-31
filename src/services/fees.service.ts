@@ -476,44 +476,44 @@ export const feeReceiptsApi = {
 };
 
 // ============================================================================
-// STUDENT DISCOUNTS API
+// STUDENT FEE DISCOUNTS API
 // ============================================================================
 
-export const studentDiscountsApi = {
+export const studentFeeDiscountsApi = {
   list: async (filters?: any): Promise<PaginatedResponse<any>> => {
     const queryString = buildQueryString(filters || {});
     return fetchApi<PaginatedResponse<any>>(
-      buildApiUrl(`${API_ENDPOINTS.studentDiscounts.list}${queryString}`)
+      buildApiUrl(`${API_ENDPOINTS.studentFeeDiscounts.list}${queryString}`)
     );
   },
 
   get: async (id: number): Promise<any> => {
-    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.detail(id)));
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentFeeDiscounts.detail(id)));
   },
 
   create: async (data: any): Promise<any> => {
-    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.create), {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentFeeDiscounts.create), {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: any): Promise<any> => {
-    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.update(id)), {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentFeeDiscounts.update(id)), {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   patch: async (id: number, data: any): Promise<any> => {
-    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentDiscounts.patch(id)), {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.studentFeeDiscounts.patch(id)), {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number): Promise<void> => {
-    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.studentDiscounts.delete(id)), {
+    return fetchApi<void>(buildApiUrl(API_ENDPOINTS.studentFeeDiscounts.delete(id)), {
       method: 'DELETE',
     });
   },

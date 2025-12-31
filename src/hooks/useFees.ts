@@ -14,7 +14,7 @@ import {
   feeGroupsApi,
   feeInstallmentsApi,
   feeReceiptsApi,
-  studentDiscountsApi,
+  studentFeeDiscountsApi,
   feeRefundsApi,
   feeRemindersApi,
   bankPaymentsApi,
@@ -481,51 +481,51 @@ export const useDeleteFeeReceipt = () => {
 };
 
 // ============================================================================
-// STUDENT DISCOUNTS HOOKS
+// STUDENT FEE DISCOUNTS HOOKS
 // ============================================================================
 
-export const useStudentDiscounts = (filters?: any) => {
+export const useStudentFeeDiscounts = (filters?: any) => {
   return useQuery({
-    queryKey: ['student-discounts', filters],
-    queryFn: () => studentDiscountsApi.list(filters),
+    queryKey: ['student-fee-discounts', filters],
+    queryFn: () => studentFeeDiscountsApi.list(filters),
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useStudentDiscountDetail = (id: number | null) => {
+export const useStudentFeeDiscountDetail = (id: number | null) => {
   return useQuery({
-    queryKey: ['student-discount-detail', id],
-    queryFn: () => studentDiscountsApi.get(id!),
+    queryKey: ['student-fee-discount-detail', id],
+    queryFn: () => studentFeeDiscountsApi.get(id!),
     enabled: !!id,
   });
 };
 
-export const useCreateStudentDiscount = () => {
+export const useCreateStudentFeeDiscount = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => studentDiscountsApi.create(data),
+    mutationFn: (data: any) => studentFeeDiscountsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+      queryClient.invalidateQueries({ queryKey: ['student-fee-discounts'] });
     },
   });
 };
 
-export const useUpdateStudentDiscount = () => {
+export const useUpdateStudentFeeDiscount = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => studentDiscountsApi.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) => studentFeeDiscountsApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+      queryClient.invalidateQueries({ queryKey: ['student-fee-discounts'] });
     },
   });
 };
 
-export const useDeleteStudentDiscount = () => {
+export const useDeleteStudentFeeDiscount = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => studentDiscountsApi.delete(id),
+    mutationFn: (id: number) => studentFeeDiscountsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student-discounts'] });
+      queryClient.invalidateQueries({ queryKey: ['student-fee-discounts'] });
     },
   });
 };
