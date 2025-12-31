@@ -3,176 +3,179 @@
  * Create/Edit form for fee structures
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
-import { useAcademicSessions } from '../../../hooks/useCore';
-import { usePrograms, useClasses } from '../../../hooks/useAcademic';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
+import { FeeStructure, FeeStructureCreateInput } from '../../../types/fees.types';
+import { useFeeMasters } from '../../../hooks/useFees';
+import { useStudents } from '../../../hooks/useStudents';
 
 interface FeeStructureFormProps {
-  feeStructure: any | null;
-  onSubmit: (data: any) => void;
+  feeStructure: FeeStructure | null;
+  onSubmit: (data: Partial<FeeStructureCreateInput>) => void;
   onCancel: () => void;
 }
 
 export const FeeStructureForm = ({ feeStructure, onSubmit, onCancel }: FeeStructureFormProps) => {
-  // Fetch dropdown data
-  const { data: sessionsData } = useAcademicSessions({ page_size: 100 });
-  const { data: programsData } = usePrograms({ page_size: 100 });
-  const { data: classesData } = useClasses({ page_size: 100 });
-
-  const [formData, setFormData] = useState<any>({
-    name: '',
-    academic_session: 0,
-    program: 0,
-    class_obj: null,
-    semester: null,
-    total_amount: 0,
-    effective_from: '',
-    effective_to: '',
+  const [formData, setFormData] = useState<Partial<FeeStructureCreateInput>>({
+    student: 0,
+    fee_master: 0,
+    amount: '0',
+    due_date: new Date().toISOString().split('T')[0],
+    is_paid: false,
+    paid_amount: '0',
+    balance: '0',
     is_active: true,
   });
 
+  // Fetch dropdown data
+  const { data: studentsData } = useStudents({ page_size: 1000 });
+  const { data: feeMastersData } = useFeeMasters({ page_size: 1000 });
+
+  // Create options for dropdowns
+  const studentOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!studentsData?.results) return [];
+    return studentsData.results.map((student) => ({
+      value: student.id,
+      label: `${student.first_name} ${student.last_name}`,
+      subtitle: student.roll_number || student.email || '',
+    }));
+  }, [studentsData]);
+
+  const feeMasterOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!feeMastersData?.results) return [];
+    return feeMastersData.results.map((master) => ({
+      value: master.id,
+      label: `${master.fee_type_name || 'Fee'} - Sem ${master.semester}`,
+      subtitle: `₹${master.amount} • ${master.program_name || ''}`,
+    }));
+  }, [feeMastersData]);
+
   useEffect(() => {
     if (feeStructure) {
-      setFormData(feeStructure);
+      setFormData({
+        student: feeStructure.student,
+        fee_master: feeStructure.fee_master,
+        amount: feeStructure.amount,
+        due_date: feeStructure.due_date,
+        is_paid: feeStructure.is_paid,
+        paid_amount: feeStructure.paid_amount,
+        balance: feeStructure.balance,
+        is_active: feeStructure.is_active,
+      });
     }
   }, [feeStructure]);
 
+  // Auto-calculate balance when amount or paid_amount changes
+  useEffect(() => {
+    const amount = parseFloat(formData.amount || '0');
+    const paidAmount = parseFloat(formData.paid_amount || '0');
+    const balance = (amount - paidAmount).toFixed(2);
+    setFormData(prev => ({ ...prev, balance }));
+  }, [formData.amount, formData.paid_amount]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const userId = localStorage.getItem('kumss_user_id') || undefined;
+    const submitData: any = { ...formData };
+
+    if (!feeStructure && userId) {
+      submitData.created_by = userId;
+      submitData.updated_by = userId;
+    } else if (feeStructure && userId) {
+      submitData.updated_by = userId;
+    }
+
+    onSubmit(submitData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Structure Name *</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="e.g., B.Tech Semester 1 Fee Structure"
-          required
+        <Label htmlFor="student">Student *</Label>
+        <SearchableSelect
+          options={studentOptions}
+          value={formData.student}
+          onChange={(value) => setFormData({ ...formData, student: Number(value) })}
+          placeholder="Select student"
+          searchPlaceholder="Search students..."
+          emptyText="No students available"
         />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="academic_session">Academic Session *</Label>
-          <select
-            id="academic_session"
-            className="w-full p-2 border rounded"
-            value={formData.academic_session}
-            onChange={(e) => setFormData({ ...formData, academic_session: parseInt(e.target.value) })}
-            required
-          >
-            <option value="">Select Session</option>
-            {sessionsData?.results?.map((session) => (
-              <option key={session.id} value={session.id}>
-                {session.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="program">Program *</Label>
-          <select
-            id="program"
-            className="w-full p-2 border rounded"
-            value={formData.program}
-            onChange={(e) => setFormData({ ...formData, program: parseInt(e.target.value) })}
-            required
-          >
-            <option value="">Select Program</option>
-            {programsData?.results?.map((program) => (
-              <option key={program.id} value={program.id}>
-                {program.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="class_obj">Class</Label>
-          <select
-            id="class_obj"
-            className="w-full p-2 border rounded"
-            value={formData.class_obj || ''}
-            onChange={(e) => setFormData({ ...formData, class_obj: e.target.value ? parseInt(e.target.value) : null })}
-          >
-            <option value="">Select Class</option>
-            {classesData?.results?.map((classItem) => (
-              <option key={classItem.id} value={classItem.id}>
-                {classItem.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="semester">Semester</Label>
-          <Input
-            id="semester"
-            type="number"
-            value={formData.semester || ''}
-            onChange={(e) => setFormData({ ...formData, semester: e.target.value ? parseInt(e.target.value) : null })}
-            placeholder="1, 2, 3..."
-            min="1"
-            max="8"
-          />
-        </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="total_amount">Total Amount *</Label>
+        <Label htmlFor="fee_master">Fee Master *</Label>
+        <SearchableSelect
+          options={feeMasterOptions}
+          value={formData.fee_master}
+          onChange={(value) => setFormData({ ...formData, fee_master: Number(value) })}
+          placeholder="Select fee master"
+          searchPlaceholder="Search fee masters..."
+          emptyText="No fee masters available"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount (₹) *</Label>
         <Input
-          id="total_amount"
+          id="amount"
           type="number"
-          value={formData.total_amount}
-          onChange={(e) => setFormData({ ...formData, total_amount: parseFloat(e.target.value) })}
-          placeholder="e.g., 75000"
-          min="0"
           step="0.01"
+          value={formData.amount}
+          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+          placeholder="0.00"
+          required
+          min="0"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="due_date">Due Date *</Label>
+        <Input
+          id="due_date"
+          type="date"
+          value={formData.due_date}
+          onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
           required
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="effective_from">Effective From *</Label>
-          <Input
-            id="effective_from"
-            type="date"
-            value={formData.effective_from}
-            onChange={(e) => setFormData({ ...formData, effective_from: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="effective_to">Effective To</Label>
-          <Input
-            id="effective_to"
-            type="date"
-            value={formData.effective_to || ''}
-            onChange={(e) => setFormData({ ...formData, effective_to: e.target.value })}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="paid_amount">Paid Amount (₹)</Label>
+        <Input
+          id="paid_amount"
+          type="number"
+          step="0.01"
+          value={formData.paid_amount}
+          onChange={(e) => setFormData({ ...formData, paid_amount: e.target.value })}
+          placeholder="0.00"
+          min="0"
+        />
       </div>
 
-      <div className="flex items-center justify-between">
-        <Label htmlFor="is_active">Active</Label>
-        <Switch
-          id="is_active"
-          checked={formData.is_active}
-          onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+      <div className="space-y-2">
+        <Label htmlFor="balance">Balance (₹)</Label>
+        <Input
+          id="balance"
+          type="number"
+          step="0.01"
+          value={formData.balance}
+          disabled
+          className="bg-gray-100"
         />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="is_paid"
+          checked={formData.is_paid}
+          onChange={(e) => setFormData({ ...formData, is_paid: e.target.checked })}
+          className="w-4 h-4"
+        />
+        <Label htmlFor="is_paid">Mark as Paid</Label>
       </div>
 
       <div className="flex gap-2 pt-4">
