@@ -30,7 +30,15 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
 
   useEffect(() => {
     if (feeDiscount) {
-      setFormData(feeDiscount);
+      // Map backend fields to frontend form state
+      const mappedData = {
+        ...feeDiscount,
+        discount_value: feeDiscount.discount_type === 'percentage'
+          ? feeDiscount.percentage
+          : feeDiscount.amount,
+        eligibility_criteria: feeDiscount.criteria || '',
+      };
+      setFormData(mappedData);
     }
   }, [feeDiscount]);
 
@@ -49,7 +57,24 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
 
     const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
-    const submitData: any = { ...formData };
+
+    // Map frontend fields to backend schema
+    const submitData: any = {
+      name: formData.name,
+      code: formData.code,
+      discount_type: formData.discount_type,
+      is_active: formData.is_active,
+      criteria: formData.eligibility_criteria || '',
+    };
+
+    // Map discount_value to either amount or percentage based on discount_type
+    if (formData.discount_type === 'percentage') {
+      submitData.percentage = formData.discount_value;
+      submitData.amount = '';
+    } else {
+      submitData.amount = formData.discount_value;
+      submitData.percentage = '';
+    }
 
     // Auto-populate college ID
     if (collegeId) {
