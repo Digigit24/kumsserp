@@ -4,9 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchWithAuth } from '../utils/fetchInterceptor';
-
-const API_BASE = '/api/v1/store';
+import { storeItemsApi, saleItemsApi, salesApi } from '../services/store.service';
 
 // ============================================================================
 // STORE ITEMS
@@ -16,29 +14,10 @@ const API_BASE = '/api/v1/store';
  * Fetch store items with optional filters
  */
 export const useStoreItems = (filters?: any) => {
-  const params = new URLSearchParams();
-
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.append(key, String(value));
-      }
-    });
-  }
-
-  const queryString = params.toString();
-  const url = queryString ? `${API_BASE}/items/?${queryString}` : `${API_BASE}/items/`;
-
   return useQuery({
     queryKey: ['store-items', filters],
-    queryFn: async () => {
-      const response = await fetchWithAuth(url);
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || error.error || 'Failed to fetch store items');
-      }
-      return response.json();
-    },
+    queryFn: () => storeItemsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -67,18 +46,7 @@ export const useCreateStoreItem = () => {
         submitData.college = parseInt(collegeId);
       }
 
-      const response = await fetchWithAuth(`${API_BASE}/items/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-      }
-
-      return response.json();
+      return storeItemsApi.create(submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-items'] });
@@ -105,18 +73,7 @@ export const useUpdateStoreItem = () => {
         submitData.updated_by = userId;
       }
 
-      const response = await fetchWithAuth(`${API_BASE}/items/${id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-      }
-
-      return response.json();
+      return storeItemsApi.update(id, submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-items'] });
@@ -131,18 +88,7 @@ export const useDeleteStoreItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetchWithAuth(`${API_BASE}/items/${id}/`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to delete store item');
-      }
-
-      return true;
-    },
+    mutationFn: (id: number) => storeItemsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-items'] });
     },
@@ -157,29 +103,10 @@ export const useDeleteStoreItem = () => {
  * Fetch sale items with optional filters
  */
 export const useSaleItems = (filters?: any) => {
-  const params = new URLSearchParams();
-
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.append(key, String(value));
-      }
-    });
-  }
-
-  const queryString = params.toString();
-  const url = queryString ? `${API_BASE}/sale-items/?${queryString}` : `${API_BASE}/sale-items/`;
-
   return useQuery({
     queryKey: ['sale-items', filters],
-    queryFn: async () => {
-      const response = await fetchWithAuth(url);
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || error.error || 'Failed to fetch sale items');
-      }
-      return response.json();
-    },
+    queryFn: () => saleItemsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -207,18 +134,7 @@ export const useCreateSaleItem = () => {
         submitData.updated_by = userId;
       }
 
-      const response = await fetchWithAuth(`${API_BASE}/sale-items/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-      }
-
-      return response.json();
+      return saleItemsApi.create(submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sale-items'] });
@@ -249,18 +165,7 @@ export const useUpdateSaleItem = () => {
         submitData.updated_by = userId;
       }
 
-      const response = await fetchWithAuth(`${API_BASE}/sale-items/${id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-      }
-
-      return response.json();
+      return saleItemsApi.update(id, submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sale-items'] });
@@ -275,18 +180,7 @@ export const useDeleteSaleItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetchWithAuth(`${API_BASE}/sale-items/${id}/`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to delete sale item');
-      }
-
-      return true;
-    },
+    mutationFn: (id: number) => saleItemsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sale-items'] });
     },

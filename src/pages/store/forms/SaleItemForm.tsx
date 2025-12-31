@@ -9,7 +9,7 @@ import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { SearchableSelect } from '../../../components/common/SearchableSelect';
 import { useQuery } from '@tanstack/react-query';
-import { fetchWithAuth } from '../../../utils/fetchInterceptor';
+import { salesApi, storeItemsApi } from '../../../services/store.service';
 
 interface SaleItemFormProps {
   saleItem?: any;
@@ -30,21 +30,13 @@ export const SaleItemForm = ({ saleItem, onSubmit, onCancel }: SaleItemFormProps
   // Fetch sales for dropdown
   const { data: salesData } = useQuery({
     queryKey: ['sales-for-select'],
-    queryFn: async () => {
-      const response = await fetchWithAuth('/api/v1/store/sales/');
-      if (!response.ok) throw new Error('Failed to fetch sales');
-      return response.json();
-    },
+    queryFn: () => salesApi.list(),
   });
 
   // Fetch items for dropdown
   const { data: itemsData } = useQuery({
     queryKey: ['items-for-select'],
-    queryFn: async () => {
-      const response = await fetchWithAuth('/api/v1/store/items/');
-      if (!response.ok) throw new Error('Failed to fetch items');
-      return response.json();
-    },
+    queryFn: () => storeItemsApi.list(),
   });
 
   useEffect(() => {
