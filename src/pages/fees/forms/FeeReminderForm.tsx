@@ -73,7 +73,23 @@ export const FeeReminderForm = ({ feeReminder, onSubmit, onCancel }: FeeReminder
     e.preventDefault();
     const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
-    const submitData: any = { ...formData };
+
+    const submitData: any = {
+      student: formData.student,
+      fee_structure: formData.fee_structure,
+      reminder_date: formData.reminder_date,
+      reminder_type: formData.reminder_type,
+      status: formData.status,
+      message: formData.message,
+      is_active: formData.is_active,
+    };
+
+    // Only include sent_at if status is 'sent' and there's a value
+    if (formData.status === 'sent' && formData.sent_at) {
+      // Convert to ISO datetime format if it's a datetime-local value
+      const sentAtDate = new Date(formData.sent_at);
+      submitData.sent_at = sentAtDate.toISOString();
+    }
 
     // Auto-populate college ID
     if (collegeId) {
