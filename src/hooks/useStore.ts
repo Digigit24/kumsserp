@@ -135,6 +135,14 @@ export const useCreateStoreItem = () => {
         submitData.college = parseInt(collegeId);
       }
 
+      // Remove empty string fields (image, barcode) as backend expects file upload or null
+      if (submitData.image === '') {
+        delete submitData.image;
+      }
+      if (submitData.barcode === '') {
+        delete submitData.barcode;
+      }
+
       return storeItemsApi.create(submitData);
     },
     onSuccess: () => {
@@ -160,6 +168,14 @@ export const useUpdateStoreItem = () => {
 
       if (userId) {
         submitData.updated_by = userId;
+      }
+
+      // Remove empty string fields (image, barcode) as backend expects file upload or null
+      if (submitData.image === '') {
+        delete submitData.image;
+      }
+      if (submitData.barcode === '') {
+        delete submitData.barcode;
       }
 
       return storeItemsApi.update(id, submitData);
