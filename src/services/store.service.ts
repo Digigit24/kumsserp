@@ -70,6 +70,43 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
 };
 
 // ============================================================================
+// CATEGORIES API
+// ============================================================================
+
+export const categoriesApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/categories/${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/categories/${id}/`));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/categories/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/categories/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/categories/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
 // STORE ITEMS API
 // ============================================================================
 

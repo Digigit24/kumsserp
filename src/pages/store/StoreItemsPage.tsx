@@ -34,6 +34,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStoreItems, useCreateStoreItem, useUpdateStoreItem, useDeleteStoreItem } from '@/hooks/useStore';
+import { SearchableSelect } from '@/components/common/SearchableSelect';
+import { useQuery } from '@tanstack/react-query';
+import { categoriesApi } from '@/services/store.service';
 import { toast } from 'sonner';
 
 type ItemCategory = 'stationery' | 'equipment' | 'consumables' | 'books' | 'electronics' | 'furniture' | 'printing';
@@ -71,7 +74,19 @@ export const StoreItemsPage: React.FC = () => {
   const updateItem = useUpdateStoreItem();
   const deleteItem = useDeleteStoreItem();
 
+  // Fetch categories for dropdown
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories-for-select'],
+    queryFn: () => categoriesApi.list(),
+  });
+
   const items = itemsData?.results || [];
+
+  // Prepare category options for SearchableSelect
+  const categoryOptions = categoriesData?.results?.map((category: any) => ({
+    value: category.id,
+    label: `${category.name} (${category.code})`,
+  })) || [];
 
   // Form state
   const [itemForm, setItemForm] = useState({
@@ -261,12 +276,12 @@ export const StoreItemsPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category ID</label>
-                  <Input
-                    type="number"
-                    placeholder="Category ID"
+                  <label className="text-sm font-medium mb-2 block">Category</label>
+                  <SearchableSelect
+                    options={categoryOptions}
                     value={itemForm.category}
-                    onChange={(e) => setItemForm({ ...itemForm, category: parseInt(e.target.value) || 0 })}
+                    onChange={(value) => setItemForm({ ...itemForm, category: value })}
+                    placeholder="Select category"
                   />
                 </div>
               </div>
@@ -630,12 +645,12 @@ export const StoreItemsPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category ID</label>
-                  <Input
-                    type="number"
-                    placeholder="Category ID"
+                  <label className="text-sm font-medium mb-2 block">Category</label>
+                  <SearchableSelect
+                    options={categoryOptions}
                     value={itemForm.category}
-                    onChange={(e) => setItemForm({ ...itemForm, category: parseInt(e.target.value) || 0 })}
+                    onChange={(value) => setItemForm({ ...itemForm, category: value })}
+                    placeholder="Select category"
                   />
                 </div>
               </div>

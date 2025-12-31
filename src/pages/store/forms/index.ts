@@ -4,3 +4,4 @@
  */
 
 export { SaleItemForm } from './SaleItemForm';
+export { CategoryForm } from './CategoryForm';
