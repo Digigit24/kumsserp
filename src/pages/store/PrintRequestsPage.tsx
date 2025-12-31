@@ -38,10 +38,9 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/data/storeMockData';
 import { usePrintJobs, useCreatePrintJob, useUpdatePrintJob, usePartialUpdatePrintJob, useDeletePrintJob } from '@/hooks/useStore';
 import { PrintJobForm } from './forms';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const PrintRequestsPage: React.FC = () => {
-  const { toast } = useToast();
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -85,17 +84,10 @@ export const PrintRequestsPage: React.FC = () => {
   const handleCreateRequest = async (formData: any) => {
     try {
       await createMutation.mutateAsync(formData);
-      toast({
-        title: 'Success',
-        description: 'Print job created successfully',
-      });
+      toast.success('Print job created successfully');
       setIsCreateOpen(false);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create print job',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to create print job');
     }
   };
 
@@ -103,34 +95,20 @@ export const PrintRequestsPage: React.FC = () => {
     if (!selectedRequest) return;
     try {
       await updateMutation.mutateAsync({ id: selectedRequest.id, data: formData });
-      toast({
-        title: 'Success',
-        description: 'Print job updated successfully',
-      });
+      toast.success('Print job updated successfully');
       setIsEditOpen(false);
       setSelectedRequest(null);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update print job',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to update print job');
     }
   };
 
   const handleStatusUpdate = async (id: number, status: string) => {
     try {
       await partialUpdateMutation.mutateAsync({ id, data: { status } });
-      toast({
-        title: 'Success',
-        description: `Print job status updated to ${status}`,
-      });
+      toast.success(`Print job status updated to ${status}`);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update status',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to update status');
     }
   };
 
@@ -138,16 +116,9 @@ export const PrintRequestsPage: React.FC = () => {
     if (!confirm('Are you sure you want to delete this print job?')) return;
     try {
       await deleteMutation.mutateAsync(id);
-      toast({
-        title: 'Success',
-        description: 'Print job deleted successfully',
-      });
+      toast.success('Print job deleted successfully');
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete print job',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to delete print job');
     }
   };
 
