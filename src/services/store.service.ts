@@ -181,7 +181,7 @@ export const saleItemsApi = {
 };
 
 // ============================================================================
-// SALES API (for dropdowns)
+// SALES API
 // ============================================================================
 
 export const salesApi = {
@@ -190,6 +190,30 @@ export const salesApi = {
     return fetchApi<PaginatedResponse<any>>(
       buildApiUrl(`/api/v1/store/sales/${queryString}`)
     );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/sales/${id}/`));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/sales/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/sales/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/sales/${id}/`), {
+      method: 'DELETE',
+    });
   },
 };
 

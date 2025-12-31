@@ -6,3 +6,4 @@
 export { SaleItemForm } from './SaleItemForm';
 export { CategoryForm } from './CategoryForm';
 export { CreditForm } from './CreditForm';
+export { SaleForm } from './SaleForm';

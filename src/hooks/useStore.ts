@@ -375,3 +375,93 @@ export const useDeleteCredit = () => {
     },
   });
 };
+
+// ============================================================================
+// SALES
+// ============================================================================
+
+/**
+ * Fetch sales with optional filters
+ */
+export const useSales = (filters?: any) => {
+  return useQuery({
+    queryKey: ['store-sales', filters],
+    queryFn: () => salesApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new sale
+ */
+export const useCreateSale = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+      const collegeId = localStorage.getItem('kumss_college_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+        submitData.sold_by = userId;
+      }
+
+      if (collegeId) {
+        submitData.college = parseInt(collegeId);
+      }
+
+      return salesApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-sales'] });
+    },
+  });
+};
+
+/**
+ * Update a sale
+ */
+export const useUpdateSale = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return salesApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-sales'] });
+    },
+  });
+};
+
+/**
+ * Delete a sale
+ */
+export const useDeleteSale = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => salesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-sales'] });
+    },
+  });
+};
