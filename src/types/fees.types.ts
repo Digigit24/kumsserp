@@ -54,6 +54,7 @@ export interface FeeGroup extends AuditFields {
   college: number;
   college_name?: string;
   name: string;
+  code: string;
   description: string | null;
   is_active: boolean;
 }
@@ -61,6 +62,7 @@ export interface FeeGroup extends AuditFields {
 export interface FeeGroupCreateInput {
   college: number;
   name: string;
+  code: string;
   description?: string | null;
   is_active?: boolean;
   created_by?: string;

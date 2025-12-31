@@ -19,6 +19,7 @@ interface FeeGroupFormProps {
 export const FeeGroupForm = ({ feeGroup, onSubmit, onCancel }: FeeGroupFormProps) => {
   const [formData, setFormData] = useState<Partial<FeeGroupCreateInput>>({
     name: '',
+    code: '',
     description: '',
     college: 0,
     is_active: true,
@@ -28,6 +29,7 @@ export const FeeGroupForm = ({ feeGroup, onSubmit, onCancel }: FeeGroupFormProps
     if (feeGroup) {
       setFormData({
         name: feeGroup.name,
+        code: feeGroup.code,
         description: feeGroup.description || '',
         college: feeGroup.college,
         is_active: feeGroup.is_active,
@@ -75,6 +77,17 @@ export const FeeGroupForm = ({ feeGroup, onSubmit, onCancel }: FeeGroupFormProps
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="Enter fee group name"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="code">Code *</Label>
+        <Input
+          id="code"
+          value={formData.code}
+          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+          placeholder="Enter fee group code"
           required
         />
       </div>

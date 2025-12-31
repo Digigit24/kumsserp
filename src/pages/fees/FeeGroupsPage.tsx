@@ -25,6 +25,7 @@ const FeeGroupsPage = () => {
 
   const columns: Column<FeeGroup>[] = [
     { key: 'name', label: 'Name', sortable: true },
+    { key: 'code', label: 'Code', sortable: true },
     { key: 'description', label: 'Description', sortable: false },
     {
       key: 'is_active',
@@ -135,6 +136,10 @@ const FeeGroupsPage = () => {
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
               <p className="mt-1 text-lg font-semibold">{selectedFeeGroup.name}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">Code</h3>
+              <p className="mt-1 text-lg">{selectedFeeGroup.code}</p>
             </div>
             {selectedFeeGroup.description && (
               <div>
