@@ -40,7 +40,7 @@ export const FeeReminderForm = ({ feeReminder, onSubmit, onCancel }: FeeReminder
     if (!studentsData?.results) return [];
     return studentsData.results.map((student) => ({
       value: student.id,
-      label: `${student.first_name} ${student.last_name}`,
+      label: student.full_name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || `Student ${student.id}`,
       subtitle: student.roll_number || student.email || '',
     }));
   }, [studentsData]);
