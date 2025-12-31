@@ -271,6 +271,16 @@ export const useCancelFeeCollection = () => {
   });
 };
 
+export const useDeleteFeeCollection = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => feeCollectionsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-collections'] });
+    },
+  });
+};
+
 export const useStudentFeeStatus = (studentId: number | null) => {
   return useQuery({
     queryKey: ['student-fee-status', studentId],
