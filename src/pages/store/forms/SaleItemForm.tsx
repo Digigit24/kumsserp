@@ -7,7 +7,7 @@ import { Label } from '../../../components/ui/label';
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
-import { SearchableSelect } from '../../../components/common/SearchableSelect';
+import { SearchableSelect } from '../../../components/ui/searchable-select';
 import { useQuery } from '@tanstack/react-query';
 import { salesApi, storeItemsApi } from '../../../services/store.service';
 

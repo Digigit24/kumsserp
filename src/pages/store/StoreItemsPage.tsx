@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStoreItems, useCreateStoreItem, useUpdateStoreItem, useDeleteStoreItem } from '@/hooks/useStore';
-import { SearchableSelect } from '@/components/common/SearchableSelect';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useQuery } from '@tanstack/react-query';
 import { categoriesApi } from '@/services/store.service';
 import { toast } from 'sonner';
