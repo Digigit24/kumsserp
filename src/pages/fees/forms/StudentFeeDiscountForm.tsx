@@ -11,7 +11,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
 import { StudentFeeDiscount, StudentFeeDiscountCreateInput } from '../../../types/fees.types';
 import { useStudents } from '../../../hooks/useStudents';
-import { useDiscounts } from '../../../hooks/useDiscounts';
+import { useFeeDiscounts } from '../../../hooks/useFees';
 
 interface StudentFeeDiscountFormProps {
   studentFeeDiscount: StudentFeeDiscount | null;
@@ -30,7 +30,7 @@ export const StudentFeeDiscountForm = ({ studentFeeDiscount, onSubmit, onCancel 
 
   // Fetch dropdown data
   const { data: studentsData } = useStudents({ page_size: 1000 });
-  const { data: discountsData } = useDiscounts({ page_size: 1000 });
+  const { data: discountsData } = useFeeDiscounts({ page_size: 1000 });
 
   // Create options for dropdowns
   const studentOptions: SearchableSelectOption[] = useMemo(() => {
