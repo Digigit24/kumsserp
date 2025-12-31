@@ -165,6 +165,7 @@ const TeacherCommunicationPage = lazy(() => import("../pages/communication/Teach
 // Store Module
 const StoreItemsPage = lazy(() => import("../pages/store/StoreItemsPage"));
 const PrintRequestsPage = lazy(() => import("../pages/store/PrintRequestsPage"));
+const SaleItemsPage = lazy(() => import("../pages/store/SaleItemsPage"));
 
 // Library Student Module
 const StudentLibraryPage = lazy(() => import("../pages/library/StudentLibraryPage"));
@@ -322,6 +323,7 @@ export default function AppRoutes() {
 
                     {/* Store Module */}
                     <Route path="store/items" element={<LazyRoute component={StoreItemsPage} />} />
+                    <Route path="store/sale-items" element={<LazyRoute component={SaleItemsPage} />} />
                     <Route path="store/print-requests" element={<LazyRoute component={PrintRequestsPage} />} />
                 </Route>
             </Route>
