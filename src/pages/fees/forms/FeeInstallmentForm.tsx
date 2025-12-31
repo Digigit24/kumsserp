@@ -36,8 +36,8 @@ export const FeeInstallmentForm = ({ feeInstallment, onSubmit, onCancel }: FeeIn
     if (!feeStructuresData?.results) return [];
     return feeStructuresData.results.map((structure) => ({
       value: structure.id,
-      label: structure.name,
-      subtitle: `${structure.program_name || ''} • ${structure.session_name || ''}`,
+      label: `${structure.student_name || 'Student'} - ${structure.fee_master_name || 'Fee'}`,
+      subtitle: `₹${structure.amount} • Due: ${structure.due_date} • Balance: ₹${structure.balance}`,
     }));
   }, [feeStructuresData]);
 
