@@ -7,8 +7,9 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeDiscounts } from '../../hooks/useFees';
+import { useFeeDiscounts, useCreateFeeDiscount, useUpdateFeeDiscount, useDeleteFeeDiscount } from '../../hooks/useFees';
 import { FeeDiscountForm } from './forms';
+import { toast } from 'sonner';
 
 const FeeDiscountsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -18,6 +19,9 @@ const FeeDiscountsPage = () => {
 
   // Fetch fee discounts using real API
   const { data, isLoading, error, refetch } = useFeeDiscounts(filters);
+  const createFeeDiscount = useCreateFeeDiscount();
+  const updateFeeDiscount = useUpdateFeeDiscount();
+  const deleteFeeDiscount = useDeleteFeeDiscount();
 
   const columns: Column<any>[] = [
     { key: 'code', label: 'Code', sortable: true },
@@ -91,9 +95,43 @@ const FeeDiscountsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<FeeDiscount>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: any) => {
+    console.log('handleFormSubmit called with data:', data);
+    try {
+      if (sidebarMode === 'create') {
+        console.log('Creating fee discount...');
+        const result = await createFeeDiscount.mutateAsync(data);
+        console.log('Create result:', result);
+        toast.success('Fee discount created successfully');
+      } else if (sidebarMode === 'edit' && selectedDiscount) {
+        console.log('Updating fee discount...');
+        const result = await updateFeeDiscount.mutateAsync({ id: selectedDiscount.id, data });
+        console.log('Update result:', result);
+        toast.success('Fee discount updated successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedDiscount(null);
+      refetch();
+    } catch (err: any) {
+      console.error('Form submission error:', err);
+      toast.error(err?.message || err?.error || 'An error occurred');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedDiscount) return;
+
+    if (confirm('Are you sure you want to delete this fee discount?')) {
+      try {
+        await deleteFeeDiscount.mutateAsync(selectedDiscount.id);
+        toast.success('Fee discount deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedDiscount(null);
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete fee discount');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -180,8 +218,9 @@ const FeeDiscountsPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4">
-              <Button onClick={handleEdit}>Edit</Button>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleEdit} className="flex-1">Edit</Button>
+              <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
             </div>
           </div>
         ) : (

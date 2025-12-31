@@ -9,20 +9,19 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
-import { FeeDiscount } from '../../../data/feesMockData';
 
 interface FeeDiscountFormProps {
-  feeDiscount: FeeDiscount | null;
-  onSubmit: (data: Partial<FeeDiscount>) => void;
+  feeDiscount: any | null;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscountFormProps) => {
-  const [formData, setFormData] = useState<Partial<FeeDiscount>>({
+  const [formData, setFormData] = useState<any>({
     name: '',
     code: '',
     discount_type: 'percentage',
-    discount_value: 0,
+    discount_value: '0',
     description: '',
     max_discount_amount: null,
     eligibility_criteria: '',
@@ -37,7 +36,36 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Validate required fields
+    if (!formData.name || formData.name.trim() === '') {
+      alert('Please enter a discount name');
+      return;
+    }
+    if (!formData.code || formData.code.trim() === '') {
+      alert('Please enter a discount code');
+      return;
+    }
+
+    const collegeId = localStorage.getItem('kumss_college_id');
+    const userId = localStorage.getItem('kumss_user_id') || undefined;
+    const submitData: any = { ...formData };
+
+    // Auto-populate college ID
+    if (collegeId) {
+      submitData.college = parseInt(collegeId);
+    }
+
+    // Auto-populate user IDs
+    if (!feeDiscount && userId) {
+      submitData.created_by = userId;
+      submitData.updated_by = userId;
+    } else if (feeDiscount && userId) {
+      submitData.updated_by = userId;
+    }
+
+    console.log('Submitting fee discount:', submitData);
+    onSubmit(submitData);
   };
 
   return (
@@ -86,11 +114,11 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
           id="discount_value"
           type="number"
           value={formData.discount_value}
-          onChange={(e) => setFormData({ ...formData, discount_value: parseFloat(e.target.value) })}
+          onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
           placeholder={formData.discount_type === 'percentage' ? 'e.g., 25' : 'e.g., 5000'}
           min="0"
-          max={formData.discount_type === 'percentage' ? 100 : undefined}
-          step={formData.discount_type === 'percentage' ? '0.01' : '1'}
+          max={formData.discount_type === 'percentage' ? '100' : undefined}
+          step={formData.discount_type === 'percentage' ? '0.01' : '0.01'}
           required
         />
       </div>
