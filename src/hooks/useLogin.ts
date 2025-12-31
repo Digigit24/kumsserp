@@ -20,6 +20,10 @@ export const useLogin = () => {
         setToken(response.key);
         localStorage.setItem("kumss_auth_token", response.key);
         localStorage.setItem("kumss_user_id", response.user?.id || "");
+        // Store college_id for forms
+        if (response.user?.college) {
+          localStorage.setItem("kumss_college_id", String(response.user.college));
+        }
       }
 
       // Process and store complete user data
