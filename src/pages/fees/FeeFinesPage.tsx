@@ -7,8 +7,9 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeFines } from '../../hooks/useFees';
+import { useFeeFines, useCreateFeeFine, useUpdateFeeFine, useDeleteFeeFine } from '../../hooks/useFees';
 import { FeeFineForm } from './forms';
+import { toast } from 'sonner';
 
 const FeeFinesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -18,6 +19,9 @@ const FeeFinesPage = () => {
 
   // Fetch fee fines using real API
   const { data, isLoading, error, refetch } = useFeeFines(filters);
+  const createFeeFine = useCreateFeeFine();
+  const updateFeeFine = useUpdateFeeFine();
+  const deleteFeeFine = useDeleteFeeFine();
 
   const columns: Column<any>[] = [
     { key: 'name', label: 'Fine Name', sortable: true },
@@ -108,9 +112,43 @@ const FeeFinesPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<FeeFine>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: any) => {
+    console.log('handleFormSubmit called with data:', data);
+    try {
+      if (sidebarMode === 'create') {
+        console.log('Creating fee fine...');
+        const result = await createFeeFine.mutateAsync(data);
+        console.log('Create result:', result);
+        toast.success('Fee fine created successfully');
+      } else if (sidebarMode === 'edit' && selectedFine) {
+        console.log('Updating fee fine...');
+        const result = await updateFeeFine.mutateAsync({ id: selectedFine.id, data });
+        console.log('Update result:', result);
+        toast.success('Fee fine updated successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedFine(null);
+      refetch();
+    } catch (err: any) {
+      console.error('Form submission error:', err);
+      toast.error(err?.message || err?.error || 'An error occurred');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedFine) return;
+
+    if (confirm('Are you sure you want to delete this fee fine?')) {
+      try {
+        await deleteFeeFine.mutateAsync(selectedFine.id);
+        toast.success('Fee fine deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedFine(null);
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete fee fine');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -201,8 +239,9 @@ const FeeFinesPage = () => {
                 </Badge>
               </p>
             </div>
-            <div className="pt-4">
-              <Button onClick={handleEdit}>Edit</Button>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleEdit} className="flex-1">Edit</Button>
+              <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
             </div>
           </div>
         ) : (

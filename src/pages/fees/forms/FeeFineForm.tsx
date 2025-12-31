@@ -9,20 +9,19 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
-import { FeeFine } from '../../../data/feesMockData';
 
 interface FeeFineFormProps {
-  feeFine: FeeFine | null;
-  onSubmit: (data: Partial<FeeFine>) => void;
+  feeFine: any | null;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) => {
-  const [formData, setFormData] = useState<Partial<FeeFine>>({
+  const [formData, setFormData] = useState<any>({
     name: '',
     fine_type: 'late_payment',
     calculation_type: 'fixed',
-    amount: 0,
+    amount: '0',
     description: '',
     grace_period_days: 0,
     max_fine_amount: null,
@@ -37,7 +36,32 @@ export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Validate required fields
+    if (!formData.name || formData.name.trim() === '') {
+      alert('Please enter a fine name');
+      return;
+    }
+
+    const collegeId = localStorage.getItem('kumss_college_id');
+    const userId = localStorage.getItem('kumss_user_id') || undefined;
+    const submitData: any = { ...formData };
+
+    // Auto-populate college ID
+    if (collegeId) {
+      submitData.college = parseInt(collegeId);
+    }
+
+    // Auto-populate user IDs
+    if (!feeFine && userId) {
+      submitData.created_by = userId;
+      submitData.updated_by = userId;
+    } else if (feeFine && userId) {
+      submitData.updated_by = userId;
+    }
+
+    console.log('Submitting fee fine:', submitData);
+    onSubmit(submitData);
   };
 
   return (
@@ -92,11 +116,11 @@ export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) =
           id="amount"
           type="number"
           value={formData.amount}
-          onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
           placeholder={formData.calculation_type === 'percentage' ? 'e.g., 5' : 'e.g., 100'}
           min="0"
-          max={formData.calculation_type === 'percentage' ? 100 : undefined}
-          step={formData.calculation_type === 'percentage' ? '0.01' : '1'}
+          max={formData.calculation_type === 'percentage' ? '100' : undefined}
+          step={formData.calculation_type === 'percentage' ? '0.01' : '0.01'}
           required
         />
         {formData.calculation_type === 'per_day' && (
