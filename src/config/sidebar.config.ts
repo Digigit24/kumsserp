@@ -852,6 +852,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     roles: ["super_admin", "college_admin"],
     items: [
       {
+        name: "Permissions",
+        href: "/system/permissions",
+        icon: Shield,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Settings",
         href: "/settings",
         icon: Settings,

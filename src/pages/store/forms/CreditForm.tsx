@@ -11,7 +11,7 @@ import { Switch } from '../../../components/ui/switch';
 import { SearchableSelect } from '../../../components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { useQuery } from '@tanstack/react-query';
-import { studentsApi } from '../../../services/students.service';
+import { studentApi } from '../../../services/students.service';
 
 interface CreditFormProps {
   credit?: any;
@@ -35,7 +35,7 @@ export const CreditForm = ({ credit, onSubmit, onCancel }: CreditFormProps) => {
   // Fetch students for dropdown
   const { data: studentsData } = useQuery({
     queryKey: ['students-for-select'],
-    queryFn: () => studentsApi.list(),
+    queryFn: () => studentApi.list(),
   });
 
   useEffect(() => {
