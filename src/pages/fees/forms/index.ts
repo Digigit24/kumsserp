@@ -11,3 +11,7 @@ export { FeeCollectionForm } from './FeeCollectionForm';
 export { FeeTypeForm } from './FeeTypeForm';
 export { FeeGroupForm } from './FeeGroupForm';
 export { FeeInstallmentForm } from './FeeInstallmentForm';
+export { FeeReceiptForm } from './FeeReceiptForm';
+export { StudentFeeDiscountForm } from './StudentFeeDiscountForm';
+export { FeeRefundForm } from './FeeRefundForm';
+export { FeeReminderForm } from './FeeReminderForm';
