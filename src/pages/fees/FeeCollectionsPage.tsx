@@ -7,8 +7,10 @@ import { Column, DataTable, FilterConfig } from '../../components/common/DataTab
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeCollections } from '../../hooks/useFees';
+import { useFeeCollections, useCreateFeeCollection, useUpdateFeeCollection, useDeleteFeeCollection } from '../../hooks/useFees';
+import { FeeCollection } from '../../types/fees.types';
 import { FeeCollectionForm } from './forms';
+import { toast } from 'sonner';
 
 const FeeCollectionsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -18,6 +20,9 @@ const FeeCollectionsPage = () => {
 
   // Fetch fee collections using real API
   const { data, isLoading, error, refetch } = useFeeCollections(filters);
+  const createFeeCollection = useCreateFeeCollection();
+  const updateFeeCollection = useUpdateFeeCollection();
+  const deleteFeeCollection = useDeleteFeeCollection();
 
   const columns: Column<any>[] = [
     { key: 'receipt_number', label: 'Receipt No', sortable: true },
@@ -93,9 +98,38 @@ const FeeCollectionsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = (data: Partial<FeeCollection>) => {
-    console.log('Form submitted:', data);
-    setIsSidebarOpen(false);
+  const handleFormSubmit = async (data: Partial<FeeCollection>) => {
+    try {
+      if (sidebarMode === 'create') {
+        await createFeeCollection.mutateAsync(data);
+        toast.success('Fee collection created successfully');
+      } else if (sidebarMode === 'edit' && selectedCollection) {
+        await updateFeeCollection.mutateAsync({ id: selectedCollection.id, data });
+        toast.success('Fee collection updated successfully');
+      }
+      setIsSidebarOpen(false);
+      setSelectedCollection(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.message || 'An error occurred');
+      console.error('Form submission error:', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedCollection) return;
+
+    if (confirm('Are you sure you want to delete this fee collection?')) {
+      try {
+        await deleteFeeCollection.mutateAsync(selectedCollection.id);
+        toast.success('Fee collection deleted successfully');
+        setIsSidebarOpen(false);
+        setSelectedCollection(null);
+        refetch();
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete fee collection');
+      }
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -212,8 +246,9 @@ const FeeCollectionsPage = () => {
               </p>
             </div>
             {!selectedCollection.is_cancelled && (
-              <div className="pt-4">
-                <Button onClick={handleEdit}>Edit</Button>
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleEdit} className="flex-1">Edit</Button>
+                <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
               </div>
             )}
           </div>

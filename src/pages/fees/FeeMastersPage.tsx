@@ -25,9 +25,24 @@ const FeeMastersPage = () => {
   const deleteFeeMaster = useDeleteFeeMaster();
 
   const columns: Column<FeeMaster>[] = [
-    { key: 'program_name', label: 'Program', sortable: false },
-    { key: 'academic_year_name', label: 'Academic Year', sortable: false },
-    { key: 'fee_type_name', label: 'Fee Type', sortable: false },
+    {
+      key: 'program_name',
+      label: 'Program',
+      sortable: false,
+      render: (fee) => fee.program_name || `ID: ${fee.program}`
+    },
+    {
+      key: 'academic_year_name',
+      label: 'Academic Year',
+      sortable: false,
+      render: (fee) => fee.academic_year_label || fee.academic_year_name || `ID: ${fee.academic_year}`
+    },
+    {
+      key: 'fee_type_name',
+      label: 'Fee Type',
+      sortable: false,
+      render: (fee) => fee.fee_type_name || `ID: ${fee.fee_type}`
+    },
     { key: 'semester', label: 'Semester', sortable: true },
     { key: 'amount', label: 'Amount', render: (fee) => `₹${fee.amount}` },
     {

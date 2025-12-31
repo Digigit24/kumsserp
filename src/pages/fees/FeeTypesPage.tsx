@@ -25,9 +25,19 @@ const FeeTypesPage = () => {
 
   const columns: Column<FeeType>[] = [
     { key: 'name', label: 'Name', sortable: true },
-    { key: 'fee_group_name', label: 'Fee Group', sortable: false },
+    {
+      key: 'fee_group_name',
+      label: 'Fee Group',
+      sortable: false,
+      render: (feeType) => feeType.fee_group_name || `ID: ${feeType.fee_group}`
+    },
     { key: 'code', label: 'Code', sortable: true },
-    { key: 'description', label: 'Description', sortable: false },
+    {
+      key: 'description',
+      label: 'Description',
+      sortable: false,
+      render: (feeType) => feeType.description || '-'
+    },
     {
       key: 'is_active',
       label: 'Status',
