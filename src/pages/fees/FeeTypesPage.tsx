@@ -2,12 +2,12 @@
  * Fee Types Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeTypes, useCreateFeeType, useUpdateFeeType, useDeleteFeeType } from '../../hooks/useFees';
+import { useFeeTypes, useCreateFeeType, useUpdateFeeType, useDeleteFeeType, useFeeGroups } from '../../hooks/useFees';
 import { FeeType } from '../../types/fees.types';
 import { FeeTypeForm } from './forms/FeeTypeForm';
 import { toast } from 'sonner';
@@ -23,13 +23,25 @@ const FeeTypesPage = () => {
   const updateFeeType = useUpdateFeeType();
   const deleteFeeType = useDeleteFeeType();
 
+  // Fetch fee groups to resolve names
+  const { data: feeGroupsData } = useFeeGroups({ page_size: 1000 });
+
+  // Create lookup map for fee groups
+  const feeGroupMap = useMemo(() => {
+    if (!feeGroupsData?.results) return {};
+    return feeGroupsData.results.reduce((acc, group) => {
+      acc[group.id] = group.name;
+      return acc;
+    }, {} as Record<number, string>);
+  }, [feeGroupsData]);
+
   const columns: Column<FeeType>[] = [
     { key: 'name', label: 'Name', sortable: true },
     {
       key: 'fee_group_name',
       label: 'Fee Group',
       sortable: false,
-      render: (feeType) => feeType.fee_group_name || `ID: ${feeType.fee_group}`
+      render: (feeType) => feeType.fee_group_name || feeGroupMap[feeType.fee_group] || '-'
     },
     { key: 'code', label: 'Code', sortable: true },
     {
@@ -150,7 +162,7 @@ const FeeTypesPage = () => {
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Fee Group</h3>
-              <p className="mt-1 text-lg">{selectedFeeType.fee_group_name || `ID: ${selectedFeeType.fee_group}`}</p>
+              <p className="mt-1 text-lg">{selectedFeeType.fee_group_name || feeGroupMap[selectedFeeType.fee_group] || '-'}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Code</h3>

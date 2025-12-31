@@ -2,12 +2,14 @@
  * Fee Masters Page
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useFeeMasters, useCreateFeeMaster, useUpdateFeeMaster, useDeleteFeeMaster } from '../../hooks/useFees';
+import { useFeeMasters, useCreateFeeMaster, useUpdateFeeMaster, useDeleteFeeMaster, useFeeTypes } from '../../hooks/useFees';
+import { usePrograms } from '../../hooks/useAcademic';
+import { useAcademicYears } from '../../hooks/useCore';
 import { FeeMaster } from '../../types/fees.types';
 import { FeeMasterForm } from './forms';
 import { toast } from 'sonner';
@@ -24,24 +26,54 @@ const FeeMastersPage = () => {
   const updateFeeMaster = useUpdateFeeMaster();
   const deleteFeeMaster = useDeleteFeeMaster();
 
+  // Fetch related data to resolve names
+  const { data: programsData } = usePrograms({ page_size: 1000 });
+  const { data: academicYearsData } = useAcademicYears({ page_size: 1000 });
+  const { data: feeTypesData } = useFeeTypes({ page_size: 1000 });
+
+  // Create lookup maps
+  const programMap = useMemo(() => {
+    if (!programsData?.results) return {};
+    return programsData.results.reduce((acc, program) => {
+      acc[program.id] = program.name;
+      return acc;
+    }, {} as Record<number, string>);
+  }, [programsData]);
+
+  const academicYearMap = useMemo(() => {
+    if (!academicYearsData?.results) return {};
+    return academicYearsData.results.reduce((acc, year) => {
+      acc[year.id] = year.year || `Year ${year.id}`;
+      return acc;
+    }, {} as Record<number, string>);
+  }, [academicYearsData]);
+
+  const feeTypeMap = useMemo(() => {
+    if (!feeTypesData?.results) return {};
+    return feeTypesData.results.reduce((acc, feeType) => {
+      acc[feeType.id] = feeType.name;
+      return acc;
+    }, {} as Record<number, string>);
+  }, [feeTypesData]);
+
   const columns: Column<FeeMaster>[] = [
     {
       key: 'program_name',
       label: 'Program',
       sortable: false,
-      render: (fee) => fee.program_name || `ID: ${fee.program}`
+      render: (fee) => fee.program_name || programMap[fee.program] || '-'
     },
     {
       key: 'academic_year_name',
       label: 'Academic Year',
       sortable: false,
-      render: (fee) => fee.academic_year_label || fee.academic_year_name || `ID: ${fee.academic_year}`
+      render: (fee) => fee.academic_year_label || fee.academic_year_name || academicYearMap[fee.academic_year] || '-'
     },
     {
       key: 'fee_type_name',
       label: 'Fee Type',
       sortable: false,
-      render: (fee) => fee.fee_type_name || `ID: ${fee.fee_type}`
+      render: (fee) => fee.fee_type_name || feeTypeMap[fee.fee_type] || '-'
     },
     { key: 'semester', label: 'Semester', sortable: true },
     { key: 'amount', label: 'Amount', render: (fee) => `₹${fee.amount}` },
@@ -150,17 +182,17 @@ const FeeMastersPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Program</h3>
-                <p className="mt-1 text-lg">{selectedFeeMaster.program_name || `ID: ${selectedFeeMaster.program}`}</p>
+                <p className="mt-1 text-lg">{selectedFeeMaster.program_name || programMap[selectedFeeMaster.program] || '-'}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Academic Year</h3>
-                <p className="mt-1 text-lg">{selectedFeeMaster.academic_year_name || `ID: ${selectedFeeMaster.academic_year}`}</p>
+                <p className="mt-1 text-lg">{selectedFeeMaster.academic_year_name || academicYearMap[selectedFeeMaster.academic_year] || '-'}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Fee Type</h3>
-                <p className="mt-1 text-lg">{selectedFeeMaster.fee_type_name || `ID: ${selectedFeeMaster.fee_type}`}</p>
+                <p className="mt-1 text-lg">{selectedFeeMaster.fee_type_name || feeTypeMap[selectedFeeMaster.fee_type] || '-'}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Semester</h3>
