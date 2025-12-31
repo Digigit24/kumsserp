@@ -25,14 +25,34 @@ import {
   Lock,
   Unlock,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { permissionsApi } from '../../services/core.service';
 
 const PermissionsPage = () => {
+  const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Mutation for saving permissions
+  const savePermissionsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return permissionsApi.create(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['permissions'] });
+      toast.success(`Permissions saved successfully for ${roles.find(r => r.value === selectedRole)?.label}`);
+      setHasChanges(false);
+    },
+    onError: (error: any) => {
+      console.error('Error saving permissions:', error);
+      toast.error(error?.message || 'Failed to save permissions');
+    },
+  });
 
   // Role options
   const roles = [
@@ -176,34 +196,25 @@ const PermissionsPage = () => {
     setHasChanges(true);
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!selectedRole) {
       toast.error('Please select a role first');
       return;
     }
 
-    try {
-      // Prepare permissions JSON
-      const permissionsJson = JSON.stringify(permissions);
-      const collegeId = localStorage.getItem('kumss_college_id');
+    // Prepare permissions JSON
+    const permissionsJson = JSON.stringify(permissions);
+    const collegeId = localStorage.getItem('kumss_college_id');
 
-      const data = {
-        college: collegeId ? parseInt(collegeId) : 0,
-        role: selectedRole,
-        permissions_json: permissionsJson,
-        is_active: true,
-      };
+    const data = {
+      college: collegeId ? parseInt(collegeId) : 0,
+      role: selectedRole,
+      permissions_json: permissionsJson,
+      is_active: true,
+    };
 
-      // Here you would call the API
-      // await permissionsApi.create(data);
-
-      console.log('Saving permissions:', data);
-      toast.success(`Permissions saved for ${roles.find(r => r.value === selectedRole)?.label}`);
-      setHasChanges(false);
-    } catch (error: any) {
-      console.error('Error saving permissions:', error);
-      toast.error(error?.message || 'Failed to save permissions');
-    }
+    console.log('Saving permissions:', data);
+    savePermissionsMutation.mutate(data);
   };
 
   const handleReset = () => {
@@ -238,9 +249,21 @@ const PermissionsPage = () => {
               Reset
             </Button>
           )}
-          <Button onClick={handleSave} disabled={!selectedRole || !hasChanges}>
-            <Save className="h-4 w-4 mr-2" />
-            Save Permissions
+          <Button
+            onClick={handleSave}
+            disabled={!selectedRole || !hasChanges || savePermissionsMutation.isPending}
+          >
+            {savePermissionsMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Permissions
+              </>
+            )}
           </Button>
         </div>
       </div>
