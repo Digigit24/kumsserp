@@ -60,6 +60,13 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
   const [error, setError] = useState<string | null>(null);
 
   const loadPermissions = async () => {
+    // Don't fetch permissions if user is not authenticated
+    const token = localStorage.getItem('kumss_auth_token');
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
