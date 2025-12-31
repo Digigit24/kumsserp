@@ -76,10 +76,8 @@ export const FeeDiscountForm = ({ feeDiscount, onSubmit, onCancel }: FeeDiscount
       submitData.percentage = '';
     }
 
-    // Auto-populate college ID
-    if (collegeId) {
-      submitData.college = parseInt(collegeId);
-    }
+    // Always include college ID
+    submitData.college = collegeId ? parseInt(collegeId) : 0;
 
     // Auto-populate user IDs
     if (!feeDiscount && userId) {
