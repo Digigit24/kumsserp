@@ -75,27 +75,25 @@ export const StoreItemsPage: React.FC = () => {
 
   // Form state
   const [itemForm, setItemForm] = useState({
-    item_code: '',
+    code: '',
     name: '',
-    category: 'stationery' as ItemCategory,
+    category: 0,
     description: '',
     unit: 'Piece',
-    current_stock: 0,
+    stock_quantity: 0,
     min_stock_level: 10,
-    max_stock_level: 100,
-    reorder_point: 20,
-    unit_price: 0,
-    location: '',
-    supplier: '',
+    price: 0,
+    barcode: '',
+    image: '',
   });
 
   // Calculate statistics
   const stats = useMemo(() => {
     return {
       totalItems: items.length,
-      totalValue: items.reduce((sum: number, item: any) => sum + (parseFloat(item.total_value || 0)), 0),
-      lowStockItems: items.filter((i: any) => i.status === 'low_stock').length,
-      outOfStockItems: items.filter((i: any) => i.status === 'out_of_stock').length,
+      totalValue: items.reduce((sum: number, item: any) => sum + (parseFloat(item.price || 0) * parseInt(item.stock_quantity || 0)), 0),
+      lowStockItems: items.filter((i: any) => i.stock_quantity > 0 && i.stock_quantity < i.min_stock_level).length,
+      outOfStockItems: items.filter((i: any) => i.stock_quantity <= 0).length,
     };
   }, [items]);
 
@@ -103,10 +101,10 @@ export const StoreItemsPage: React.FC = () => {
   const filteredItems = items.filter((item: any) => {
     const matchesSearch =
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.item_code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' || String(item.category) === categoryFilter || item.category_name === categoryFilter;
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
 
     return matchesSearch && matchesCategory && matchesStatus;
@@ -155,35 +153,31 @@ export const StoreItemsPage: React.FC = () => {
   const handleEditItem = (item: any) => {
     setSelectedItem(item);
     setItemForm({
-      item_code: item.item_code || '',
+      code: item.code || '',
       name: item.name || '',
-      category: item.category || 'stationery',
+      category: item.category || 0,
       description: item.description || '',
       unit: item.unit || 'Piece',
-      current_stock: item.current_stock || 0,
+      stock_quantity: item.stock_quantity || 0,
       min_stock_level: item.min_stock_level || 10,
-      max_stock_level: item.max_stock_level || 100,
-      reorder_point: item.reorder_point || 20,
-      unit_price: item.unit_price || 0,
-      location: item.location || '',
-      supplier: item.supplier || '',
+      price: item.price || 0,
+      barcode: item.barcode || '',
+      image: item.image || '',
     });
   };
 
   const resetForm = () => {
     setItemForm({
-      item_code: '',
+      code: '',
       name: '',
-      category: 'stationery',
+      category: 0,
       description: '',
       unit: 'Piece',
-      current_stock: 0,
+      stock_quantity: 0,
       min_stock_level: 10,
-      max_stock_level: 100,
-      reorder_point: 20,
-      unit_price: 0,
-      location: '',
-      supplier: '',
+      price: 0,
+      barcode: '',
+      image: '',
     });
   };
 
@@ -262,29 +256,18 @@ export const StoreItemsPage: React.FC = () => {
                   <label className="text-sm font-medium mb-2 block">Item Code *</label>
                   <Input
                     placeholder="e.g., ST-001"
-                    value={itemForm.item_code}
-                    onChange={(e) => setItemForm({ ...itemForm, item_code: e.target.value })}
+                    value={itemForm.code}
+                    onChange={(e) => setItemForm({ ...itemForm, code: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select
+                  <label className="text-sm font-medium mb-2 block">Category ID</label>
+                  <Input
+                    type="number"
+                    placeholder="Category ID"
                     value={itemForm.category}
-                    onValueChange={(value) => setItemForm({ ...itemForm, category: value as ItemCategory })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stationery">Stationery</SelectItem>
-                      <SelectItem value="equipment">Equipment</SelectItem>
-                      <SelectItem value="consumables">Consumables</SelectItem>
-                      <SelectItem value="books">Books</SelectItem>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="furniture">Furniture</SelectItem>
-                      <SelectItem value="printing">Printing Supplies</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => setItemForm({ ...itemForm, category: parseInt(e.target.value) || 0 })}
+                  />
                 </div>
               </div>
 
@@ -330,25 +313,25 @@ export const StoreItemsPage: React.FC = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Unit Price (₹) *</label>
+                  <label className="text-sm font-medium mb-2 block">Price (₹) *</label>
                   <Input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={itemForm.unit_price}
-                    onChange={(e) => setItemForm({ ...itemForm, unit_price: parseFloat(e.target.value) || 0 })}
+                    value={itemForm.price}
+                    onChange={(e) => setItemForm({ ...itemForm, price: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Current Stock</label>
+                  <label className="text-sm font-medium mb-2 block">Stock Quantity</label>
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.current_stock}
-                    onChange={(e) => setItemForm({ ...itemForm, current_stock: parseInt(e.target.value) || 0 })}
+                    value={itemForm.stock_quantity}
+                    onChange={(e) => setItemForm({ ...itemForm, stock_quantity: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -360,44 +343,25 @@ export const StoreItemsPage: React.FC = () => {
                     onChange={(e) => setItemForm({ ...itemForm, min_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Max Stock Level</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={itemForm.max_stock_level}
-                    onChange={(e) => setItemForm({ ...itemForm, max_stock_level: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Reorder Point</label>
+                  <label className="text-sm font-medium mb-2 block">Barcode (Optional)</label>
                   <Input
-                    type="number"
-                    min="0"
-                    value={itemForm.reorder_point}
-                    onChange={(e) => setItemForm({ ...itemForm, reorder_point: parseInt(e.target.value) || 0 })}
+                    placeholder="Barcode"
+                    value={itemForm.barcode}
+                    onChange={(e) => setItemForm({ ...itemForm, barcode: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Location</label>
+                  <label className="text-sm font-medium mb-2 block">Image URL (Optional)</label>
                   <Input
-                    placeholder="e.g., Store Room A, Shelf 1"
-                    value={itemForm.location}
-                    onChange={(e) => setItemForm({ ...itemForm, location: e.target.value })}
+                    placeholder="Image URL"
+                    value={itemForm.image}
+                    onChange={(e) => setItemForm({ ...itemForm, image: e.target.value })}
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Supplier (Optional)</label>
-                <Input
-                  placeholder="Supplier name"
-                  value={itemForm.supplier}
-                  onChange={(e) => setItemForm({ ...itemForm, supplier: e.target.value })}
-                />
               </div>
 
               {/* Value Calculation */}
@@ -405,7 +369,7 @@ export const StoreItemsPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total Stock Value:</span>
                   <span className="text-lg font-bold text-primary">
-                    {formatCurrency(itemForm.current_stock * itemForm.unit_price)}
+                    {formatCurrency(itemForm.stock_quantity * itemForm.price)}
                   </span>
                 </div>
               </div>
@@ -416,7 +380,7 @@ export const StoreItemsPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleCreateItem}
-                  disabled={!itemForm.item_code || !itemForm.name || itemForm.unit_price === 0}
+                  disabled={!itemForm.code || !itemForm.name || itemForm.price === 0}
                 >
                   <Package className="h-4 w-4 mr-2" />
                   Add Item
@@ -599,7 +563,7 @@ export const StoreItemsPage: React.FC = () => {
                   filteredItems.map((item: any) => (
                     <tr key={item.id} className="border-b hover:bg-accent/50 transition-colors">
                       <td className="py-3 px-4">
-                        <p className="font-medium text-sm">{item.item_code}</p>
+                        <p className="font-medium text-sm">{item.code}</p>
                       </td>
                       <td className="py-3 px-4">
                         <p className="font-medium text-sm">{item.name}</p>
@@ -607,23 +571,22 @@ export const StoreItemsPage: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 hidden md:table-cell">
                         <Badge variant="outline" className="capitalize">
-                          {item.category}
+                          {item.category_name || `Category #${item.category}`}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <p className="font-medium">{item.current_stock}</p>
+                        <p className="font-medium">{item.stock_quantity}</p>
                         <p className="text-xs text-muted-foreground">{item.unit}</p>
                       </td>
                       <td className="py-3 px-4 text-right hidden lg:table-cell">
-                        <p className="text-sm">{formatCurrency(parseFloat(item.unit_price || 0))}</p>
+                        <p className="text-sm">{formatCurrency(parseFloat(item.price || 0))}</p>
                       </td>
                       <td className="py-3 px-4 text-right hidden lg:table-cell">
-                        <p className="font-medium">{formatCurrency(parseFloat(item.total_value || 0))}</p>
+                        <p className="font-medium">{formatCurrency(parseFloat(item.price || 0) * parseInt(item.stock_quantity || 0))}</p>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <Badge variant={getStockStatusColor(item.status) as any} className="gap-1">
-                          {getStatusIcon(item.status)}
-                          {item.status?.replace('_', ' ')}
+                        <Badge variant={item.stock_quantity <= 0 ? 'destructive' : item.stock_quantity < item.min_stock_level ? 'warning' : 'success'} className="gap-1">
+                          {item.stock_quantity <= 0 ? 'Out of Stock' : item.stock_quantity < item.min_stock_level ? 'Low Stock' : 'In Stock'}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -662,27 +625,18 @@ export const StoreItemsPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Item Code *</label>
                   <Input
-                    value={itemForm.item_code}
-                    onChange={(e) => setItemForm({ ...itemForm, item_code: e.target.value })}
+                    value={itemForm.code}
+                    onChange={(e) => setItemForm({ ...itemForm, code: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select
+                  <label className="text-sm font-medium mb-2 block">Category ID</label>
+                  <Input
+                    type="number"
+                    placeholder="Category ID"
                     value={itemForm.category}
-                    onValueChange={(value) => setItemForm({ ...itemForm, category: value as ItemCategory })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stationery">Stationery</SelectItem>
-                      <SelectItem value="equipment">Equipment</SelectItem>
-                      <SelectItem value="consumables">Consumables</SelectItem>
-                      <SelectItem value="books">Books</SelectItem>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="furniture">Furniture</SelectItem>
-                      <SelectItem value="printing">Printing Supplies</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => setItemForm({ ...itemForm, category: parseInt(e.target.value) || 0 })}
+                  />
                 </div>
               </div>
 
@@ -724,25 +678,25 @@ export const StoreItemsPage: React.FC = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Unit Price (₹) *</label>
+                  <label className="text-sm font-medium mb-2 block">Price (₹) *</label>
                   <Input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={itemForm.unit_price}
-                    onChange={(e) => setItemForm({ ...itemForm, unit_price: parseFloat(e.target.value) || 0 })}
+                    value={itemForm.price}
+                    onChange={(e) => setItemForm({ ...itemForm, price: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Current Stock</label>
+                  <label className="text-sm font-medium mb-2 block">Stock Quantity</label>
                   <Input
                     type="number"
                     min="0"
-                    value={itemForm.current_stock}
-                    onChange={(e) => setItemForm({ ...itemForm, current_stock: parseInt(e.target.value) || 0 })}
+                    value={itemForm.stock_quantity}
+                    onChange={(e) => setItemForm({ ...itemForm, stock_quantity: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
@@ -754,49 +708,32 @@ export const StoreItemsPage: React.FC = () => {
                     onChange={(e) => setItemForm({ ...itemForm, min_stock_level: parseInt(e.target.value) || 0 })}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Max Stock Level</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={itemForm.max_stock_level}
-                    onChange={(e) => setItemForm({ ...itemForm, max_stock_level: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Reorder Point</label>
+                  <label className="text-sm font-medium mb-2 block">Barcode (Optional)</label>
                   <Input
-                    type="number"
-                    min="0"
-                    value={itemForm.reorder_point}
-                    onChange={(e) => setItemForm({ ...itemForm, reorder_point: parseInt(e.target.value) || 0 })}
+                    placeholder="Barcode"
+                    value={itemForm.barcode}
+                    onChange={(e) => setItemForm({ ...itemForm, barcode: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Location</label>
+                  <label className="text-sm font-medium mb-2 block">Image URL (Optional)</label>
                   <Input
-                    value={itemForm.location}
-                    onChange={(e) => setItemForm({ ...itemForm, location: e.target.value })}
+                    placeholder="Image URL"
+                    value={itemForm.image}
+                    onChange={(e) => setItemForm({ ...itemForm, image: e.target.value })}
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Supplier (Optional)</label>
-                <Input
-                  value={itemForm.supplier}
-                  onChange={(e) => setItemForm({ ...itemForm, supplier: e.target.value })}
-                />
               </div>
 
               <div className="p-4 bg-accent/30 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total Stock Value:</span>
                   <span className="text-lg font-bold text-primary">
-                    {formatCurrency(itemForm.current_stock * itemForm.unit_price)}
+                    {formatCurrency(itemForm.stock_quantity * itemForm.price)}
                   </span>
                 </div>
               </div>
