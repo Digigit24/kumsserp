@@ -229,3 +229,47 @@ export const creditsApi = {
     });
   },
 };
+
+// ============================================================================
+// PRINT JOBS API
+// ============================================================================
+
+export const printJobsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/print-jobs/${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/print-jobs/${id}/`));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/print-jobs/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/print-jobs/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  partialUpdate: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/print-jobs/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/print-jobs/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
