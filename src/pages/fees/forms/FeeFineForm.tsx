@@ -1,14 +1,17 @@
 /**
  * Fee Fine Form Component
- * Create/Edit form for fee fines
+ * Create/Edit form for applying fines to students
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
+import { SearchableSelect, SearchableSelectOption } from '../../../components/ui/searchable-select';
+import { useStudents } from '../../../hooks/useStudents';
+import { useFeeStructures } from '../../../hooks/useFees';
 
 interface FeeFineFormProps {
   feeFine: any | null;
@@ -18,19 +21,46 @@ interface FeeFineFormProps {
 
 export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) => {
   const [formData, setFormData] = useState<any>({
-    name: '',
-    fine_type: 'late_payment',
-    calculation_type: 'fixed',
+    student: 0,
+    fee_structure: 0,
     amount: '0',
-    description: '',
-    grace_period_days: 0,
-    max_fine_amount: null,
+    reason: '',
+    fine_date: new Date().toISOString().split('T')[0],
+    is_paid: false,
+    paid_date: '',
     is_active: true,
   });
 
+  // Fetch dropdown data
+  const { data: studentsData } = useStudents({ page_size: 1000 });
+  const { data: feeStructuresData } = useFeeStructures({ page_size: 1000 });
+
+  // Create options for dropdowns
+  const studentOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!studentsData?.results) return [];
+    return studentsData.results.map((student) => ({
+      value: student.id,
+      label: student.full_name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || `Student ${student.id}`,
+      subtitle: student.roll_number || student.email || '',
+    }));
+  }, [studentsData]);
+
+  const feeStructureOptions: SearchableSelectOption[] = useMemo(() => {
+    if (!feeStructuresData?.results) return [];
+    return feeStructuresData.results.map((structure) => ({
+      value: structure.id,
+      label: structure.name || `Fee Structure ${structure.id}`,
+      subtitle: structure.description || '',
+    }));
+  }, [feeStructuresData]);
+
   useEffect(() => {
     if (feeFine) {
-      setFormData(feeFine);
+      setFormData({
+        ...feeFine,
+        fine_date: feeFine.fine_date || new Date().toISOString().split('T')[0],
+        paid_date: feeFine.paid_date || '',
+      });
     }
   }, [feeFine]);
 
@@ -38,18 +68,34 @@ export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) =
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.name || formData.name.trim() === '') {
-      alert('Please enter a fine name');
+    if (!formData.student || formData.student === 0) {
+      alert('Please select a student');
+      return;
+    }
+    if (!formData.reason || formData.reason.trim() === '') {
+      alert('Please enter a reason for the fine');
+      return;
+    }
+    if (!formData.fine_date) {
+      alert('Please select a fine date');
       return;
     }
 
-    const collegeId = localStorage.getItem('kumss_college_id');
     const userId = localStorage.getItem('kumss_user_id') || undefined;
-    const submitData: any = { ...formData };
 
-    // Auto-populate college ID
-    if (collegeId) {
-      submitData.college = parseInt(collegeId);
+    const submitData: any = {
+      student: formData.student,
+      fee_structure: formData.fee_structure || 0,
+      amount: formData.amount,
+      reason: formData.reason,
+      fine_date: formData.fine_date,
+      is_paid: formData.is_paid,
+      is_active: formData.is_active,
+    };
+
+    // Only include paid_date if is_paid is true and date is provided
+    if (formData.is_paid && formData.paid_date) {
+      submitData.paid_date = formData.paid_date;
     }
 
     // Auto-populate user IDs
@@ -67,103 +113,86 @@ export const FeeFineForm = ({ feeFine, onSubmit, onCancel }: FeeFineFormProps) =
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Fine Name *</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="e.g., Late Payment Fine"
-          required
+        <Label htmlFor="student">Student *</Label>
+        <SearchableSelect
+          options={studentOptions}
+          value={formData.student}
+          onChange={(value) => setFormData({ ...formData, student: Number(value) })}
+          placeholder="Select student"
+          searchPlaceholder="Search students..."
+          emptyText="No students available"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="fine_type">Fine Type *</Label>
-        <select
-          id="fine_type"
-          className="w-full p-2 border rounded"
-          value={formData.fine_type}
-          onChange={(e) => setFormData({ ...formData, fine_type: e.target.value as 'late_payment' | 'damage' | 'library' | 'other' })}
-          required
-        >
-          <option value="late_payment">Late Payment</option>
-          <option value="damage">Damage</option>
-          <option value="library">Library</option>
-          <option value="other">Other</option>
-        </select>
+        <Label htmlFor="fee_structure">Fee Structure</Label>
+        <SearchableSelect
+          options={feeStructureOptions}
+          value={formData.fee_structure}
+          onChange={(value) => setFormData({ ...formData, fee_structure: Number(value) })}
+          placeholder="Select fee structure (optional)"
+          searchPlaceholder="Search fee structures..."
+          emptyText="No fee structures available"
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="calculation_type">Calculation Type *</Label>
-        <select
-          id="calculation_type"
-          className="w-full p-2 border rounded"
-          value={formData.calculation_type}
-          onChange={(e) => setFormData({ ...formData, calculation_type: e.target.value as 'percentage' | 'fixed' | 'per_day' })}
-          required
-        >
-          <option value="fixed">Fixed Amount</option>
-          <option value="percentage">Percentage</option>
-          <option value="per_day">Per Day</option>
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="amount">
-          {formData.calculation_type === 'percentage' ? 'Fine Percentage *' : 'Fine Amount *'}
-        </Label>
+        <Label htmlFor="amount">Fine Amount *</Label>
         <Input
           id="amount"
           type="number"
           value={formData.amount}
           onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-          placeholder={formData.calculation_type === 'percentage' ? 'e.g., 5' : 'e.g., 100'}
+          placeholder="e.g., 500"
           min="0"
-          max={formData.calculation_type === 'percentage' ? '100' : undefined}
-          step={formData.calculation_type === 'percentage' ? '0.01' : '0.01'}
+          step="0.01"
           required
         />
-        {formData.calculation_type === 'per_day' && (
-          <p className="text-xs text-muted-foreground">Amount charged per day after grace period</p>
-        )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="grace_period_days">Grace Period (Days)</Label>
-        <Input
-          id="grace_period_days"
-          type="number"
-          value={formData.grace_period_days}
-          onChange={(e) => setFormData({ ...formData, grace_period_days: parseInt(e.target.value) })}
-          placeholder="e.g., 7"
-          min="0"
-        />
-        <p className="text-xs text-muted-foreground">Number of days before fine starts applying</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="max_fine_amount">Max Fine Amount</Label>
-        <Input
-          id="max_fine_amount"
-          type="number"
-          value={formData.max_fine_amount || ''}
-          onChange={(e) => setFormData({ ...formData, max_fine_amount: e.target.value ? parseFloat(e.target.value) : null })}
-          placeholder="e.g., 5000"
-          min="0"
-        />
-        <p className="text-xs text-muted-foreground">Maximum fine amount (leave empty for no limit)</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="reason">Reason *</Label>
         <Textarea
-          id="description"
-          value={formData.description || ''}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Description of the fine"
+          id="reason"
+          value={formData.reason || ''}
+          onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+          placeholder="e.g., Late payment of tuition fee"
           rows={3}
+          required
         />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="fine_date">Fine Date *</Label>
+        <Input
+          id="fine_date"
+          type="date"
+          value={formData.fine_date}
+          onChange={(e) => setFormData({ ...formData, fine_date: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="is_paid">Paid</Label>
+        <Switch
+          id="is_paid"
+          checked={formData.is_paid}
+          onCheckedChange={(checked) => setFormData({ ...formData, is_paid: checked })}
+        />
+      </div>
+
+      {formData.is_paid && (
+        <div className="space-y-2">
+          <Label htmlFor="paid_date">Paid Date</Label>
+          <Input
+            id="paid_date"
+            type="date"
+            value={formData.paid_date || ''}
+            onChange={(e) => setFormData({ ...formData, paid_date: e.target.value })}
+          />
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <Label htmlFor="is_active">Active</Label>
