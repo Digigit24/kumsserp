@@ -65,6 +65,17 @@ export const StudentFeeDiscountForm = ({ studentFeeDiscount, onSubmit, onCancel 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!formData.student || formData.student === 0) {
+      alert('Please select a student');
+      return;
+    }
+    if (!formData.discount || formData.discount === 0) {
+      alert('Please select a discount');
+      return;
+    }
+
     const userId = localStorage.getItem('kumss_user_id') || undefined;
     const submitData: any = { ...formData };
 
@@ -75,6 +86,7 @@ export const StudentFeeDiscountForm = ({ studentFeeDiscount, onSubmit, onCancel 
       submitData.updated_by = userId;
     }
 
+    console.log('Submitting student fee discount:', submitData);
     onSubmit(submitData);
   };
 

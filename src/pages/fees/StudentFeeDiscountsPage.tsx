@@ -69,20 +69,25 @@ const StudentFeeDiscountsPage = () => {
   };
 
   const handleFormSubmit = async (data: Partial<StudentFeeDiscount>) => {
+    console.log('handleFormSubmit called with data:', data);
     try {
       if (sidebarMode === 'create') {
-        await createStudentFeeDiscount.mutateAsync(data);
+        console.log('Creating student fee discount...');
+        const result = await createStudentFeeDiscount.mutateAsync(data);
+        console.log('Create result:', result);
         toast.success('Student fee discount created successfully');
       } else if (sidebarMode === 'edit' && selectedDiscount) {
-        await updateStudentFeeDiscount.mutateAsync({ id: selectedDiscount.id, data });
+        console.log('Updating student fee discount...');
+        const result = await updateStudentFeeDiscount.mutateAsync({ id: selectedDiscount.id, data });
+        console.log('Update result:', result);
         toast.success('Student fee discount updated successfully');
       }
       setIsSidebarOpen(false);
       setSelectedDiscount(null);
       refetch();
     } catch (err: any) {
-      toast.error(err?.message || 'An error occurred');
       console.error('Form submission error:', err);
+      toast.error(err?.message || err?.error || 'An error occurred');
     }
   };
 
