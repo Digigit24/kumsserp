@@ -3,7 +3,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
-import { useSalaryStructures } from '../../../hooks/useHR';
+import { useSalaryStructures, useTeachers } from '../../../hooks/useHR';
 
 interface PayrollFormProps {
   item: any | null;
@@ -13,8 +13,11 @@ interface PayrollFormProps {
 
 export const PayrollForm = ({ item, onSubmit, onCancel }: PayrollFormProps) => {
   const { data: structures } = useSalaryStructures({ is_active: true });
+  const { data: teachers } = useTeachers({ is_active: true });
+
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     defaultValues: item || {
+      teacher: '',
       salary_structure: '',
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
@@ -33,6 +36,7 @@ export const PayrollForm = ({ item, onSubmit, onCancel }: PayrollFormProps) => {
     // Convert to proper types
     const cleanedData = {
       ...data,
+      teacher: parseInt(data.teacher),
       salary_structure: parseInt(data.salary_structure),
       month: parseInt(data.month),
       year: parseInt(data.year),
@@ -42,6 +46,23 @@ export const PayrollForm = ({ item, onSubmit, onCancel }: PayrollFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="teacher">Teacher *</Label>
+        <select
+          id="teacher"
+          {...register('teacher', { required: 'Teacher is required' })}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="">Select teacher</option>
+          {teachers?.results?.map((teacher: any) => (
+            <option key={teacher.id} value={teacher.teacher_id || teacher.id}>
+              {teacher.full_name} {teacher.email ? `(${teacher.email})` : ''}
+            </option>
+          ))}
+        </select>
+        {errors.teacher && <p className="text-sm text-destructive">{errors.teacher.message as string}</p>}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="salary_structure">Salary Structure *</Label>
         <select
