@@ -141,16 +141,16 @@ const StockReceiptsPage = () => {
         title="Stock Receipts"
         description="Manage stock receipts from vendors"
         columns={columns}
-        data={data?.results || []}
-        totalCount={data?.count || 0}
+        data={data || null}
         isLoading={isLoading}
-        error={error?.message}
+        error={error?.message || null}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
         onRowClick={handleRowClick}
-        onAddNew={handleAddNew}
-        addButtonText="Add Stock Receipt"
+        onRefresh={refetch}
+        onAdd={handleAddNew}
+        addButtonLabel="Add Stock Receipt"
       />
 
       <DetailSidebar

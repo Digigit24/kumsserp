@@ -134,16 +134,16 @@ const VendorsPage = () => {
         title="Vendors"
         description="Manage your store vendors and suppliers"
         columns={columns}
-        data={data?.results || []}
-        totalCount={data?.count || 0}
+        data={data || null}
         isLoading={isLoading}
-        error={error?.message}
+        error={error?.message || null}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
         onRowClick={handleRowClick}
-        onAddNew={handleAddNew}
-        addButtonText="Add Vendor"
+        onRefresh={refetch}
+        onAdd={handleAddNew}
+        addButtonLabel="Add Vendor"
       />
 
       <DetailSidebar
