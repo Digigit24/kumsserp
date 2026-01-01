@@ -90,6 +90,8 @@ export interface User {
   college?: number | null; // College ID for non-super_admin users
   college_name?: string;
   collegeName?: string;
+  teacher_id?: number | null; // Teacher model ID for teacher users
+  student_id?: number | null; // Student model ID for student users
 
   // Additional login response fields
   user_roles?: UserRole[];
