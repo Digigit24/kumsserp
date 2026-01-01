@@ -3,6 +3,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { useTeachers } from '../../../hooks/useHR';
 
 interface SalaryStructureFormProps {
   item: any | null;
@@ -11,8 +12,11 @@ interface SalaryStructureFormProps {
 }
 
 export const SalaryStructureForm = ({ item, onSubmit, onCancel }: SalaryStructureFormProps) => {
+  const { data: teachers } = useTeachers({ is_active: true });
+
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm({
     defaultValues: item || {
+      teacher: '',
       effective_from: '',
       effective_to: '',
       basic_salary: '',
@@ -28,8 +32,34 @@ export const SalaryStructureForm = ({ item, onSubmit, onCancel }: SalaryStructur
   const isCurrent = watch('is_current');
   const isActive = watch('is_active');
 
+  const handleFormSubmit = (data: any) => {
+    // Convert teacher to integer
+    const cleanedData = {
+      ...data,
+      teacher: parseInt(data.teacher),
+    };
+    onSubmit(cleanedData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="teacher">Teacher *</Label>
+        <select
+          id="teacher"
+          {...register('teacher', { required: 'Teacher is required' })}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="">Select teacher</option>
+          {teachers?.results?.map((teacher: any) => (
+            <option key={teacher.id} value={teacher.teacher_id || teacher.id}>
+              {teacher.full_name} {teacher.email ? `(${teacher.email})` : ''}
+            </option>
+          ))}
+        </select>
+        {errors.teacher && <p className="text-sm text-destructive">{errors.teacher.message as string}</p>}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="effective_from">Effective From *</Label>
         <Input id="effective_from" type="date" {...register('effective_from', { required: 'Effective from is required' })} />

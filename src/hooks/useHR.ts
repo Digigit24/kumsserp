@@ -489,20 +489,11 @@ export const useCreateSalaryStructure = () => {
 
   return useMutation({
     mutationFn: async (data: any) => {
-      const userId = localStorage.getItem('kumss_user_id');
-
+      // Don't send created_by/updated_by - let backend set from authenticated user
       const submitData: any = {
         ...data,
         is_active: data.is_active ?? true,
       };
-
-      if (userId) {
-        submitData.created_by = userId;
-        submitData.updated_by = userId;
-        if (!data.teacher) {
-          submitData.teacher = parseInt(userId);
-        }
-      }
 
       return salaryStructuresApi.create(submitData);
     },
