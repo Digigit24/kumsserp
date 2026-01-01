@@ -170,6 +170,8 @@ const CreditsPage = lazy(() => import("../pages/store/CreditsPage"));
 const SalesPage = lazy(() => import("../pages/store/SalesPage"));
 const PrintRequestsPage = lazy(() => import("../pages/store/PrintRequestsPage"));
 const SaleItemsPage = lazy(() => import("../pages/store/SaleItemsPage"));
+const VendorsPage = lazy(() => import("../pages/store/VendorsPage"));
+const StockReceiptsPage = lazy(() => import("../pages/store/StockReceiptsPage"));
 
 // Library Student Module
 const StudentLibraryPage = lazy(() => import("../pages/library/StudentLibraryPage"));
@@ -336,6 +338,8 @@ export default function AppRoutes() {
                     <Route path="store/sales" element={<LazyRoute component={SalesPage} />} />
                     <Route path="store/sale-items" element={<LazyRoute component={SaleItemsPage} />} />
                     <Route path="store/print-requests" element={<LazyRoute component={PrintRequestsPage} />} />
+                    <Route path="store/vendors" element={<LazyRoute component={VendorsPage} />} />
+                    <Route path="store/stock-receipts" element={<LazyRoute component={StockReceiptsPage} />} />
                 </Route>
             </Route>
 
