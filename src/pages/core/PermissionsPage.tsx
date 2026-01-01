@@ -29,7 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { permissionsApi } from '../../services/core.service';
 import type { UserPermissionsJSON, PermissionDetail } from '../../types/permissions.types';
 
@@ -38,15 +38,48 @@ const PermissionsPage = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [permissions, setPermissions] = useState<UserPermissionsJSON>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [existingPermissionId, setExistingPermissionId] = useState<number | null>(null);
+
+  // Fetch existing permissions when role is selected
+  const { data: existingPermissions, isLoading: isLoadingPermissions } = useQuery({
+    queryKey: ['permissions', selectedRole],
+    queryFn: async () => {
+      if (!selectedRole) return null;
+      const collegeId = localStorage.getItem('kumss_college_id');
+      const response = await permissionsApi.list({
+        college: collegeId ? parseInt(collegeId) : undefined,
+        role: selectedRole
+      });
+      return response.results?.[0] || null;
+    },
+    enabled: !!selectedRole,
+  });
+
+  // Load existing permissions into state
+  useEffect(() => {
+    if (existingPermissions) {
+      setExistingPermissionId(existingPermissions.id);
+      setPermissions(existingPermissions.permissions_json || {});
+    } else {
+      setExistingPermissionId(null);
+      setPermissions({});
+    }
+    setHasChanges(false);
+  }, [existingPermissions]);
 
   // Mutation for saving permissions
   const savePermissionsMutation = useMutation({
     mutationFn: async (data: any) => {
-      return permissionsApi.create(data);
+      // Use update if permission exists, otherwise create
+      if (existingPermissionId) {
+        return permissionsApi.update(existingPermissionId, data);
+      } else {
+        return permissionsApi.create(data);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['permissions'] });
-      toast.success(`Permissions saved successfully for ${roles.find(r => r.value === selectedRole)?.label}`);
+      toast.success(`Permissions ${existingPermissionId ? 'updated' : 'created'} successfully for ${roles.find(r => r.value === selectedRole)?.label}`);
       setHasChanges(false);
     },
     onError: (error: any) => {
@@ -350,17 +383,17 @@ const PermissionsPage = () => {
           )}
           <Button
             onClick={handleSave}
-            disabled={!selectedRole || !hasChanges || savePermissionsMutation.isPending}
+            disabled={!selectedRole || !hasChanges || savePermissionsMutation.isPending || isLoadingPermissions}
           >
             {savePermissionsMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
+                {existingPermissionId ? 'Updating...' : 'Saving...'}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Save Permissions
+                {existingPermissionId ? 'Update Permissions' : 'Save Permissions'}
               </>
             )}
           </Button>
@@ -408,8 +441,19 @@ const PermissionsPage = () => {
 
       {/* Permissions Grid */}
       {selectedRole ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {permissionModules.map((module) => {
+        isLoadingPermissions ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
+              <h3 className="text-lg font-semibold mb-2">Loading Permissions...</h3>
+              <p className="text-muted-foreground">
+                Fetching existing permissions for {roles.find(r => r.value === selectedRole)?.label}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {permissionModules.map((module) => {
             const Icon = module.icon;
             const enabledCount = getEnabledCount(module.module, module.permissions);
             const totalCount = module.permissions.length;
@@ -506,7 +550,8 @@ const PermissionsPage = () => {
               </Card>
             );
           })}
-        </div>
+          </div>
+        )
       ) : (
         <Card className="border-dashed border-2">
           <CardContent className="p-12 text-center">
