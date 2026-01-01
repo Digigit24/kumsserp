@@ -192,14 +192,15 @@ const PermissionsPage = () => {
     setPermissions(prev => {
       const modulePerms = prev[moduleName] || {};
       const actionPerm = modulePerms[action as keyof typeof modulePerms] as PermissionDetail | undefined;
+      const willBeEnabled = !(actionPerm?.enabled ?? false);
 
       return {
         ...prev,
         [moduleName]: {
           ...modulePerms,
           [action]: {
-            enabled: !(actionPerm?.enabled ?? false),
-            scope: actionPerm?.scope || getDefaultScope(),
+            enabled: willBeEnabled,
+            scope: willBeEnabled ? (actionPerm?.scope || getDefaultScope()) : 'none',
           },
         },
       };
@@ -237,10 +238,12 @@ const PermissionsPage = () => {
 
     const defaultScope = getDefaultScope();
     const newModulePerms: any = {};
+    const willEnable = !allEnabled;
+
     modulePermissions.forEach(p => {
       newModulePerms[p.action] = {
-        enabled: !allEnabled,
-        scope: defaultScope,
+        enabled: willEnable,
+        scope: willEnable ? defaultScope : 'none',
       };
     });
 
@@ -264,13 +267,30 @@ const PermissionsPage = () => {
       return;
     }
 
-    // Prepare permissions data
+    // Prepare complete permissions data with all modules
+    // Fill in missing permissions with enabled=false, scope="none"
+    const completePermissions: UserPermissionsJSON = {};
+
+    permissionModules.forEach(module => {
+      completePermissions[module.module] = {};
+      const modulePerms = permissions[module.module] || {};
+
+      module.permissions.forEach(perm => {
+        const actionPerm = modulePerms[perm.action as keyof typeof modulePerms] as PermissionDetail | undefined;
+
+        completePermissions[module.module]![perm.action as keyof typeof completePermissions[typeof module.module]] = {
+          enabled: actionPerm?.enabled ?? false,
+          scope: actionPerm?.enabled ? (actionPerm.scope || getDefaultScope()) : 'none',
+        } as any;
+      });
+    });
+
     const collegeId = localStorage.getItem('kumss_college_id');
 
     const data = {
       college: collegeId ? parseInt(collegeId) : 0,
       role: selectedRole,
-      permissions_json: permissions,
+      permissions_json: completePermissions,
       is_active: true,
     };
 
