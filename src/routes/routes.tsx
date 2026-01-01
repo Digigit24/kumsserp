@@ -144,10 +144,16 @@ const BookReturnsPage = lazy(() => import("../pages/library/BookReturnsPage"));
 const MyBooksPage = lazy(() => import("../pages/library/MyBooksPage"));
 
 // HR Module
+const DeductionsPage = lazy(() => import("../pages/hr/DeductionsPage"));
+const LeaveTypesPage = lazy(() => import("../pages/hr/LeaveTypesPage"));
 const LeaveApplicationsPage = lazy(() => import("../pages/hr/LeaveApplicationsPage"));
 const LeaveApprovalsPage = lazy(() => import("../pages/hr/LeaveApprovalsPage"));
+const LeaveBalancesPage = lazy(() => import("../pages/hr/LeaveBalancesPage"));
 const SalaryStructuresPage = lazy(() => import("../pages/hr/SalaryStructuresPage"));
+const SalaryComponentsPage = lazy(() => import("../pages/hr/SalaryComponentsPage"));
 const PayrollsPage = lazy(() => import("../pages/hr/PayrollsPage"));
+const PayrollItemsPage = lazy(() => import("../pages/hr/PayrollItemsPage"));
+const PayslipsPage = lazy(() => import("../pages/hr/PayslipsPage"));
 
 // Reports Module
 const ReportTemplatesPage = lazy(() => import("../pages/reports/ReportTemplatesPage"));
@@ -312,10 +318,16 @@ export default function AppRoutes() {
                     <Route path="library/student" element={<LazyRoute component={StudentLibraryPage} />} />
 
                     {/* HR Module */}
+                    <Route path="hr/deductions" element={<LazyRoute component={DeductionsPage} />} />
+                    <Route path="hr/leave-types" element={<LazyRoute component={LeaveTypesPage} />} />
                     <Route path="hr/leave-applications" element={<LazyRoute component={LeaveApplicationsPage} />} />
                     <Route path="hr/leave-approvals" element={<LazyRoute component={LeaveApprovalsPage} />} />
+                    <Route path="hr/leave-balances" element={<LazyRoute component={LeaveBalancesPage} />} />
                     <Route path="hr/salary-structures" element={<LazyRoute component={SalaryStructuresPage} />} />
+                    <Route path="hr/salary-components" element={<LazyRoute component={SalaryComponentsPage} />} />
                     <Route path="hr/payrolls" element={<LazyRoute component={PayrollsPage} />} />
+                    <Route path="hr/payroll-items" element={<LazyRoute component={PayrollItemsPage} />} />
+                    <Route path="hr/payslips" element={<LazyRoute component={PayslipsPage} />} />
 
                     {/* Reports Module */}
                     <Route path="reports/templates" element={<LazyRoute component={ReportTemplatesPage} />} />

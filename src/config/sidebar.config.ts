@@ -675,6 +675,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     roles: ["super_admin", "college_admin"],
     items: [
       {
+        name: "Leave Types",
+        href: "/hr/leave-types",
+        icon: FileText,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Leave Applications",
         href: "/hr/leave-applications",
         icon: FileText,
@@ -687,15 +693,45 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
-        name: "Payrolls",
-        href: "/hr/payrolls",
-        icon: CreditCard,
+        name: "Leave Balances",
+        href: "/hr/leave-balances",
+        icon: FileText,
         roles: ["super_admin", "college_admin"],
       },
       {
         name: "Salary Structures",
         href: "/hr/salary-structures",
         icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Salary Components",
+        href: "/hr/salary-components",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Deductions",
+        href: "/hr/deductions",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Payrolls",
+        href: "/hr/payrolls",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Payroll Items",
+        href: "/hr/payroll-items",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Payslips",
+        href: "/hr/payslips",
+        icon: FileText,
         roles: ["super_admin", "college_admin"],
       },
     ],
