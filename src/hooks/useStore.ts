@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { storeItemsApi, saleItemsApi, salesApi, categoriesApi, creditsApi, printJobsApi } from '../services/store.service';
+import { storeItemsApi, saleItemsApi, salesApi, categoriesApi, creditsApi, printJobsApi, vendorApi, stockReceiptApi } from '../services/store.service';
 
 // ============================================================================
 // CATEGORIES
@@ -588,6 +588,179 @@ export const useDeleteSale = () => {
     mutationFn: (id: number) => salesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-sales'] });
+    },
+  });
+};
+
+// ============================================================================
+// VENDORS
+// ============================================================================
+
+/**
+ * Fetch vendors with optional filters
+ */
+export const useVendors = (filters?: any) => {
+  return useQuery({
+    queryKey: ['store-vendors', filters],
+    queryFn: () => vendorApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new vendor
+ */
+export const useCreateVendor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+      const collegeId = localStorage.getItem('kumss_college_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      if (collegeId) {
+        submitData.college = parseInt(collegeId);
+      }
+
+      return vendorApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-vendors'] });
+    },
+  });
+};
+
+/**
+ * Update a vendor
+ */
+export const useUpdateVendor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return vendorApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-vendors'] });
+    },
+  });
+};
+
+/**
+ * Delete a vendor
+ */
+export const useDeleteVendor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => vendorApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-vendors'] });
+    },
+  });
+};
+
+// ============================================================================
+// STOCK RECEIPTS
+// ============================================================================
+
+/**
+ * Fetch stock receipts with optional filters
+ */
+export const useStockReceipts = (filters?: any) => {
+  return useQuery({
+    queryKey: ['store-stock-receipts', filters],
+    queryFn: () => stockReceiptApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new stock receipt
+ */
+export const useCreateStockReceipt = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      return stockReceiptApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-stock-receipts'] });
+    },
+  });
+};
+
+/**
+ * Update a stock receipt
+ */
+export const useUpdateStockReceipt = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return stockReceiptApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-stock-receipts'] });
+    },
+  });
+};
+
+/**
+ * Delete a stock receipt
+ */
+export const useDeleteStockReceipt = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => stockReceiptApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-stock-receipts'] });
     },
   });
 };
