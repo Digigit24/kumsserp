@@ -117,9 +117,9 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
 
 export const teachersApi = {
   list: async (filters?: any): Promise<PaginatedResponse<any>> => {
-    const queryString = buildQueryString(filters || {});
+    const queryString = buildQueryString({ user_type: 'teacher', page_size: 1000, ...filters });
     return fetchApi<PaginatedResponse<any>>(
-      buildApiUrl(`/api/v1/accounts/teachers/${queryString}`)
+      buildApiUrl(`/api/v1/accounts/users/${queryString}`)
     );
   },
 };

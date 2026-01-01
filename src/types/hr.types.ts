@@ -98,7 +98,7 @@ export interface LeaveTypeFilters {
 
 export interface LeaveApplication extends AuditFields {
   id: number;
-  teacher: number;
+  teacher: string; // UUID
   teacher_name?: string;
   leave_type: number;
   leave_type_name?: string;
@@ -119,7 +119,7 @@ export interface LeaveApplicationCreateInput {
   attachment?: string;
   status?: string;
   is_active?: boolean;
-  teacher?: number;
+  teacher?: string; // UUID
   leave_type: number;
   created_by?: string;
   updated_by?: string;
@@ -162,7 +162,7 @@ export interface LeaveApprovalUpdateInput extends Partial<LeaveApprovalCreateInp
 
 export interface LeaveBalance extends AuditFields {
   id: number;
-  teacher: number;
+  teacher: string; // UUID
   teacher_name?: string;
   leave_type: number;
   leave_type_name?: string;
@@ -175,7 +175,7 @@ export interface LeaveBalance extends AuditFields {
 }
 
 export interface LeaveBalanceCreateInput {
-  teacher?: number;
+  teacher?: string; // UUID
   leave_type: number;
   academic_year: number;
   total_days: number;
@@ -191,7 +191,7 @@ export interface LeaveBalanceUpdateInput extends Partial<LeaveBalanceCreateInput
 export interface LeaveBalanceFilters {
   page?: number;
   page_size?: number;
-  teacher?: number;
+  teacher?: string; // UUID
   leave_type?: number;
   academic_year?: number;
   search?: string;
@@ -204,7 +204,7 @@ export interface LeaveBalanceFilters {
 
 export interface SalaryStructure extends AuditFields {
   id: number;
-  teacher: number;
+  teacher: string; // UUID
   teacher_name?: string;
   effective_from: string;
   effective_to: string;
@@ -218,7 +218,7 @@ export interface SalaryStructure extends AuditFields {
 }
 
 export interface SalaryStructureCreateInput {
-  teacher?: number;
+  teacher?: string; // UUID
   effective_from: string;
   effective_to?: string;
   basic_salary: string;
@@ -276,7 +276,7 @@ export interface SalaryComponentFilters {
 
 export interface Payroll extends AuditFields {
   id: number;
-  teacher: number;
+  teacher: string; // UUID
   teacher_name?: string;
   salary_structure: number;
   month: number;
@@ -293,7 +293,7 @@ export interface Payroll extends AuditFields {
 }
 
 export interface PayrollCreateInput {
-  teacher?: number;
+  teacher?: string; // UUID
   salary_structure: number;
   month: number;
   year: number;
@@ -315,7 +315,7 @@ export interface PayrollUpdateInput extends Partial<PayrollCreateInput> {}
 export interface PayrollFilters {
   page?: number;
   page_size?: number;
-  teacher?: number;
+  teacher?: string; // UUID
   month?: number;
   year?: number;
   status?: string;
@@ -398,7 +398,7 @@ export interface PayslipFilters {
 export interface LeaveApplicationFilters {
   page?: number;
   page_size?: number;
-  teacher?: number;
+  teacher?: string; // UUID
   leave_type?: number;
   status?: string;
   from_date?: string;
@@ -420,7 +420,7 @@ export interface LeaveApprovalFilters {
 export interface SalaryStructureFilters {
   page?: number;
   page_size?: number;
-  teacher?: number;
+  teacher?: string; // UUID
   is_current?: boolean;
   is_active?: boolean;
   search?: string;

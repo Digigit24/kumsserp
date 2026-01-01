@@ -34,16 +34,9 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
       total_days: parseInt(data.total_days),
     };
 
-    // Convert teacher to number if provided
-    if (cleanedData.teacher) {
-      const teacherId = parseInt(cleanedData.teacher);
-      if (!isNaN(teacherId)) {
-        cleanedData.teacher = teacherId;
-      } else {
-        delete cleanedData.teacher;
-      }
-    } else {
-      delete cleanedData.teacher; // Remove if empty
+    // Keep teacher as UUID string if provided, otherwise remove it
+    if (!cleanedData.teacher || cleanedData.teacher.trim() === '') {
+      delete cleanedData.teacher;
     }
 
     // Remove attachment if it's empty
@@ -105,7 +98,7 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
           <option value="">Select teacher (or leave blank)</option>
           {teachers?.results?.map((teacher: any) => (
             <option key={teacher.id} value={teacher.id}>
-              {teacher.first_name} {teacher.last_name} {teacher.email ? `(${teacher.email})` : ''}
+              {teacher.full_name} {teacher.email ? `(${teacher.email})` : ''}
             </option>
           ))}
         </select>

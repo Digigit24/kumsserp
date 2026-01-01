@@ -235,7 +235,6 @@ export const useCreateLeaveApplication = () => {
   return useMutation({
     mutationFn: async (data: any) => {
       const userId = localStorage.getItem('kumss_user_id');
-      const teacherId = localStorage.getItem('kumss_teacher_id'); // Try to get teacher ID from localStorage
 
       const submitData: any = {
         ...data,
@@ -246,15 +245,10 @@ export const useCreateLeaveApplication = () => {
       if (userId) {
         submitData.created_by = userId;
         submitData.updated_by = userId;
-      }
 
-      // Set teacher ID if available
-      if (!submitData.teacher || submitData.teacher === null) {
-        if (teacherId) {
-          const parsedTeacherId = parseInt(teacherId);
-          if (!isNaN(parsedTeacherId)) {
-            submitData.teacher = parsedTeacherId;
-          }
+        // If teacher is not provided, use current user's ID (UUID)
+        if (!submitData.teacher) {
+          submitData.teacher = userId;
         }
       }
 
