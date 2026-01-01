@@ -33,6 +33,7 @@ import { useStudents } from '@/hooks/useStudents';
 import { useBulkMarkAttendance, useStudentAttendance, useMarkStudentAttendance } from '@/hooks/useAttendance';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { useSections } from '@/hooks/useAcademic';
 
 interface AttendanceRecord {
   student_id: number;
@@ -72,6 +73,11 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
 
   // Fetch data
   const { data: subjectsData } = useSubjects({ page_size: 100, is_active: true });
+  const { data: sectionsData } = useSections({
+    class_obj: selectedClass || undefined,
+    is_active: true,
+    page_size: 100
+  });
   const { data: studentsData, isLoading: studentsLoading } = useStudents({
     page_size: 200,
     class_obj: selectedClass || undefined,
@@ -242,7 +248,36 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
       </div>
 
       {/* Context Selectors - Permission-driven */}
-      <ContextSelectorToolbar />
+      <ContextSelectorToolbar showSection={false} />
+
+      {/* Manual Section Selector for flexibility */}
+      {selectedClass && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="section">Section (Optional)</Label>
+                <Select
+                  value={selectedSection ? String(selectedSection) : "all"}
+                  onValueChange={(value) => setSelectedSection(value === "all" ? null : Number(value))}
+                >
+                  <SelectTrigger id="section">
+                    <SelectValue placeholder="All sections" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All sections</SelectItem>
+                    {sectionsData?.results?.map((section: any) => (
+                      <SelectItem key={section.id} value={String(section.id)}>
+                        {section.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Date and Subject Selection */}
       <Card>
