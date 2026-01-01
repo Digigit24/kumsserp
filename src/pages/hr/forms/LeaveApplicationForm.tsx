@@ -25,8 +25,36 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
     },
   });
 
+  const handleFormSubmit = (data: any) => {
+    // Clean up the data before submission
+    const cleanedData: any = {
+      ...data,
+      leave_type: parseInt(data.leave_type),
+      total_days: parseInt(data.total_days),
+    };
+
+    // Convert teacher to number if provided
+    if (cleanedData.teacher) {
+      const teacherId = parseInt(cleanedData.teacher);
+      if (!isNaN(teacherId)) {
+        cleanedData.teacher = teacherId;
+      } else {
+        delete cleanedData.teacher;
+      }
+    } else {
+      delete cleanedData.teacher; // Remove if empty
+    }
+
+    // Remove attachment if it's empty
+    if (!cleanedData.attachment || cleanedData.attachment.trim() === '') {
+      delete cleanedData.attachment;
+    }
+
+    onSubmit(cleanedData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="leave_type">Leave Type *</Label>
         <select
@@ -64,6 +92,12 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
         <Label htmlFor="reason">Reason *</Label>
         <Textarea id="reason" {...register('reason', { required: 'Reason is required' })} placeholder="Enter reason for leave" rows={3} />
         {errors.reason && <p className="text-sm text-destructive">{errors.reason.message as string}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="teacher">Teacher ID (Optional)</Label>
+        <Input id="teacher" type="number" {...register('teacher')} placeholder="Leave blank to use current user" />
+        <p className="text-xs text-muted-foreground">Enter teacher ID or leave blank to auto-assign</p>
       </div>
 
       <div className="space-y-2">
