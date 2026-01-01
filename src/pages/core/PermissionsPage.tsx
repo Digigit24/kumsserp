@@ -172,6 +172,22 @@ const PermissionsPage = () => {
     },
   ];
 
+  // Get default scope based on selected role
+  const getDefaultScope = () => {
+    switch (selectedRole) {
+      case 'super_admin':
+      case 'college_admin':
+        return 'all';
+      case 'teacher':
+        return 'team';
+      case 'student':
+      case 'parent':
+        return 'mine';
+      default:
+        return 'all';
+    }
+  };
+
   const handlePermissionToggle = (moduleName: string, action: string) => {
     setPermissions(prev => {
       const modulePerms = prev[moduleName] || {};
@@ -183,7 +199,28 @@ const PermissionsPage = () => {
           ...modulePerms,
           [action]: {
             enabled: !(actionPerm?.enabled ?? false),
-            scope: actionPerm?.scope || 'all',
+            scope: actionPerm?.scope || getDefaultScope(),
+          },
+        },
+      };
+    });
+    setHasChanges(true);
+  };
+
+  const handleScopeChange = (moduleName: string, action: string, newScope: string) => {
+    setPermissions(prev => {
+      const modulePerms = prev[moduleName] || {};
+      const actionPerm = modulePerms[action as keyof typeof modulePerms] as PermissionDetail | undefined;
+
+      if (!actionPerm?.enabled) return prev; // Don't change scope if permission is disabled
+
+      return {
+        ...prev,
+        [moduleName]: {
+          ...modulePerms,
+          [action]: {
+            enabled: true,
+            scope: newScope,
           },
         },
       };
@@ -198,11 +235,12 @@ const PermissionsPage = () => {
       return actionPerm?.enabled === true;
     });
 
+    const defaultScope = getDefaultScope();
     const newModulePerms: any = {};
     modulePermissions.forEach(p => {
       newModulePerms[p.action] = {
         enabled: !allEnabled,
-        scope: 'all',
+        scope: defaultScope,
       };
     });
 
@@ -211,6 +249,13 @@ const PermissionsPage = () => {
       [moduleName]: newModulePerms,
     }));
     setHasChanges(true);
+  };
+
+  const getPermissionScope = (moduleName: string, action: string): string => {
+    const modulePerms = permissions[moduleName];
+    if (!modulePerms) return getDefaultScope();
+    const actionPerm = modulePerms[action as keyof typeof modulePerms] as PermissionDetail | undefined;
+    return actionPerm?.scope || getDefaultScope();
   };
 
   const handleSave = () => {
@@ -373,6 +418,7 @@ const PermissionsPage = () => {
                     {module.permissions.map((permission) => {
                       const permKey = `${module.module}-${permission.action}`;
                       const isEnabled = isPermissionEnabled(module.module, permission.action);
+                      const currentScope = getPermissionScope(module.module, permission.action);
 
                       return (
                         <div
@@ -395,9 +441,35 @@ const PermissionsPage = () => {
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {permission.description}
                             </p>
+                            {isEnabled && (
+                              <div className="mt-2">
+                                <Select
+                                  value={currentScope}
+                                  onValueChange={(value) => handleScopeChange(module.module, permission.action, value)}
+                                >
+                                  <SelectTrigger className="h-8 w-32 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="mine">
+                                      <span className="text-xs">Mine Only</span>
+                                    </SelectItem>
+                                    <SelectItem value="team">
+                                      <span className="text-xs">Team/Class</span>
+                                    </SelectItem>
+                                    <SelectItem value="department">
+                                      <span className="text-xs">Department</span>
+                                    </SelectItem>
+                                    <SelectItem value="all">
+                                      <span className="text-xs">All Data</span>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                           {isEnabled && (
-                            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                           )}
                         </div>
                       );
