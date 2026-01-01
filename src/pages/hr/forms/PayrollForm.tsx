@@ -12,7 +12,7 @@ interface PayrollFormProps {
 }
 
 export const PayrollForm = ({ item, onSubmit, onCancel }: PayrollFormProps) => {
-  const { data: structures } = useSalaryStructures({ is_current: true });
+  const { data: structures } = useSalaryStructures({ is_active: true });
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     defaultValues: item || {
       salary_structure: '',
@@ -29,8 +29,19 @@ export const PayrollForm = ({ item, onSubmit, onCancel }: PayrollFormProps) => {
     },
   });
 
+  const handleFormSubmit = (data: any) => {
+    // Convert to proper types
+    const cleanedData = {
+      ...data,
+      salary_structure: parseInt(data.salary_structure),
+      month: parseInt(data.month),
+      year: parseInt(data.year),
+    };
+    onSubmit(cleanedData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="salary_structure">Salary Structure *</Label>
         <select
