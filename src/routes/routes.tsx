@@ -29,10 +29,8 @@ const Dashboard = lazy(() => import("../pages/Dashboard").then(m => ({ default: 
 const Settings = lazy(() => import("../pages/Settings"));
 const DebugPage = lazy(() => import("../pages/debug/DebugPage").then(m => ({ default: m.DebugPage })));
 
-// System Module
-const PermissionsPage = lazy(() => import("../pages/system/PermissionsPage").then(m => ({ default: m.PermissionsPage })));
-
 // Core Module
+const PermissionsPage = lazy(() => import("../pages/core/PermissionsPage"));
 const CollegesPage = lazy(() => import("../pages/core/CollegesPage"));
 const AcademicYearsPage = lazy(() => import("../pages/core/AcademicYearsPage"));
 const AcademicSessionsPage = lazy(() => import("../pages/core/AcademicSessionsPage"));
