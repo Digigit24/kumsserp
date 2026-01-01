@@ -217,11 +217,36 @@ export const useDeleteLeaveType = () => {
 
 /**
  * Fetch leave applications with optional filters
+ * Enriches data with teacher names
  */
 export const useLeaveApplications = (filters?: any) => {
   return useQuery({
     queryKey: ['hr-leave-applications', filters],
-    queryFn: () => leaveApplicationsApi.list(filters),
+    queryFn: async () => {
+      // Fetch leave applications and teachers in parallel
+      const [leaveApplications, teachers] = await Promise.all([
+        leaveApplicationsApi.list(filters),
+        teachersApi.list({ page_size: 1000 }),
+      ]);
+
+      // Create a map of teacher_id to teacher name
+      const teacherMap = new Map();
+      teachers.results?.forEach((teacher: any) => {
+        if (teacher.teacher_id) {
+          teacherMap.set(teacher.teacher_id, teacher.full_name);
+        }
+      });
+
+      // Enrich leave applications with teacher names
+      if (leaveApplications.results) {
+        leaveApplications.results = leaveApplications.results.map((application: any) => ({
+          ...application,
+          teacher_name: teacherMap.get(application.teacher) || `Teacher #${application.teacher}`,
+        }));
+      }
+
+      return leaveApplications;
+    },
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -472,11 +497,36 @@ export const useDeleteLeaveBalance = () => {
 
 /**
  * Fetch salary structures with optional filters
+ * Enriches data with teacher names
  */
 export const useSalaryStructures = (filters?: any) => {
   return useQuery({
     queryKey: ['hr-salary-structures', filters],
-    queryFn: () => salaryStructuresApi.list(filters),
+    queryFn: async () => {
+      // Fetch salary structures and teachers in parallel
+      const [salaryStructures, teachers] = await Promise.all([
+        salaryStructuresApi.list(filters),
+        teachersApi.list({ page_size: 1000 }),
+      ]);
+
+      // Create a map of teacher_id to teacher name
+      const teacherMap = new Map();
+      teachers.results?.forEach((teacher: any) => {
+        if (teacher.teacher_id) {
+          teacherMap.set(teacher.teacher_id, teacher.full_name);
+        }
+      });
+
+      // Enrich salary structures with teacher names
+      if (salaryStructures.results) {
+        salaryStructures.results = salaryStructures.results.map((structure: any) => ({
+          ...structure,
+          teacher_name: teacherMap.get(structure.teacher) || `Teacher #${structure.teacher}`,
+        }));
+      }
+
+      return salaryStructures;
+    },
     staleTime: 5 * 60 * 1000,
   });
 };
