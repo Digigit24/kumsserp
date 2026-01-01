@@ -34,16 +34,9 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
       total_days: parseInt(data.total_days),
     };
 
-    // Convert teacher to integer if provided
+    // Convert teacher to integer (required field)
     if (cleanedData.teacher) {
-      const teacherId = parseInt(cleanedData.teacher);
-      if (!isNaN(teacherId)) {
-        cleanedData.teacher = teacherId;
-      } else {
-        delete cleanedData.teacher;
-      }
-    } else {
-      delete cleanedData.teacher;
+      cleanedData.teacher = parseInt(cleanedData.teacher);
     }
 
     // Remove attachment if it's empty
@@ -96,20 +89,20 @@ export const LeaveApplicationForm = ({ item, onSubmit, onCancel }: LeaveApplicat
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="teacher">Teacher (Optional)</Label>
+        <Label htmlFor="teacher">Teacher *</Label>
         <select
           id="teacher"
-          {...register('teacher')}
+          {...register('teacher', { required: 'Teacher is required' })}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <option value="">Select teacher (or leave blank)</option>
+          <option value="">Select teacher</option>
           {teachers?.results?.map((teacher: any) => (
             <option key={teacher.id} value={teacher.teacher_id || teacher.id}>
               {teacher.full_name} {teacher.email ? `(${teacher.email})` : ''}
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground">Leave blank to auto-assign to current user</p>
+        {errors.teacher && <p className="text-sm text-destructive">{errors.teacher.message as string}</p>}
       </div>
 
       <div className="space-y-2">

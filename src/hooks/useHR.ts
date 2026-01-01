@@ -235,13 +235,6 @@ export const useCreateLeaveApplication = () => {
   return useMutation({
     mutationFn: async (data: any) => {
       const userId = localStorage.getItem('kumss_user_id');
-      const userStr = localStorage.getItem('kumss_user');
-      let user = null;
-      try {
-        user = userStr ? JSON.parse(userStr) : null;
-      } catch (e) {
-        console.error('Failed to parse user from localStorage:', e);
-      }
 
       const submitData: any = {
         ...data,
@@ -252,11 +245,6 @@ export const useCreateLeaveApplication = () => {
       if (userId) {
         submitData.created_by = userId;
         submitData.updated_by = userId;
-
-        // If teacher is not provided, try to get teacher_id from user object
-        if (!submitData.teacher && user?.teacher_id) {
-          submitData.teacher = user.teacher_id;
-        }
       }
 
       return leaveApplicationsApi.create(submitData);
