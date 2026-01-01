@@ -267,22 +267,29 @@ const PermissionsPage = () => {
       return;
     }
 
-    // Prepare complete permissions data with all modules
-    // Fill in missing permissions with enabled=false, scope="none"
-    const completePermissions: UserPermissionsJSON = {};
+    // Prepare permissions data - only include enabled permissions
+    const filteredPermissions: UserPermissionsJSON = {};
 
     permissionModules.forEach(module => {
-      completePermissions[module.module] = {};
       const modulePerms = permissions[module.module] || {};
+      const enabledPerms: any = {};
 
       module.permissions.forEach(perm => {
         const actionPerm = modulePerms[perm.action as keyof typeof modulePerms] as PermissionDetail | undefined;
 
-        completePermissions[module.module]![perm.action as keyof typeof completePermissions[typeof module.module]] = {
-          enabled: actionPerm?.enabled ?? false,
-          scope: actionPerm?.enabled ? (actionPerm.scope || getDefaultScope()) : 'none',
-        } as any;
+        // Only include if enabled is true
+        if (actionPerm?.enabled === true) {
+          enabledPerms[perm.action] = {
+            enabled: true,
+            scope: actionPerm.scope || getDefaultScope(),
+          };
+        }
       });
+
+      // Only add module if it has at least one enabled permission
+      if (Object.keys(enabledPerms).length > 0) {
+        filteredPermissions[module.module] = enabledPerms;
+      }
     });
 
     const collegeId = localStorage.getItem('kumss_college_id');
@@ -290,7 +297,7 @@ const PermissionsPage = () => {
     const data = {
       college: collegeId ? parseInt(collegeId) : 0,
       role: selectedRole,
-      permissions_json: completePermissions,
+      permissions_json: filteredPermissions,
       is_active: true,
     };
 
