@@ -202,14 +202,13 @@ const PermissionsPage = () => {
       return;
     }
 
-    // Prepare permissions JSON
-    const permissionsJson = JSON.stringify(permissions);
+    // Prepare permissions data
     const collegeId = localStorage.getItem('kumss_college_id');
 
     const data = {
       college: collegeId ? parseInt(collegeId) : 0,
       role: selectedRole,
-      permissions_json: permissionsJson,
+      permissions_json: permissions, // Send as object, not stringified
       is_active: true,
     };
 
