@@ -112,6 +112,19 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
 };
 
 // ============================================================================
+// TEACHERS API (for dropdowns)
+// ============================================================================
+
+export const teachersApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/accounts/teachers/${queryString}`)
+    );
+  },
+};
+
+// ============================================================================
 // DEDUCTIONS API
 // ============================================================================
 

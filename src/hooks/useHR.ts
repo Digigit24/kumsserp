@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  teachersApi,
   deductionsApi,
   leaveTypesApi,
   leaveApplicationsApi,
@@ -16,6 +17,21 @@ import {
   payrollItemsApi,
   payslipsApi,
 } from '../services/hr.service';
+
+// ============================================================================
+// TEACHERS (for dropdowns)
+// ============================================================================
+
+/**
+ * Fetch teachers list for dropdowns
+ */
+export const useTeachers = (filters?: any) => {
+  return useQuery({
+    queryKey: ['teachers', filters],
+    queryFn: () => teachersApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
 // ============================================================================
 // DEDUCTIONS
