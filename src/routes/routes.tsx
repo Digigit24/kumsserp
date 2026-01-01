@@ -41,7 +41,6 @@ const WeekendsPage = lazy(() => import("../pages/core/WeekendsPage"));
 const SystemSettingsPage = lazy(() => import("../pages/core/SystemSettingsPage"));
 const NotificationSettingsPage = lazy(() => import("../pages/core/NotificationSettingsPage"));
 const ActivityLogsPage = lazy(() => import("../pages/core/ActivityLogsPage"));
-const CorePermissionsPage = lazy(() => import("../pages/core/PermissionsPage"));
 
 // Accounts Module
 const UsersPage = lazy(() => import("../pages/accounts/UsersPage"));
@@ -205,7 +204,7 @@ export default function AppRoutes() {
                     <Route path="core/system-settings" element={<LazyRoute component={SystemSettingsPage} />} />
                     <Route path="core/notification-settings" element={<LazyRoute component={NotificationSettingsPage} />} />
                     <Route path="core/activity-logs" element={<LazyRoute component={ActivityLogsPage} />} />
-                    <Route path="core/permissions" element={<LazyRoute component={CorePermissionsPage} />} />
+                    <Route path="core/permissions" element={<LazyRoute component={PermissionsPage} />} />
 
                     {/* Accounts Module */}
                     <Route path="accounts/users" element={<LazyRoute component={UsersPage} />} />
