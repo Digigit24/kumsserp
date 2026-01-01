@@ -3,7 +3,8 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Checkbox } from '../../../components/ui/checkbox';
-import { useLeaveTypes } from '../../../hooks/useHR';
+import { useLeaveTypes, useTeachers } from '../../../hooks/useHR';
+import { useAcademicYears } from '../../../hooks/useCore';
 
 interface LeaveBalanceFormProps {
   item: any | null;
@@ -13,8 +14,12 @@ interface LeaveBalanceFormProps {
 
 export const LeaveBalanceForm = ({ item, onSubmit, onCancel }: LeaveBalanceFormProps) => {
   const { data: leaveTypes } = useLeaveTypes({ is_active: true });
+  const { data: teachers } = useTeachers({ is_active: true });
+  const { data: academicYears } = useAcademicYears({ is_active: true });
+
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm({
     defaultValues: item || {
+      teacher: '',
       leave_type: '',
       academic_year: '',
       total_days: '',
@@ -26,8 +31,39 @@ export const LeaveBalanceForm = ({ item, onSubmit, onCancel }: LeaveBalanceFormP
 
   const isActive = watch('is_active');
 
+  const handleFormSubmit = (data: any) => {
+    // Convert to integers
+    const cleanedData = {
+      ...data,
+      teacher: parseInt(data.teacher),
+      leave_type: parseInt(data.leave_type),
+      academic_year: parseInt(data.academic_year),
+      total_days: parseInt(data.total_days),
+      used_days: parseInt(data.used_days || 0),
+      balance_days: data.balance_days ? parseInt(data.balance_days) : undefined,
+    };
+    onSubmit(cleanedData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="teacher">Teacher *</Label>
+        <select
+          id="teacher"
+          {...register('teacher', { required: 'Teacher is required' })}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="">Select teacher</option>
+          {teachers?.results?.map((teacher: any) => (
+            <option key={teacher.id} value={teacher.teacher_id || teacher.id}>
+              {teacher.full_name} {teacher.email ? `(${teacher.email})` : ''}
+            </option>
+          ))}
+        </select>
+        {errors.teacher && <p className="text-sm text-destructive">{errors.teacher.message as string}</p>}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="leave_type">Leave Type *</Label>
         <select
@@ -44,8 +80,19 @@ export const LeaveBalanceForm = ({ item, onSubmit, onCancel }: LeaveBalanceFormP
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="academic_year">Academic Year (ID) *</Label>
-        <Input id="academic_year" type="number" {...register('academic_year', { required: 'Academic year is required' })} placeholder="e.g., 1" />
+        <Label htmlFor="academic_year">Academic Year *</Label>
+        <select
+          id="academic_year"
+          {...register('academic_year', { required: 'Academic year is required' })}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="">Select academic year</option>
+          {academicYears?.results?.map((year: any) => (
+            <option key={year.id} value={year.id}>
+              {year.year} {year.is_current ? '(Current)' : ''}
+            </option>
+          ))}
+        </select>
         {errors.academic_year && <p className="text-sm text-destructive">{errors.academic_year.message as string}</p>}
       </div>
 

@@ -410,11 +410,36 @@ export const useDeleteLeaveApproval = () => {
 
 /**
  * Fetch leave balances with optional filters
+ * Enriches data with teacher names
  */
 export const useLeaveBalances = (filters?: any) => {
   return useQuery({
     queryKey: ['hr-leave-balances', filters],
-    queryFn: () => leaveBalancesApi.list(filters),
+    queryFn: async () => {
+      // Fetch leave balances and teachers in parallel
+      const [leaveBalances, teachers] = await Promise.all([
+        leaveBalancesApi.list(filters),
+        teachersApi.list({ page_size: 1000 }),
+      ]);
+
+      // Create a map of teacher_id to teacher name
+      const teacherMap = new Map();
+      teachers.results?.forEach((teacher: any) => {
+        if (teacher.teacher_id) {
+          teacherMap.set(teacher.teacher_id, teacher.full_name);
+        }
+      });
+
+      // Enrich leave balances with teacher names
+      if (leaveBalances.results) {
+        leaveBalances.results = leaveBalances.results.map((balance: any) => ({
+          ...balance,
+          teacher_name: teacherMap.get(balance.teacher) || `Teacher #${balance.teacher}`,
+        }));
+      }
+
+      return leaveBalances;
+    },
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -427,20 +452,11 @@ export const useCreateLeaveBalance = () => {
 
   return useMutation({
     mutationFn: async (data: any) => {
-      const userId = localStorage.getItem('kumss_user_id');
-
+      // Don't send created_by/updated_by - let backend set from authenticated user
       const submitData: any = {
         ...data,
         is_active: data.is_active ?? true,
       };
-
-      if (userId) {
-        submitData.created_by = userId;
-        submitData.updated_by = userId;
-        if (!data.teacher) {
-          submitData.teacher = parseInt(userId);
-        }
-      }
 
       return leaveBalancesApi.create(submitData);
     },
