@@ -5,6 +5,16 @@
 
 import { buildApiUrl, getDefaultHeaders } from '../config/api.config';
 import type { PaginatedResponse } from '../types/core.types';
+import type {
+  Vendor,
+  VendorCreateInput,
+  VendorUpdateInput,
+  VendorFilters,
+  StockReceipt,
+  StockReceiptCreateInput,
+  StockReceiptUpdateInput,
+  StockReceiptFilters,
+} from '../types/store.types';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -293,6 +303,130 @@ export const printJobsApi = {
 
   delete: async (id: number): Promise<void> => {
     return fetchApi<void>(buildApiUrl(`/api/v1/store/print-jobs/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// VENDOR API
+// ============================================================================
+
+export const vendorApi = {
+  /**
+   * List all vendors with pagination and filters
+   */
+  list: async (filters?: VendorFilters): Promise<PaginatedResponse<Vendor>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<Vendor>>(
+      buildApiUrl(`/api/v1/store/vendors/${queryString}`)
+    );
+  },
+
+  /**
+   * Get vendor by ID
+   */
+  get: async (id: number): Promise<Vendor> => {
+    return fetchApi<Vendor>(buildApiUrl(`/api/v1/store/vendors/${id}/`));
+  },
+
+  /**
+   * Create new vendor
+   */
+  create: async (data: VendorCreateInput): Promise<Vendor> => {
+    return fetchApi<Vendor>(buildApiUrl('/api/v1/store/vendors/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update vendor (full update)
+   */
+  update: async (id: number, data: VendorUpdateInput): Promise<Vendor> => {
+    return fetchApi<Vendor>(buildApiUrl(`/api/v1/store/vendors/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Partial update vendor
+   */
+  patch: async (id: number, data: Partial<VendorUpdateInput>): Promise<Vendor> => {
+    return fetchApi<Vendor>(buildApiUrl(`/api/v1/store/vendors/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete vendor
+   */
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/vendors/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// STOCK RECEIPT API
+// ============================================================================
+
+export const stockReceiptApi = {
+  /**
+   * List all stock receipts with pagination and filters
+   */
+  list: async (filters?: StockReceiptFilters): Promise<PaginatedResponse<StockReceipt>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<StockReceipt>>(
+      buildApiUrl(`/api/v1/store/stock-receipts/${queryString}`)
+    );
+  },
+
+  /**
+   * Get stock receipt by ID
+   */
+  get: async (id: number): Promise<StockReceipt> => {
+    return fetchApi<StockReceipt>(buildApiUrl(`/api/v1/store/stock-receipts/${id}/`));
+  },
+
+  /**
+   * Create new stock receipt
+   */
+  create: async (data: StockReceiptCreateInput): Promise<StockReceipt> => {
+    return fetchApi<StockReceipt>(buildApiUrl('/api/v1/store/stock-receipts/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update stock receipt (full update)
+   */
+  update: async (id: number, data: StockReceiptUpdateInput): Promise<StockReceipt> => {
+    return fetchApi<StockReceipt>(buildApiUrl(`/api/v1/store/stock-receipts/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Partial update stock receipt
+   */
+  patch: async (id: number, data: Partial<StockReceiptUpdateInput>): Promise<StockReceipt> => {
+    return fetchApi<StockReceipt>(buildApiUrl(`/api/v1/store/stock-receipts/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete stock receipt
+   */
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/stock-receipts/${id}/`), {
       method: 'DELETE',
     });
   },
