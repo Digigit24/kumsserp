@@ -117,6 +117,7 @@ const StaffAttendancePage = lazy(() => import("../pages/attendance/StaffAttendan
 const SubjectAttendancePage = lazy(() => import("../pages/attendance/SubjectAttendancePage"));
 const AttendanceNotificationsPage = lazy(() => import("../pages/attendance/AttendanceNotificationsPage"));
 const AttendanceMarkingPage = lazy(() => import("../pages/attendance/AttendanceMarkingPage"));
+const TeacherAttendanceMarkingPage = lazy(() => import("../pages/attendance/TeacherAttendanceMarkingPage").then(m => ({ default: m.TeacherAttendanceMarkingPage })));
 const MyAttendancePage = lazy(() => import("../pages/attendance/MyAttendancePage"));
 
 // Fees Module
@@ -289,6 +290,7 @@ export default function AppRoutes() {
                     <Route path="attendance/subjects" element={<LazyRoute component={SubjectAttendancePage} />} />
                     <Route path="attendance/notifications" element={<LazyRoute component={AttendanceNotificationsPage} />} />
                     <Route path="attendance/marking" element={<LazyRoute component={AttendanceMarkingPage} />} />
+                    <Route path="attendance/teacher-marking" element={<LazyRoute component={TeacherAttendanceMarkingPage} />} />
                     <Route path="attendance/my-attendance" element={<LazyRoute component={MyAttendancePage} />} />
 
                     {/* Fees Module */}

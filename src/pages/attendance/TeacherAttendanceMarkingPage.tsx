@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Check,
@@ -43,11 +43,28 @@ interface AttendanceRecord {
 
 export const TeacherAttendanceMarkingPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const { selectedClass, selectedSection } = useHierarchicalContext();
+  const { selectedClass, selectedSection, setSelectedClass, setSelectedSection } = useHierarchicalContext();
   const { permissions } = usePermissions();
 
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
+
+  // Handle navigation state to pre-select class/section/subject
+  useEffect(() => {
+    const state = location.state as any;
+    if (state) {
+      if (state.classId && state.classId !== selectedClass) {
+        setSelectedClass(state.classId);
+      }
+      if (state.sectionId && state.sectionId !== selectedSection) {
+        setSelectedSection(state.sectionId);
+      }
+      if (state.subjectId && state.subjectId !== selectedSubject) {
+        setSelectedSubject(state.subjectId);
+      }
+    }
+  }, [location.state]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -171,9 +188,9 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
 
       toast.success(`Attendance saved successfully for ${attendanceRecords.length} students!`);
 
-      // Reload attendance data to show updated records
+      // Navigate back to teacher attendance page
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/teacher/attendance');
       }, 1000);
     } catch (error: any) {
       toast.error(error?.message || 'Failed to save attendance');
@@ -218,9 +235,9 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
             Mark attendance for your class
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/dashboard')}>
+        <Button variant="outline" onClick={() => navigate('/teacher/attendance')}>
           <ChevronLeft className="h-4 w-4 mr-2" />
-          Back
+          Back to My Classes
         </Button>
       </div>
 
