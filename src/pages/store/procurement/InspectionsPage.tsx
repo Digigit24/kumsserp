@@ -1,12 +1,75 @@
 import { useState } from 'react';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import { Column, DataTable } from '../../../components/common/DataTable';
 import { Badge } from '../../../components/ui/badge';
-import { useInspections } from '../../../hooks/useProcurement';
+import { Button } from '../../../components/ui/button';
+import {
+  useInspections,
+  useCreateInspection,
+  useUpdateInspection,
+  useDeleteInspection,
+} from '../../../hooks/useProcurement';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { InspectionForm } from './forms/InspectionForm';
+import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 
 export const InspectionsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [inspectionToDelete, setInspectionToDelete] = useState<number | null>(null);
 
-  const { data, isLoading } = useInspections(filters);
+  const { data, isLoading, refetch } = useInspections(filters);
+  const createMutation = useCreateInspection();
+  const updateMutation = useUpdateInspection();
+  const deleteMutation = useDeleteInspection();
+
+  const handleCreate = () => {
+    setSelectedInspection(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (inspection: any) => {
+    setSelectedInspection(inspection);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setInspectionToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!inspectionToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(inspectionToDelete);
+      toast.success('Inspection deleted successfully');
+      refetch();
+      setDeleteDialogOpen(false);
+      setInspectionToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete inspection');
+    }
+  };
+
+  const handleSubmit = async (data: any) => {
+    try {
+      if (selectedInspection) {
+        await updateMutation.mutateAsync({ id: selectedInspection.id, data });
+        toast.success('Inspection updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Inspection created successfully');
+      }
+      setIsFormOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save inspection');
+    }
+  };
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'outline' | 'destructive' => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -82,6 +145,20 @@ export const InspectionsPage = () => {
         </Badge>
       ),
     },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -91,6 +168,10 @@ export const InspectionsPage = () => {
           <h1 className="text-3xl font-bold">Quality Inspections</h1>
           <p className="text-muted-foreground">Track quality inspections for goods received</p>
         </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-1" />
+          Create Inspection
+        </Button>
       </div>
 
       <DataTable
@@ -98,6 +179,27 @@ export const InspectionsPage = () => {
         data={data}
         isLoading={isLoading}
         onPageChange={(page) => setFilters({ ...filters, page })}
+      />
+
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedInspection ? 'Edit Inspection' : 'Create New Inspection'}</DialogTitle>
+          </DialogHeader>
+          <InspectionForm
+            inspection={selectedInspection}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Inspection"
+        description="Are you sure you want to delete this inspection? This action cannot be undone."
       />
     </div>
   );

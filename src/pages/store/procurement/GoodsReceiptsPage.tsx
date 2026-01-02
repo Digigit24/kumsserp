@@ -1,21 +1,79 @@
 import { useState } from 'react';
-import { Package, Send, CheckCircle } from 'lucide-react';
+import { Package, Send, CheckCircle, Edit, Trash2, Plus } from 'lucide-react';
 import { Column, DataTable } from '../../../components/common/DataTable';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import {
   useGoodsReceipts,
+  useCreateGoodsReceipt,
+  useUpdateGoodsReceipt,
+  useDeleteGoodsReceipt,
   useSubmitGoodsReceiptForInspection,
   usePostGoodsReceiptToInventory,
 } from '../../../hooks/useProcurement';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { GoodsReceiptForm } from './forms/GoodsReceiptForm';
+import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 
 export const GoodsReceiptsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedGRN, setSelectedGRN] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [grnToDelete, setGrnToDelete] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useGoodsReceipts(filters);
+  const createMutation = useCreateGoodsReceipt();
+  const updateMutation = useUpdateGoodsReceipt();
+  const deleteMutation = useDeleteGoodsReceipt();
   const inspectionMutation = useSubmitGoodsReceiptForInspection();
   const inventoryMutation = usePostGoodsReceiptToInventory();
+
+  const handleCreate = () => {
+    setSelectedGRN(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (grn: any) => {
+    setSelectedGRN(grn);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setGrnToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!grnToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(grnToDelete);
+      toast.success('Goods receipt deleted successfully');
+      refetch();
+      setDeleteDialogOpen(false);
+      setGrnToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete goods receipt');
+    }
+  };
+
+  const handleSubmit = async (data: any) => {
+    try {
+      if (selectedGRN) {
+        await updateMutation.mutateAsync({ id: selectedGRN.id, data });
+        toast.success('Goods receipt updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Goods receipt created successfully');
+      }
+      setIsFormOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save goods receipt');
+    }
+  };
 
   const handleSubmitForInspection = async (grn: any) => {
     try {
@@ -103,6 +161,12 @@ export const GoodsReceiptsPage = () => {
               Post to Inventory
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },
@@ -115,6 +179,10 @@ export const GoodsReceiptsPage = () => {
           <h1 className="text-3xl font-bold">Goods Receipt Notes (GRN)</h1>
           <p className="text-muted-foreground">Track goods received from suppliers</p>
         </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-1" />
+          Create GRN
+        </Button>
       </div>
 
       <DataTable
@@ -122,6 +190,27 @@ export const GoodsReceiptsPage = () => {
         data={data}
         isLoading={isLoading}
         onPageChange={(page) => setFilters({ ...filters, page })}
+      />
+
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedGRN ? 'Edit Goods Receipt' : 'Create New Goods Receipt'}</DialogTitle>
+          </DialogHeader>
+          <GoodsReceiptForm
+            goodsReceipt={selectedGRN}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Goods Receipt"
+        description="Are you sure you want to delete this goods receipt? This action cannot be undone."
       />
     </div>
   );

@@ -5,15 +5,73 @@ import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import {
   useQuotations,
+  useCreateQuotation,
+  useUpdateQuotation,
+  useDeleteQuotation,
   useMarkQuotationSelected,
 } from '../../../hooks/useProcurement';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { QuotationForm } from './forms/QuotationForm';
+import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 
 export const QuotationsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [quotationToDelete, setQuotationToDelete] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useQuotations(filters);
+  const createMutation = useCreateQuotation();
+  const updateMutation = useUpdateQuotation();
+  const deleteMutation = useDeleteQuotation();
   const selectMutation = useMarkQuotationSelected();
+
+  const handleCreate = () => {
+    setSelectedQuotation(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (quotation: any) => {
+    setSelectedQuotation(quotation);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setQuotationToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!quotationToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(quotationToDelete);
+      toast.success('Quotation deleted successfully');
+      refetch();
+      setDeleteDialogOpen(false);
+      setQuotationToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete quotation');
+    }
+  };
+
+  const handleSubmit = async (data: any) => {
+    try {
+      if (selectedQuotation) {
+        await updateMutation.mutateAsync({ id: selectedQuotation.id, data });
+        toast.success('Quotation updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Quotation created successfully');
+      }
+      setIsFormOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save quotation');
+    }
+  };
 
   const handleMarkSelected = async (quotation: any) => {
     try {
@@ -90,6 +148,12 @@ export const QuotationsPage = () => {
               Select
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },
@@ -102,6 +166,10 @@ export const QuotationsPage = () => {
           <h1 className="text-3xl font-bold">Quotations</h1>
           <p className="text-muted-foreground">Review and compare supplier quotations</p>
         </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-1" />
+          Create Quotation
+        </Button>
       </div>
 
       <DataTable
@@ -109,6 +177,27 @@ export const QuotationsPage = () => {
         data={data}
         isLoading={isLoading}
         onPageChange={(page) => setFilters({ ...filters, page })}
+      />
+
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedQuotation ? 'Edit Quotation' : 'Create New Quotation'}</DialogTitle>
+          </DialogHeader>
+          <QuotationForm
+            quotation={selectedQuotation}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Quotation"
+        description="Are you sure you want to delete this quotation? This action cannot be undone."
       />
     </div>
   );

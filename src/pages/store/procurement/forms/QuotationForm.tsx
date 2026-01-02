@@ -1,5 +1,5 @@
 /**
- * Procurement Requirement Form
+ * Procurement Quotation Form
  */
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -11,40 +11,43 @@ import { Textarea } from '../../../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { CentralStoreDropdown } from '../../../../components/common/CentralStoreDropdown';
-import { CategoryDropdown } from '../../../../components/common/CategoryDropdown';
+import { VendorDropdown } from '../../../../components/common/VendorDropdown';
 
-interface RequirementFormProps {
-  requirement?: any;
+interface QuotationFormProps {
+  quotation?: any;
   onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
-export const RequirementForm = ({ requirement, onSubmit, onCancel }: RequirementFormProps) => {
+export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormProps) => {
   const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
-    defaultValues: requirement || {
-      requirement_number: '',
-      title: '',
-      description: '',
-      required_by_date: '',
-      urgency: 'low',
-      status: 'draft',
-      estimated_budget: '',
-      justification: '',
+    defaultValues: quotation || {
+      quotation_number: '',
+      quotation_date: '',
+      supplier: '',
+      requirement: '',
+      status: 'received',
+      is_selected: false,
+      valid_until: '',
+      payment_terms: '',
+      delivery_terms: '',
+      remarks: '',
+      terms_conditions: '',
       metadata: '',
-      central_store: '',
-      approval_request: '',
       is_active: true,
       items: [
         {
           item_description: '',
           quantity: 0,
           unit: '',
-          estimated_unit_price: '',
-          estimated_total: '',
+          unit_price: '',
+          discount_percent: '',
+          discount_amount: '',
+          tax_percent: '',
+          tax_amount: '',
+          total: '',
           specifications: '',
           remarks: '',
-          category: '',
           is_active: true,
         },
       ],
@@ -66,61 +69,61 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="requirement_number" required>Requirement Number</Label>
+              <Label htmlFor="quotation_number" required>Quotation Number</Label>
               <Input
-                id="requirement_number"
-                {...register('requirement_number', { required: 'Requirement number is required' })}
+                id="quotation_number"
+                {...register('quotation_number', { required: 'Quotation number is required' })}
               />
-              {errors.requirement_number && <p className="text-sm text-red-500">{errors.requirement_number.message}</p>}
+              {errors.quotation_number && <p className="text-sm text-red-500">{errors.quotation_number.message}</p>}
             </div>
 
             <div>
-              <Label htmlFor="required_by_date" required>Required By Date</Label>
+              <Label htmlFor="quotation_date" required>Quotation Date</Label>
               <Input
-                id="required_by_date"
+                id="quotation_date"
                 type="date"
-                {...register('required_by_date', { required: 'Required by date is required' })}
+                {...register('quotation_date', { required: 'Quotation date is required' })}
               />
-              {errors.required_by_date && <p className="text-sm text-red-500">{errors.required_by_date.message}</p>}
+              {errors.quotation_date && <p className="text-sm text-red-500">{errors.quotation_date.message}</p>}
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="title" required>Title</Label>
-            <Input
-              id="title"
-              {...register('title', { required: 'Title is required' })}
-            />
-            {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="description" required>Description</Label>
-            <Textarea
-              id="description"
-              {...register('description', { required: 'Description is required' })}
-              rows={3}
-            />
-            {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="urgency" required>Urgency</Label>
-              <Select
-                defaultValue={watch('urgency')}
-                onValueChange={(value) => setValue('urgency', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select urgency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="supplier"
+                control={control}
+                rules={{ required: 'Supplier is required' }}
+                render={({ field }) => (
+                  <VendorDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    error={errors.supplier?.message}
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="requirement">Requirement ID</Label>
+              <Input
+                id="requirement"
+                type="number"
+                {...register('requirement', { valueAsNumber: true })}
+                placeholder="Related requirement"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="valid_until">Valid Until</Label>
+              <Input
+                id="valid_until"
+                type="date"
+                {...register('valid_until')}
+              />
             </div>
 
             <div>
@@ -133,55 +136,59 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="received">Received</SelectItem>
+                  <SelectItem value="under_review">Under Review</SelectItem>
+                  <SelectItem value="selected">Selected</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="quotation_received">Quotation Received</SelectItem>
-                  <SelectItem value="po_created">PO Created</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="estimated_budget">Estimated Budget</Label>
-              <Input
-                id="estimated_budget"
-                type="number"
-                step="0.01"
-                {...register('estimated_budget')}
-                placeholder="0.00"
-              />
-            </div>
-
-            <div>
-              <Controller
-                name="central_store"
-                control={control}
-                rules={{ required: 'Central store is required' }}
-                render={({ field }) => (
-                  <CentralStoreDropdown
-                    value={field.value}
-                    onChange={field.onChange}
-                    required
-                    error={errors.central_store?.message}
-                  />
-                )}
-              />
-            </div>
+          <div>
+            <Label htmlFor="payment_terms">Payment Terms</Label>
+            <Textarea
+              id="payment_terms"
+              {...register('payment_terms')}
+              rows={2}
+              placeholder="e.g., Net 30 days, 50% advance"
+            />
           </div>
 
           <div>
-            <Label htmlFor="justification">Justification</Label>
+            <Label htmlFor="delivery_terms">Delivery Terms</Label>
             <Textarea
-              id="justification"
-              {...register('justification')}
+              id="delivery_terms"
+              {...register('delivery_terms')}
+              rows={2}
+              placeholder="e.g., FOB, CIF, delivery within 15 days"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="remarks">Remarks</Label>
+            <Textarea
+              id="remarks"
+              {...register('remarks')}
+              rows={2}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="terms_conditions">Terms & Conditions</Label>
+            <Textarea
+              id="terms_conditions"
+              {...register('terms_conditions')}
               rows={3}
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_selected"
+              {...register('is_selected')}
+            />
+            <Label htmlFor="is_selected">Mark as Selected</Label>
           </div>
         </CardContent>
       </Card>
@@ -189,7 +196,7 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
       {/* Items */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Requirement Items</CardTitle>
+          <CardTitle>Quotation Items</CardTitle>
           <Button
             type="button"
             size="sm"
@@ -198,11 +205,14 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                 item_description: '',
                 quantity: 0,
                 unit: '',
-                estimated_unit_price: '',
-                estimated_total: '',
+                unit_price: '',
+                discount_percent: '',
+                discount_amount: '',
+                tax_percent: '',
+                tax_amount: '',
+                total: '',
                 specifications: '',
                 remarks: '',
-                category: '',
                 is_active: true,
               })
             }
@@ -264,43 +274,72 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                   </div>
 
                   <div>
-                    <Controller
-                      name={`items.${index}.category`}
-                      control={control}
-                      render={({ field }) => (
-                        <CategoryDropdown
-                          value={field.value}
-                          onChange={field.onChange}
-                          showLabel={true}
-                          error={errors.items?.[index]?.category?.message}
-                        />
-                      )}
+                    <Label htmlFor={`items.${index}.unit_price`} required>Unit Price</Label>
+                    <Input
+                      id={`items.${index}.unit_price`}
+                      type="number"
+                      step="0.01"
+                      {...register(`items.${index}.unit_price`, { required: 'Required' })}
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor={`items.${index}.estimated_unit_price`}>Est. Unit Price</Label>
+                    <Label htmlFor={`items.${index}.discount_percent`}>Discount %</Label>
                     <Input
-                      id={`items.${index}.estimated_unit_price`}
+                      id={`items.${index}.discount_percent`}
                       type="number"
                       step="0.01"
-                      {...register(`items.${index}.estimated_unit_price`)}
+                      {...register(`items.${index}.discount_percent`)}
                       placeholder="0.00"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor={`items.${index}.estimated_total`}>Est. Total</Label>
+                    <Label htmlFor={`items.${index}.discount_amount`}>Discount Amt</Label>
                     <Input
-                      id={`items.${index}.estimated_total`}
+                      id={`items.${index}.discount_amount`}
                       type="number"
                       step="0.01"
-                      {...register(`items.${index}.estimated_total`)}
+                      {...register(`items.${index}.discount_amount`)}
                       placeholder="0.00"
                     />
                   </div>
+
+                  <div>
+                    <Label htmlFor={`items.${index}.tax_percent`}>Tax %</Label>
+                    <Input
+                      id={`items.${index}.tax_percent`}
+                      type="number"
+                      step="0.01"
+                      {...register(`items.${index}.tax_percent`)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`items.${index}.tax_amount`}>Tax Amount</Label>
+                    <Input
+                      id={`items.${index}.tax_amount`}
+                      type="number"
+                      step="0.01"
+                      {...register(`items.${index}.tax_amount`)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor={`items.${index}.total`}>Total Amount</Label>
+                  <Input
+                    id={`items.${index}.total`}
+                    type="number"
+                    step="0.01"
+                    {...register(`items.${index}.total`)}
+                    placeholder="0.00"
+                  />
                 </div>
 
                 <div>
@@ -343,7 +382,7 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
       {/* Form Actions */}
       <div className="flex gap-2 pt-4">
         <Button type="submit" className="flex-1">
-          {requirement ? 'Update' : 'Create'} Requirement
+          {quotation ? 'Update' : 'Create'} Quotation
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
