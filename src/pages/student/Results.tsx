@@ -1,38 +1,106 @@
-import React from 'react';
-import { Trophy, TrendingUp, FileText, Download, Award } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Trophy, TrendingUp, FileText, Download, Award, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useStudent } from '@/hooks/useStudents';
+import { useStudentMarks } from '@/hooks/useExamination';
 
 export const Results: React.FC = () => {
-  // Mock data - Replace with actual API calls
-  const overallPerformance = {
-    currentCGPA: 8.5,
-    currentSemesterGPA: 8.7,
-    totalCredits: 120,
-    rank: 5,
-    totalStudents: 150,
-  };
+  const { user } = useAuth();
+  const studentId = user?.id ? Number(user.id) : null;
 
-  const semesterResults = [
-    {
-      id: 1,
-      semester: 'Semester 1 - 2024',
-      examType: 'Mid-term',
-      publishedDate: '2024-12-20',
-      gpa: 8.7,
-      totalMarks: 500,
-      obtainedMarks: 435,
-      percentage: 87,
-      results: [
-        { subject: 'Mathematics', totalMarks: 100, obtainedMarks: 85, grade: 'A', credits: 4 },
-        { subject: 'Physics', totalMarks: 100, obtainedMarks: 78, grade: 'B+', credits: 4 },
-        { subject: 'Chemistry', totalMarks: 100, obtainedMarks: 92, grade: 'A+', credits: 4 },
-        { subject: 'English', totalMarks: 100, obtainedMarks: 88, grade: 'A', credits: 3 },
-        { subject: 'Computer Science', totalMarks: 100, obtainedMarks: 92, grade: 'A+', credits: 4 },
-      ],
-    },
-  ];
+  // Fetch student details to get current student record
+  const { data: studentsData, isLoading: studentLoading } = useStudent(studentId);
+
+  // Fetch student marks
+  const { data: marksData, isLoading: marksLoading } = useStudentMarks({
+    student: studentId || undefined,
+    page_size: 100,
+  });
+
+  const marks = marksData?.results || [];
+
+  // Calculate overall performance from marks
+  const overallPerformance = useMemo(() => {
+    if (!marks.length) {
+      return {
+        currentCGPA: 0,
+        currentSemesterGPA: 0,
+        totalCredits: 0,
+        rank: 0,
+        totalStudents: 0,
+      };
+    }
+
+    // Calculate averages and totals
+    const totalMarks = marks.reduce((sum, mark) => sum + (mark.total_marks || 0), 0);
+    const obtainedMarks = marks.reduce((sum, mark) => sum + (mark.obtained_marks || 0), 0);
+    const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+    const gpa = (percentage / 100) * 10; // Simple conversion
+
+    return {
+      currentCGPA: Number(gpa.toFixed(2)),
+      currentSemesterGPA: Number(gpa.toFixed(2)),
+      totalCredits: marks.length * 4, // Assuming 4 credits per subject
+      rank: 0, // Would need separate API endpoint for ranking
+      totalStudents: 0, // Would need separate API endpoint
+    };
+  }, [marks]);
+
+  // Group marks by exam
+  const semesterResults = useMemo(() => {
+    const examGroups = marks.reduce((groups: any, mark) => {
+      const examId = mark.exam || 0;
+      const examName = mark.exam_name || 'Exam';
+
+      if (!groups[examId]) {
+        groups[examId] = {
+          id: examId,
+          semester: examName,
+          examType: mark.exam_type_name || 'Examination',
+          publishedDate: mark.created_at || new Date().toISOString(),
+          results: [],
+        };
+      }
+
+      groups[examId].results.push({
+        subject: mark.subject_name || 'Subject',
+        totalMarks: mark.total_marks || 100,
+        obtainedMarks: mark.obtained_marks || 0,
+        grade: mark.grade || 'N/A',
+        credits: 4, // Default credits
+      });
+
+      return groups;
+    }, {});
+
+    // Calculate exam totals
+    return Object.values(examGroups).map((exam: any) => {
+      const totalMarks = exam.results.reduce((sum: number, r: any) => sum + r.totalMarks, 0);
+      const obtainedMarks = exam.results.reduce((sum: number, r: any) => sum + r.obtainedMarks, 0);
+      const percentage = totalMarks > 0 ? Math.round((obtainedMarks / totalMarks) * 100) : 0;
+      const gpa = Number(((percentage / 100) * 10).toFixed(2));
+
+      return {
+        ...exam,
+        totalMarks,
+        obtainedMarks,
+        percentage,
+        gpa,
+      };
+    });
+  }, [marks]);
+
+  // Loading state
+  if (studentLoading || marksLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const getGradeColor = (grade: string) => {
     if (grade.startsWith('A')) return 'success';
@@ -51,6 +119,21 @@ export const Results: React.FC = () => {
         </p>
       </div>
 
+      {/* Empty State */}
+      {marks.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Results Available</h3>
+              <p className="text-muted-foreground max-w-md">
+                Your examination results will appear here once they are published by your instructors.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
       {/* Overall Performance */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -208,6 +291,8 @@ export const Results: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 };

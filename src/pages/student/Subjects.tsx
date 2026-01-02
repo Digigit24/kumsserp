@@ -1,75 +1,53 @@
-import React from 'react';
-import { BookOpen, Users, Clock, Calendar } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { BookOpen, Users, Clock, Calendar, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { useStudent } from '@/hooks/useStudents';
+import { useSubjectAssignments } from '@/hooks/useAcademic';
 
 export const Subjects: React.FC = () => {
-  // Mock data - Replace with actual API calls
-  const subjects = [
-    {
-      id: 1,
-      name: 'Mathematics',
-      code: 'MATH101',
-      teacher: 'Dr. Smith',
-      credits: 4,
-      type: 'Core',
-      schedule: [
-        { day: 'Monday', time: '09:00 AM - 10:00 AM', room: 'Room 101' },
-        { day: 'Wednesday', time: '09:00 AM - 10:00 AM', room: 'Room 101' },
-        { day: 'Friday', time: '09:00 AM - 10:00 AM', room: 'Room 101' },
-      ]
-    },
-    {
-      id: 2,
-      name: 'Physics',
-      code: 'PHY101',
-      teacher: 'Prof. Johnson',
-      credits: 4,
-      type: 'Core',
-      schedule: [
-        { day: 'Tuesday', time: '11:00 AM - 12:00 PM', room: 'Lab 203' },
-        { day: 'Thursday', time: '11:00 AM - 12:00 PM', room: 'Lab 203' },
-      ]
-    },
-    {
-      id: 3,
-      name: 'Chemistry',
-      code: 'CHEM101',
-      teacher: 'Dr. Williams',
-      credits: 4,
-      type: 'Core',
-      schedule: [
-        { day: 'Monday', time: '02:00 PM - 03:00 PM', room: 'Lab 204' },
-        { day: 'Thursday', time: '02:00 PM - 03:00 PM', room: 'Lab 204' },
-      ]
-    },
-    {
-      id: 4,
-      name: 'English',
-      code: 'ENG101',
-      teacher: 'Ms. Brown',
-      credits: 3,
-      type: 'Core',
-      schedule: [
-        { day: 'Tuesday', time: '02:00 PM - 03:00 PM', room: 'Room 105' },
-        { day: 'Friday', time: '02:00 PM - 03:00 PM', room: 'Room 105' },
-      ]
-    },
-    {
-      id: 5,
-      name: 'Computer Science',
-      code: 'CS101',
-      teacher: 'Mr. Davis',
-      credits: 4,
-      type: 'Elective',
-      schedule: [
-        { day: 'Wednesday', time: '11:00 AM - 12:00 PM', room: 'Computer Lab' },
-        { day: 'Friday', time: '11:00 AM - 12:00 PM', room: 'Computer Lab' },
-      ]
-    },
-  ];
+  const { user } = useAuth();
+  const studentId = user?.id ? Number(user.id) : null;
+
+  // Fetch student details to get current class
+  const { data: studentData, isLoading: studentLoading } = useStudent(studentId);
+
+  // Fetch subject assignments for the student's class
+  const classId = studentData?.current_class;
+  const sectionId = studentData?.current_section;
+
+  const { data: assignmentsData, isLoading: assignmentsLoading } = useSubjectAssignments({
+    class_field: classId || undefined,
+    section: sectionId || undefined,
+    page_size: 100,
+  });
+
+  const subjectAssignments = assignmentsData?.results || [];
+
+  // Transform API data to match UI structure
+  const subjects = useMemo(() => {
+    return subjectAssignments.map((assignment) => ({
+      id: assignment.id,
+      name: assignment.subject_name || 'Subject',
+      code: assignment.subject_code || 'N/A',
+      teacher: assignment.teacher_name || 'Staff',
+      credits: 4, // Default credits, would need to come from subject details
+      type: 'Core', // Would need to determine from subject type
+      schedule: [], // Would need separate timetable API call for schedule
+    }));
+  }, [subjectAssignments]);
 
   const totalCredits = subjects.reduce((sum, subject) => sum + subject.credits, 0);
+
+  // Loading state
+  if (studentLoading || assignmentsLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -105,6 +83,21 @@ export const Subjects: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Empty State */}
+      {subjects.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Subjects Found</h3>
+              <p className="text-muted-foreground max-w-md">
+                Your enrolled subjects will appear here. Please contact your administrator if you believe this is an error.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
       {/* Subjects List */}
       <div className="grid gap-6">
         {subjects.map((subject) => (
@@ -169,6 +162,8 @@ export const Subjects: React.FC = () => {
           </Card>
         ))}
       </div>
+        </>
+      )}
     </div>
   );
 };

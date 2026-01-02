@@ -117,9 +117,22 @@ export const Assignments: React.FC = () => {
       )}
 
       {error && (
-        <div className="text-center py-12">
-          <p className="text-destructive">Failed to load assignments: {error.message}</p>
-        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Unable to Load Assignments</h3>
+              <p className="text-muted-foreground max-w-md mb-4">
+                {error.message?.includes('404')
+                  ? 'The student assignments endpoint is not yet available on the backend. Please contact your administrator to implement the /api/v1/students/assignments/ endpoint.'
+                  : `Failed to load assignments: ${error.message}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Expected endpoint: <code className="bg-muted px-2 py-1 rounded">/api/v1/students/assignments/</code>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {!isLoading && !error && (
