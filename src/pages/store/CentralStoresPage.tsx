@@ -3,18 +3,23 @@ import { Plus, Building2, MapPin, Phone, Mail, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useCentralStores, useDeleteCentralStore } from '@/hooks/useCentralStores';
+import { useCentralStores, useDeleteCentralStore, useCreateCentralStore, useUpdateCentralStore } from '@/hooks/useCentralStores';
 import { DataTable } from '@/components/common/DataTable';
 import { DetailSidebar } from '@/components/common/DetailSidebar';
+import { CentralStoreForm } from './forms/CentralStoreForm';
 import type { CentralStore } from '@/types/store.types';
+import { toast } from 'sonner';
 
 export const CentralStoresPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedStore, setSelectedStore] = useState<CentralStore | null>(null);
   const [filters, setFilters] = useState({ page: 1, page_size: 10 });
 
-  const { data, isLoading } = useCentralStores(filters);
+  const { data, isLoading, refetch } = useCentralStores(filters);
   const deleteMutation = useDeleteCentralStore();
+  const createMutation = useCreateCentralStore();
+  const updateMutation = useUpdateCentralStore();
 
   const columns = [
     { key: 'code', label: 'Code', sortable: true },
@@ -39,12 +44,47 @@ export const CentralStoresPage: React.FC = () => {
 
   const handleView = (store: CentralStore) => {
     setSelectedStore(store);
+    setSidebarMode('view');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = (store: CentralStore) => {
+    setSelectedStore(store);
+    setSidebarMode('edit');
+    setIsSidebarOpen(true);
+  };
+
+  const handleCreate = () => {
+    setSelectedStore(null);
+    setSidebarMode('create');
     setIsSidebarOpen(true);
   };
 
   const handleDelete = async (id: number) => {
     if (confirm('Delete this central store?')) {
-      await deleteMutation.mutateAsync(id);
+      try {
+        await deleteMutation.mutateAsync(id);
+        toast.success('Store deleted successfully');
+        refetch();
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to delete store');
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (sidebarMode === 'edit' && selectedStore) {
+        await updateMutation.mutateAsync({ id: selectedStore.id, data });
+        toast.success('Store updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Store created successfully');
+      }
+      setIsSidebarOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Operation failed');
     }
   };
 
@@ -55,7 +95,7 @@ export const CentralStoresPage: React.FC = () => {
           <h1 className="text-3xl font-bold">Central Stores</h1>
           <p className="text-muted-foreground">Manage central store locations</p>
         </div>
-        <Button onClick={() => { setSelectedStore(null); setIsSidebarOpen(true); }}>
+        <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Add Central Store
         </Button>
@@ -66,6 +106,7 @@ export const CentralStoresPage: React.FC = () => {
         data={data}
         isLoading={isLoading}
         onView={handleView}
+        onEdit={handleEdit}
         onDelete={handleDelete}
         onPageChange={(page) => setFilters({ ...filters, page })}
       />
@@ -73,10 +114,16 @@ export const CentralStoresPage: React.FC = () => {
       <DetailSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        title={selectedStore ? 'Store Details' : 'New Central Store'}
-        mode="view"
+        title={sidebarMode === 'create' ? 'New Central Store' : sidebarMode === 'edit' ? 'Edit Store' : 'Store Details'}
+        mode={sidebarMode}
       >
-        {selectedStore && (
+        {(sidebarMode === 'create' || sidebarMode === 'edit') ? (
+          <CentralStoreForm
+            store={selectedStore}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsSidebarOpen(false)}
+          />
+        ) : selectedStore && (
           <div className="space-y-6">
             <Card>
               <CardHeader>
