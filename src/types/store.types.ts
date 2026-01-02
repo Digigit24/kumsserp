@@ -119,3 +119,76 @@ export interface StockReceiptFilters {
   receive_date?: string;
   is_active?: boolean;
 }
+// ============================================================================
+// CENTRAL STORE TYPES
+// ============================================================================
+
+export interface CentralStore {
+  id: number;
+  name: string;
+  code: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  pincode: string;
+  contact_phone: string;
+  contact_email: string;
+  is_active: boolean;
+  manager: string;
+  manager_name?: string;
+  created_by: string;
+  updated_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CentralStoreCreateInput {
+  name: string;
+  code: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  contact_phone: string;
+  contact_email: string;
+  is_active?: boolean;
+  manager: string;
+}
+
+export interface CentralStoreUpdateInput {
+  name?: string;
+  code?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  is_active?: boolean;
+  manager?: string;
+}
+
+export interface CentralStoreFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  ordering?: string;
+  is_active?: boolean;
+}
+
+export interface CentralStoreInventory {
+  item_name: string;
+  quantity: number;
+  unit: string;
+  last_updated: string;
+}
+
+export interface CentralStoreStockSummary {
+  total_items: number;
+  total_value: number;
+  low_stock_items: number;
+  out_of_stock_items: number;
+}
