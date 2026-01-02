@@ -98,6 +98,11 @@ const CreateAssignmentPage = lazy(() => import("../pages/assignments").then(m =>
 const AssignmentsListPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.AssignmentsListPage })));
 const SubmissionsPage = lazy(() => import("../pages/assignments").then(m => ({ default: m.SubmissionsPage })));
 
+// Approvals Module
+const PendingApprovalsPage = lazy(() => import("../pages/approvals/PendingApprovalsPage"));
+const MyRequestsPage = lazy(() => import("../pages/approvals/MyRequestsPage"));
+const ApprovalDetailPage = lazy(() => import("../pages/approvals/ApprovalDetailPage"));
+
 // Examinations Module
 const ExamsPage = lazy(() => import("../pages/exams/ExamsPage"));
 const ExamTypesPage = lazy(() => import("../pages/exams/ExamTypesPage"));
@@ -270,6 +275,11 @@ export default function AppRoutes() {
                     <Route path="assignments/create" element={<LazyRoute component={CreateAssignmentPage} />} />
                     <Route path="assignments/list" element={<LazyRoute component={AssignmentsListPage} />} />
                     <Route path="assignments/submissions" element={<LazyRoute component={SubmissionsPage} />} />
+
+                    {/* Approvals Module */}
+                    <Route path="approvals/pending" element={<LazyRoute component={PendingApprovalsPage} />} />
+                    <Route path="approvals/my-requests" element={<LazyRoute component={MyRequestsPage} />} />
+                    <Route path="approvals/:id" element={<LazyRoute component={ApprovalDetailPage} />} />
 
                     {/* Examinations Module */}
                     <Route path="exams/exams" element={<LazyRoute component={ExamsPage} />} />

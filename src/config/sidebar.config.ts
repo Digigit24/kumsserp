@@ -821,6 +821,27 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= APPROVALS (ADMIN + PERMISSION-BASED) =================
+  {
+    group: "Approvals",
+    icon: CheckSquare,
+    permissions: ["manage_approvals", "review_approvals"], // Permission-based access
+    items: [
+      {
+        name: "Pending Approvals",
+        href: "/approvals/pending",
+        icon: ClipboardList,
+        permissions: ["review_approvals"], // Can review approvals
+      },
+      {
+        name: "My Requests",
+        href: "/approvals/my-requests",
+        icon: FileText,
+        permissions: ["manage_approvals", "review_approvals"], // Anyone who can interact with approvals
+      },
+    ],
+  },
+
   // ================= COMMUNICATION (ALL) =================
   {
     group: "Communication",

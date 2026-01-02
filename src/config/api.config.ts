@@ -940,6 +940,19 @@ export const API_ENDPOINTS = {
     grade: (id: number) => `/api/v1/assignment-submissions/${id}/grade/`,
     mySubmissions: "/api/v1/assignment-submissions/my-submissions/",
   },
+
+  // Approvals Module
+  approvals: {
+    list: "/api/v1/approvals/requests/",
+    pendingApprovals: "/api/v1/approvals/requests/pending_approvals/",
+    myRequests: "/api/v1/approvals/requests/my_requests/",
+    detail: (id: number) => `/api/v1/approvals/requests/${id}/`,
+    review: (id: number) => `/api/v1/approvals/requests/${id}/review/`,
+    feePayment: "/api/v1/approvals/fee-payment/",
+    notifications: "/api/v1/approvals/notifications/",
+    unreadCount: "/api/v1/approvals/notifications/unread_count/",
+    markAsRead: (id: number) => `/api/v1/approvals/notifications/${id}/read/`,
+  },
 };
 
 /**

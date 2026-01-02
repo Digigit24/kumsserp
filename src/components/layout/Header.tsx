@@ -12,6 +12,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 // import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useApprovalNotifications, useApprovalNotificationUnreadCount, useMarkNotificationAsRead } from "@/hooks/useApprovals";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { LogOut, Menu, User, Bell, ArrowRight, CheckCheck } from "lucide-react";
 import React, { useState } from "react";
@@ -26,6 +27,7 @@ import {
   type UserRole,
   type Notification,
 } from "@/data/notificationsMockData";
+import { formatDistanceToNow } from "date-fns";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -39,6 +41,11 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch approval notifications
+  const { data: approvalNotificationsData } = useApprovalNotifications({ page_size: 50 });
+  const { data: approvalUnreadCountData } = useApprovalNotificationUnreadCount();
+  const markNotificationAsReadMutation = useMarkNotificationAsRead();
 
   // Get user role
   const getUserRole = (): UserRole => {
@@ -54,20 +61,54 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
     return 'college_admin';
   };
 
-  // Load notifications based on user role
+  // Load notifications based on user role and merge with approval notifications
   React.useEffect(() => {
     const userRole = getUserRole();
-    const userNotifications = getNotificationsByRole(userRole, false); // Only unread
-    setNotifications(userNotifications);
-    setUnreadCount(getUnreadCount(userRole));
-  }, []);
+    const mockNotifications = getNotificationsByRole(userRole, false); // Only unread
 
-  const handleNotificationClick = (notification: Notification) => {
-    // Mark as read
-    setNotifications(notifications.map(n =>
-      n.id === notification.id ? { ...n, read: true } : n
-    ));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    // Convert approval notifications to Notification format
+    const approvalNotifications: Notification[] = (approvalNotificationsData?.results || [])
+      .filter(n => !n.is_read)
+      .map(approval => ({
+        id: `approval-${approval.id}`,
+        type: 'approval' as const,
+        priority: approval.priority,
+        title: approval.title,
+        message: approval.message,
+        timestamp: approval.created_at,
+        read: approval.is_read,
+        actionUrl: `/approvals/${approval.approval_request}`,
+        actionText: 'Review',
+        roles: ['super_admin', 'college_admin'] as UserRole[],
+        metadata: approval.metadata,
+        _approvalId: approval.id, // Store original approval notification ID
+      }));
+
+    // Merge notifications
+    const allNotifications = [...approvalNotifications, ...mockNotifications];
+    setNotifications(allNotifications);
+
+    // Calculate total unread count
+    const mockUnreadCount = getUnreadCount(userRole);
+    const approvalUnreadCount = approvalUnreadCountData?.unread_count || 0;
+    setUnreadCount(mockUnreadCount + approvalUnreadCount);
+  }, [approvalNotificationsData, approvalUnreadCountData]);
+
+  const handleNotificationClick = async (notification: Notification & { _approvalId?: number }) => {
+    // If it's an approval notification, mark it as read via API
+    if (notification._approvalId) {
+      try {
+        await markNotificationAsReadMutation.mutateAsync(notification._approvalId);
+      } catch (error) {
+        console.error('Failed to mark approval notification as read:', error);
+      }
+    } else {
+      // Mark mock notifications as read locally
+      setNotifications(notifications.map(n =>
+        n.id === notification.id ? { ...n, read: true } : n
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
 
     // Navigate to action URL if available
     if (notification.actionUrl) {
@@ -76,8 +117,12 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   };
 
   const markAllAsRead = () => {
+    // Mark mock notifications as read
     setNotifications(notifications.map(n => ({ ...n, read: true })));
     setUnreadCount(0);
+
+    // Note: For approval notifications, we'd need a bulk mark as read endpoint
+    // For now, they'll be marked as read when clicked individually
   };
 
   const handleLogout = async () => {
