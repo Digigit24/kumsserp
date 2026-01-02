@@ -192,3 +192,62 @@ export interface CentralStoreStockSummary {
   low_stock_items: number;
   out_of_stock_items: number;
 }
+// ============================================================================
+// CENTRAL INVENTORY TYPES
+// ============================================================================
+
+export interface CentralInventory {
+  id: number;
+  central_store: number;
+  central_store_name?: string;
+  item: number;
+  item_name?: string;
+  quantity_on_hand: number;
+  quantity_allocated: number;
+  quantity_available: number;
+  min_stock_level: number;
+  reorder_point: number;
+  max_stock_level: number;
+  unit_cost: string;
+  is_active: boolean;
+  created_by: string;
+  updated_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CentralInventoryCreateInput {
+  central_store: number;
+  item: number;
+  quantity_on_hand: number;
+  quantity_allocated?: number;
+  quantity_available?: number;
+  min_stock_level: number;
+  reorder_point: number;
+  max_stock_level: number;
+  unit_cost: string;
+  is_active?: boolean;
+}
+
+export interface CentralInventoryUpdateInput {
+  central_store?: number;
+  item?: number;
+  quantity_on_hand?: number;
+  quantity_allocated?: number;
+  quantity_available?: number;
+  min_stock_level?: number;
+  reorder_point?: number;
+  max_stock_level?: number;
+  unit_cost?: string;
+  is_active?: boolean;
+}
+
+export interface CentralInventoryFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  ordering?: string;
+  central_store?: number;
+  item?: number;
+  is_active?: boolean;
+}

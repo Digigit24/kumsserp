@@ -17,19 +17,19 @@ export const CentralStoresPage: React.FC = () => {
   const deleteMutation = useDeleteCentralStore();
 
   const columns = [
-    { header: 'Code', accessorKey: 'code' },
-    { header: 'Name', accessorKey: 'name' },
+    { key: 'code', label: 'Code', sortable: true },
+    { key: 'name', label: 'Name', sortable: true },
     {
-      header: 'Location',
-      accessorKey: 'city',
-      cell: (row: CentralStore) => `${row.city}, ${row.state}`,
+      key: 'location',
+      label: 'Location',
+      render: (row: CentralStore) => `${row.city}, ${row.state}`,
     },
-    { header: 'Contact', accessorKey: 'contact_phone' },
-    { header: 'Email', accessorKey: 'contact_email' },
+    { key: 'contact_phone', label: 'Contact' },
+    { key: 'contact_email', label: 'Email' },
     {
-      header: 'Status',
-      accessorKey: 'is_active',
-      cell: (row: CentralStore) => (
+      key: 'is_active',
+      label: 'Status',
+      render: (row: CentralStore) => (
         <Badge variant={row.is_active ? 'success' : 'secondary'}>
           {row.is_active ? 'Active' : 'Inactive'}
         </Badge>
@@ -63,16 +63,11 @@ export const CentralStoresPage: React.FC = () => {
 
       <DataTable
         columns={columns}
-        data={data?.results || []}
+        data={data}
         isLoading={isLoading}
         onView={handleView}
         onDelete={handleDelete}
-        pagination={{
-          page: filters.page,
-          pageSize: filters.page_size,
-          total: data?.count || 0,
-          onPageChange: (page) => setFilters({ ...filters, page }),
-        }}
+        onPageChange={(page) => setFilters({ ...filters, page })}
       />
 
       <DetailSidebar

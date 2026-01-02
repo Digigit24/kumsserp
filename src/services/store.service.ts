@@ -482,3 +482,57 @@ export const centralStoreApi = {
     return fetchApi<any>(buildApiUrl(`/api/v1/store/central-stores/${id}/stock_summary/`));
   },
 };
+// ============================================================================
+// CENTRAL INVENTORY API
+// ============================================================================
+
+export const centralInventoryApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/central-inventory/${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/central-inventory/${id}/`));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/central-inventory/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/central-inventory/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/central-inventory/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/central-inventory/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+
+  adjustStock: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/central-inventory/${id}/adjust_stock/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  lowStock: async (): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/central-inventory/low_stock/'));
+  },
+};
