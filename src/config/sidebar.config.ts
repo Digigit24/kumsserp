@@ -845,6 +845,45 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= PROCUREMENT (ADMIN ONLY) =================
+  {
+    group: "Procurement",
+    icon: ShoppingCart,
+    roles: ["super_admin", "college_admin"],
+    items: [
+      {
+        name: "Requirements",
+        href: "/procurement/requirements",
+        icon: ClipboardList,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Quotations",
+        href: "/procurement/quotations",
+        icon: FileText,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Purchase Orders",
+        href: "/procurement/purchase-orders",
+        icon: ShoppingCart,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Goods Receipts",
+        href: "/procurement/goods-receipts",
+        icon: ClipboardList,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Inspections",
+        href: "/procurement/inspections",
+        icon: CheckSquare,
+        roles: ["super_admin", "college_admin"],
+      },
+    ],
+  },
+
   // ================= COMMUNICATION (ALL) =================
   {
     group: "Communication",

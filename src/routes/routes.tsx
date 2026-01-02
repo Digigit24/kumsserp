@@ -189,6 +189,13 @@ const CentralInventoryPage = lazy(() => import("../pages/store/CentralInventoryP
 const MaterialIssuesPage = lazy(() => import("../pages/store/MaterialIssuesPage").then(m => ({ default: m.MaterialIssuesPage })));
 const StoreIndentsPage = lazy(() => import("../pages/store/StoreIndentsPage").then(m => ({ default: m.StoreIndentsPage })));
 
+// Procurement Module
+const RequirementsPage = lazy(() => import("../pages/store/procurement/RequirementsPage").then(m => ({ default: m.RequirementsPage })));
+const QuotationsPage = lazy(() => import("../pages/store/procurement/QuotationsPage").then(m => ({ default: m.QuotationsPage })));
+const PurchaseOrdersPage = lazy(() => import("../pages/store/procurement/PurchaseOrdersPage").then(m => ({ default: m.PurchaseOrdersPage })));
+const GoodsReceiptsPage = lazy(() => import("../pages/store/procurement/GoodsReceiptsPage").then(m => ({ default: m.GoodsReceiptsPage })));
+const InspectionsPage = lazy(() => import("../pages/store/procurement/InspectionsPage").then(m => ({ default: m.InspectionsPage })));
+
 // Library Student Module
 const StudentLibraryPage = lazy(() => import("../pages/library/StudentLibraryPage"));
 
@@ -367,6 +374,13 @@ export default function AppRoutes() {
                     <Route path="store/items" element={<LazyRoute component={StoreItemsPage} />} />
                     <Route path="store/categories" element={<LazyRoute component={CategoriesPage} />} />
                     <Route path="store/credits" element={<LazyRoute component={CreditsPage} />} />
+
+                    {/* Procurement Module */}
+                    <Route path="procurement/requirements" element={<LazyRoute component={RequirementsPage} />} />
+                    <Route path="procurement/quotations" element={<LazyRoute component={QuotationsPage} />} />
+                    <Route path="procurement/purchase-orders" element={<LazyRoute component={PurchaseOrdersPage} />} />
+                    <Route path="procurement/goods-receipts" element={<LazyRoute component={GoodsReceiptsPage} />} />
+                    <Route path="procurement/inspections" element={<LazyRoute component={InspectionsPage} />} />
                     <Route path="store/sales" element={<LazyRoute component={SalesPage} />} />
                     <Route path="store/sale-items" element={<LazyRoute component={SaleItemsPage} />} />
                     <Route path="store/print-requests" element={<LazyRoute component={PrintRequestsPage} />} />
