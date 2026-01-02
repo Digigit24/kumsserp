@@ -1,15 +1,65 @@
 import { useState } from 'react';
-import { Package, AlertTriangle } from 'lucide-react';
+import { Package, AlertTriangle, Plus } from 'lucide-react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { useCentralInventory, useLowStockItems } from '../../hooks/useCentralInventory';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { CentralInventoryForm } from './forms/CentralInventoryForm';
+import { useCentralInventory, useLowStockItems, useCreateCentralInventory, useUpdateCentralInventory, useDeleteCentralInventory } from '../../hooks/useCentralInventory';
+import { toast } from 'sonner';
 
 export const CentralInventoryPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
-  const { data, isLoading } = useCentralInventory(filters);
+  const { data, isLoading, refetch } = useCentralInventory(filters);
   const { data: lowStockData } = useLowStockItems();
+  const createMutation = useCreateCentralInventory();
+  const updateMutation = useUpdateCentralInventory();
+  const deleteMutation = useDeleteCentralInventory();
+
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setSidebarMode('create');
+    setIsSidebarOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setSelectedItem(item);
+    setSidebarMode('edit');
+    setIsSidebarOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm('Delete this inventory item?')) {
+      try {
+        await deleteMutation.mutateAsync(id);
+        toast.success('Item deleted successfully');
+        refetch();
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to delete item');
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (sidebarMode === 'edit' && selectedItem) {
+        await updateMutation.mutateAsync({ id: selectedItem.id, data });
+        toast.success('Item updated successfully');
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success('Item created successfully');
+      }
+      setIsSidebarOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Operation failed');
+    }
+  };
 
   const columns: Column<any>[] = [
     {
@@ -62,9 +112,15 @@ export const CentralInventoryPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Central Inventory</h1>
-        <p className="text-muted-foreground">Manage inventory across central stores</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Central Inventory</h1>
+          <p className="text-muted-foreground">Manage inventory across central stores</p>
+        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Inventory Item
+        </Button>
       </div>
 
       {lowStockData && lowStockData.length > 0 && (
@@ -93,10 +149,25 @@ export const CentralInventoryPage = () => {
             columns={columns}
             data={data}
             isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
             onPageChange={(page) => setFilters({ ...filters, page })}
           />
         </CardContent>
       </Card>
+
+      <DetailSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        title={sidebarMode === 'create' ? 'New Inventory Item' : 'Edit Inventory Item'}
+        mode={sidebarMode}
+      >
+        <CentralInventoryForm
+          inventory={selectedItem}
+          onSubmit={handleFormSubmit}
+          onCancel={() => setIsSidebarOpen(false)}
+        />
+      </DetailSidebar>
     </div>
   );
 };
