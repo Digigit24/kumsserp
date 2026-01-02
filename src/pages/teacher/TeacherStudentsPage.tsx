@@ -1,93 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Users, GraduationCap, TrendingUp, Mail, Phone, Calendar, BookOpen } from 'lucide-react';
+import { Users, GraduationCap, TrendingUp, Mail, Phone, Calendar, BookOpen, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useSubjectAssignments } from '@/hooks/useAcademic';
+import { useStudents } from '@/hooks/useStudents';
+import { useAuth } from '@/hooks/useAuth';
 
 export const TeacherStudentsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const mockStudents = [
-    {
-      id: '1',
-      name: 'John Doe',
-      class: 'Class 10-A',
-      rollNo: '001',
-      attendance: 92,
-      email: 'john.doe@example.com',
-      phone: '+91 98765 43210',
-      dateOfBirth: '2008-05-15',
-      guardianName: 'Robert Doe',
-      guardianPhone: '+91 98765 43211',
-      performance: 'Excellent',
-      subjects: ['Mathematics', 'Physics', 'Chemistry']
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      class: 'Class 10-A',
-      rollNo: '002',
-      attendance: 88,
-      email: 'jane.smith@example.com',
-      phone: '+91 98765 43212',
-      dateOfBirth: '2008-08-22',
-      guardianName: 'Mary Smith',
-      guardianPhone: '+91 98765 43213',
-      performance: 'Good',
-      subjects: ['Mathematics', 'Biology', 'Chemistry']
-    },
-    {
-      id: '3',
-      name: 'Bob Johnson',
-      class: 'Class 11-B',
-      rollNo: '015',
-      attendance: 95,
-      email: 'bob.johnson@example.com',
-      phone: '+91 98765 43214',
-      dateOfBirth: '2007-03-10',
-      guardianName: 'Tom Johnson',
-      guardianPhone: '+91 98765 43215',
-      performance: 'Excellent',
-      subjects: ['Physics', 'Mathematics', 'Computer Science']
-    },
-    {
-      id: '4',
-      name: 'Alice Williams',
-      class: 'Class 11-B',
-      rollNo: '016',
-      attendance: 90,
-      email: 'alice.williams@example.com',
-      phone: '+91 98765 43216',
-      dateOfBirth: '2007-11-18',
-      guardianName: 'Sarah Williams',
-      guardianPhone: '+91 98765 43217',
-      performance: 'Good',
-      subjects: ['Biology', 'Chemistry', 'Physics']
-    },
-    {
-      id: '5',
-      name: 'Charlie Brown',
-      class: 'Class 12-A',
-      rollNo: '030',
-      attendance: 85,
-      email: 'charlie.brown@example.com',
-      phone: '+91 98765 43218',
-      dateOfBirth: '2006-07-25',
-      guardianName: 'Lucy Brown',
-      guardianPhone: '+91 98765 43219',
-      performance: 'Average',
-      subjects: ['Mathematics', 'Physics', 'Chemistry']
-    },
-  ];
+  // Fetch subject assignments for the logged-in teacher
+  const { data: assignmentsData, isLoading: isLoadingAssignments } = useSubjectAssignments({
+    teacher: user?.id,
+    is_active: true,
+    page_size: 100,
+  });
+
+  // Get unique class and section combinations
+  const classFilters = useMemo(() => {
+    if (!assignmentsData?.results) return [];
+    const uniqueClasses = new Map();
+    assignmentsData.results.forEach(assignment => {
+      const key = `${assignment.class_obj}-${assignment.section}`;
+      if (!uniqueClasses.has(key)) {
+        uniqueClasses.set(key, {
+          class_obj: assignment.class_obj,
+          section: assignment.section,
+          class_name: assignment.class_name,
+          section_name: assignment.section_name,
+        });
+      }
+    });
+    return Array.from(uniqueClasses.values());
+  }, [assignmentsData]);
+
+  // Fetch students for all assigned classes
+  const { data: studentsData, isLoading: isLoadingStudents } = useStudents({
+    is_active: true,
+    page_size: 1000, // Get all students from teacher's classes
+  });
+
+  // Filter and map students from teacher's classes
+  const myStudents = useMemo(() => {
+    if (!studentsData?.results || !classFilters.length) return [];
+
+    const classIds = new Set(classFilters.map(c => c.class_obj));
+    const sectionIds = new Set(classFilters.map(c => c.section).filter(Boolean));
+
+    return studentsData.results
+      .filter(student => {
+        // Student must be in one of the teacher's classes
+        if (!student.current_class || !classIds.has(student.current_class)) {
+          return false;
+        }
+        // If the class has a section, student must be in that section
+        if (student.current_section && sectionIds.size > 0) {
+          return sectionIds.has(student.current_section);
+        }
+        return true;
+      })
+      .map(student => ({
+        id: student.id,
+        name: student.full_name,
+        class: student.current_class_name || 'N/A',
+        rollNo: student.admission_number,
+        attendance: 0, // TODO: Calculate from attendance records
+        email: student.email,
+        phone: student.phone || 'N/A',
+        dateOfBirth: student.date_of_birth,
+        guardianName: 'N/A', // Will be populated from guardian relationship
+        guardianPhone: 'N/A',
+        performance: 'N/A',
+        subjects: [],
+      }));
+  }, [studentsData, classFilters]);
+
+  const stats = useMemo(() => ({
+    totalStudents: myStudents.length,
+    avgAttendance: 0, // TODO: Calculate from attendance records
+    activeClasses: classFilters.length,
+  }), [myStudents, classFilters]);
+
+  const isLoading = isLoadingAssignments || isLoadingStudents;
 
   const handleViewDetails = (student: any) => {
     setSelectedStudent(student);
     setIsDetailsOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your students...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -105,8 +121,10 @@ export const TeacherStudentsPage: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">95</div>
-            <p className="text-xs text-muted-foreground">Across 3 classes</p>
+            <div className="text-2xl font-bold">{stats.totalStudents}</div>
+            <p className="text-xs text-muted-foreground">
+              Across {stats.activeClasses} {stats.activeClasses === 1 ? 'class' : 'classes'}
+            </p>
           </CardContent>
         </Card>
 
@@ -116,8 +134,8 @@ export const TeacherStudentsPage: React.FC = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">+2% from last month</p>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Coming soon</p>
           </CardContent>
         </Card>
 
@@ -127,7 +145,7 @@ export const TeacherStudentsPage: React.FC = () => {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{stats.activeClasses}</div>
             <p className="text-xs text-muted-foreground">Current semester</p>
           </CardContent>
         </Card>
@@ -138,46 +156,45 @@ export const TeacherStudentsPage: React.FC = () => {
           <CardTitle>Student List</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Roll No</th>
-                  <th className="text-left p-3 font-medium">Name</th>
-                  <th className="text-left p-3 font-medium">Class</th>
-                  <th className="text-left p-3 font-medium">Attendance</th>
-                  <th className="text-left p-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockStudents.map((student) => (
-                  <tr key={student.id} className="border-b hover:bg-muted/50">
-                    <td className="p-3">{student.rollNo}</td>
-                    <td className="p-3">{student.name}</td>
-                    <td className="p-3">{student.class}</td>
-                    <td className="p-3">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                        student.attendance >= 90 ? 'bg-green-100 text-green-800' :
-                        student.attendance >= 75 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {student.attendance}%
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewDetails(student)}
-                      >
-                        View Details
-                      </Button>
-                    </td>
+          {myStudents.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No students found in your assigned classes</p>
+              <p className="text-sm mt-2">Students will appear here once they are enrolled in your classes</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-medium">Admission No</th>
+                    <th className="text-left p-3 font-medium">Name</th>
+                    <th className="text-left p-3 font-medium">Class</th>
+                    <th className="text-left p-3 font-medium">Email</th>
+                    <th className="text-left p-3 font-medium">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {myStudents.map((student) => (
+                    <tr key={student.id} className="border-b hover:bg-muted/50">
+                      <td className="p-3">{student.rollNo}</td>
+                      <td className="p-3">{student.name}</td>
+                      <td className="p-3">{student.class}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{student.email}</td>
+                      <td className="p-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewDetails(student)}
+                        >
+                          View Details
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -196,7 +213,7 @@ export const TeacherStudentsPage: React.FC = () => {
                   <p className="text-base font-semibold">{selectedStudent.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Roll Number</p>
+                  <p className="text-sm font-medium text-muted-foreground">Admission Number</p>
                   <p className="text-base font-semibold">{selectedStudent.rollNo}</p>
                 </div>
                 <div>
@@ -204,10 +221,8 @@ export const TeacherStudentsPage: React.FC = () => {
                   <p className="text-base">{selectedStudent.class}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Attendance</p>
-                  <Badge variant={selectedStudent.attendance >= 90 ? 'success' : selectedStudent.attendance >= 75 ? 'default' : 'destructive'}>
-                    {selectedStudent.attendance}%
-                  </Badge>
+                  <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+                  <p className="text-base">{new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -229,54 +244,25 @@ export const TeacherStudentsPage: React.FC = () => {
                       <p className="text-sm">{selectedStudent.phone}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Date of Birth</p>
-                      <p className="text-sm">{new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
               {/* Guardian Info */}
-              <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Guardian Information</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Guardian Name</p>
-                    <p className="text-sm">{selectedStudent.guardianName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Guardian Phone</p>
-                    <p className="text-sm">{selectedStudent.guardianPhone}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Academic Info */}
-              <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Academic Performance</h4>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Overall Performance</p>
-                    <Badge variant={selectedStudent.performance === 'Excellent' ? 'success' : selectedStudent.performance === 'Good' ? 'default' : 'secondary'}>
-                      {selectedStudent.performance}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Subjects</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedStudent.subjects.map((subject: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="flex items-center gap-1">
-                          <BookOpen className="h-3 w-3" />
-                          {subject}
-                        </Badge>
-                      ))}
+              {selectedStudent.guardianName !== 'N/A' && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-3">Guardian Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Guardian Name</p>
+                      <p className="text-sm">{selectedStudent.guardianName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Guardian Phone</p>
+                      <p className="text-sm">{selectedStudent.guardianPhone}</p>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-2 pt-4 border-t">
                 <Button onClick={() => setIsDetailsOpen(false)} className="flex-1">
