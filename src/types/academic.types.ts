@@ -603,6 +603,7 @@ export interface ClassTimeFilters {
 export interface TimetableFilters {
   page?: number;
   page_size?: number;
+  class_obj?: number;
   section?: number;
   day_of_week?: number;
   class_time?: number;
