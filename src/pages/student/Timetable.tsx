@@ -1,7 +1,10 @@
-import React from 'react';
-import { Calendar, Clock, MapPin, User } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Calendar, Clock, MapPin, User, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { useStudent } from '@/hooks/useStudents';
+import { useTimetable } from '@/hooks/useAcademic';
 
 interface ClassSession {
   subject: string;
@@ -23,8 +26,80 @@ interface TimeSlot {
 }
 
 export const Timetable: React.FC = () => {
-  // Mock timetable data
-  const timetable: TimeSlot[] = [
+  const { user } = useAuth();
+  const studentId = user?.id ? Number(user.id) : null;
+
+  // Fetch student details to get current class
+  const { data: studentData, isLoading: studentLoading } = useStudent(studentId);
+
+  // Fetch timetable for the student's class
+  const classId = studentData?.current_class;
+  const sectionId = studentData?.current_section;
+
+  const { data: timetableData, isLoading: timetableLoading } = useTimetable({
+    class_field: classId || undefined,
+    section: sectionId || undefined,
+    page_size: 100,
+  });
+
+  const timetableRecords = timetableData?.results || [];
+
+  // Transform API data to timetable slots
+  const timetable: TimeSlot[] = useMemo(() => {
+    const timeSlots: Record<string, TimeSlot> = {};
+
+    timetableRecords.forEach((record) => {
+      const time = `${record.start_time} - ${record.end_time}`;
+      const day = record.day_of_week;
+
+      if (!timeSlots[time]) {
+        timeSlots[time] = { time };
+      }
+
+      const session: ClassSession = {
+        subject: record.subject_name || 'Class',
+        code: record.subject_code || '',
+        teacher: record.teacher_name || 'Staff',
+        room: record.classroom_name || 'Room',
+        type: 'Lecture',
+        color: getSubjectColor(record.subject_name || ''),
+      };
+
+      if (day) {
+        (timeSlots[time] as any)[day] = session;
+      }
+    });
+
+    return Object.values(timeSlots);
+  }, [timetableRecords]);
+
+  // Helper function to assign colors to subjects
+  const getSubjectColor = (subjectName: string): string => {
+    const colorMap: Record<string, string> = {
+      'Mathematics': 'bg-blue-100 border-blue-300 text-blue-900',
+      'Physics': 'bg-purple-100 border-purple-300 text-purple-900',
+      'Computer Science': 'bg-green-100 border-green-300 text-green-900',
+      'Chemistry': 'bg-red-100 border-red-300 text-red-900',
+      'English': 'bg-yellow-100 border-yellow-300 text-yellow-900',
+      'Biology': 'bg-teal-100 border-teal-300 text-teal-900',
+      'History': 'bg-orange-100 border-orange-300 text-orange-900',
+      'Sports': 'bg-pink-100 border-pink-300 text-pink-900',
+    };
+
+    return colorMap[subjectName] || 'bg-gray-100 border-gray-300 text-gray-900';
+  };
+
+  // Loading state
+  if (studentLoading || timetableLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Fallback mock data if no timetable exists
+  const mockTimetable: TimeSlot[] = [
     {
       time: '08:00 AM - 09:00 AM',
       Monday: {
@@ -209,6 +284,9 @@ export const Timetable: React.FC = () => {
     }
   ];
 
+  // Use real data if available, otherwise use mock data
+  const displayTimetable = timetable.length > 0 ? timetable : mockTimetable;
+
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // Get current day
@@ -294,7 +372,7 @@ export const Timetable: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {timetable.map((slot, index) => (
+                {displayTimetable.map((slot, index) => (
                   <tr key={index}>
                     <td className="border border-border bg-muted p-3 font-medium text-sm">
                       <div className="flex items-center gap-2">
