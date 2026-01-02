@@ -8,11 +8,11 @@ import { Loader2 } from 'lucide-react';
 
 export const Attendance: React.FC = () => {
   const { user } = useAuth();
-  const [selectedMonth] = useState(new Date().getMonth());
-  const [selectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Get student ID from authenticated user
-  const studentId = user?.student_id ? Number(user.student_id) : null;
+  // Get student ID from user object - adjust based on your user structure
+  const studentId = user?.id ? Number(user.id) : null;
 
   // Fetch student attendance summary
   const { data: summaryData, isLoading: summaryLoading } = useStudentAttendanceSummary(studentId);
