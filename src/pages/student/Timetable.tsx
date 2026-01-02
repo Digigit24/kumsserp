@@ -44,6 +44,22 @@ export const Timetable: React.FC = () => {
 
   const timetableRecords = timetableData?.results || [];
 
+  // Helper function to assign colors to subjects (defined before use in useMemo)
+  const getSubjectColor = (subjectName: string): string => {
+    const colorMap: Record<string, string> = {
+      'Mathematics': 'bg-blue-100 border-blue-300 text-blue-900',
+      'Physics': 'bg-purple-100 border-purple-300 text-purple-900',
+      'Computer Science': 'bg-green-100 border-green-300 text-green-900',
+      'Chemistry': 'bg-red-100 border-red-300 text-red-900',
+      'English': 'bg-yellow-100 border-yellow-300 text-yellow-900',
+      'Biology': 'bg-teal-100 border-teal-300 text-teal-900',
+      'History': 'bg-orange-100 border-orange-300 text-orange-900',
+      'Sports': 'bg-pink-100 border-pink-300 text-pink-900',
+    };
+
+    return colorMap[subjectName] || 'bg-gray-100 border-gray-300 text-gray-900';
+  };
+
   // Transform API data to timetable slots
   const timetable: TimeSlot[] = useMemo(() => {
     const timeSlots: Record<string, TimeSlot> = {};
@@ -72,22 +88,6 @@ export const Timetable: React.FC = () => {
 
     return Object.values(timeSlots);
   }, [timetableRecords]);
-
-  // Helper function to assign colors to subjects
-  const getSubjectColor = (subjectName: string): string => {
-    const colorMap: Record<string, string> = {
-      'Mathematics': 'bg-blue-100 border-blue-300 text-blue-900',
-      'Physics': 'bg-purple-100 border-purple-300 text-purple-900',
-      'Computer Science': 'bg-green-100 border-green-300 text-green-900',
-      'Chemistry': 'bg-red-100 border-red-300 text-red-900',
-      'English': 'bg-yellow-100 border-yellow-300 text-yellow-900',
-      'Biology': 'bg-teal-100 border-teal-300 text-teal-900',
-      'History': 'bg-orange-100 border-orange-300 text-orange-900',
-      'Sports': 'bg-pink-100 border-pink-300 text-pink-900',
-    };
-
-    return colorMap[subjectName] || 'bg-gray-100 border-gray-300 text-gray-900';
-  };
 
   // Loading state
   if (studentLoading || timetableLoading) {
