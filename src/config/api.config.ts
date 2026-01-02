@@ -953,6 +953,30 @@ export const API_ENDPOINTS = {
     unreadCount: "/api/v1/approvals/notifications/unread_count/",
     markAsRead: (id: number) => `/api/v1/approvals/notifications/${id}/read/`,
   },
+
+  // Store Module - Central Stores
+  centralStores: {
+    list: "/api/v1/store/central-stores/",
+    create: "/api/v1/store/central-stores/",
+    detail: (id: number) => `/api/v1/store/central-stores/${id}/`,
+    update: (id: number) => `/api/v1/store/central-stores/${id}/`,
+    patch: (id: number) => `/api/v1/store/central-stores/${id}/`,
+    delete: (id: number) => `/api/v1/store/central-stores/${id}/`,
+    inventory: (id: number) => `/api/v1/store/central-stores/${id}/inventory/`,
+    stockSummary: (id: number) => `/api/v1/store/central-stores/${id}/stock_summary/`,
+  },
+
+  // Store Module - Central Inventory
+  centralInventory: {
+    list: "/api/v1/store/central-inventory/",
+    create: "/api/v1/store/central-inventory/",
+    detail: (id: number) => `/api/v1/store/central-inventory/${id}/`,
+    update: (id: number) => `/api/v1/store/central-inventory/${id}/`,
+    patch: (id: number) => `/api/v1/store/central-inventory/${id}/`,
+    delete: (id: number) => `/api/v1/store/central-inventory/${id}/`,
+    adjustStock: (id: number) => `/api/v1/store/central-inventory/${id}/adjust_stock/`,
+    lowStock: "/api/v1/store/central-inventory/low_stock/",
+  },
 };
 
 /**
