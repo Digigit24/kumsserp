@@ -2,7 +2,7 @@
  * Store Indent Form - Create/Edit store indents
  */
 
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -11,6 +11,9 @@ import { Textarea } from '../../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
+import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
+import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
 
 interface StoreIndentFormProps {
   indent?: any;
@@ -67,7 +70,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="indent_number">Indent Number *</Label>
+              <Label htmlFor="indent_number" required>Indent Number</Label>
               <Input
                 id="indent_number"
                 {...register('indent_number', { required: 'Indent number is required' })}
@@ -76,7 +79,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
             </div>
 
             <div>
-              <Label htmlFor="required_by_date">Required By Date *</Label>
+              <Label htmlFor="required_by_date" required>Required By Date</Label>
               <Input
                 id="required_by_date"
                 type="date"
@@ -88,7 +91,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="priority">Priority *</Label>
+              <Label htmlFor="priority" required>Priority</Label>
               <Select
                 defaultValue={watch('priority')}
                 onValueChange={(value) => setValue('priority', value)}
@@ -128,7 +131,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
           </div>
 
           <div>
-            <Label htmlFor="justification">Justification *</Label>
+            <Label htmlFor="justification" required>Justification</Label>
             <Textarea
               id="justification"
               {...register('justification', { required: 'Justification is required' })}
@@ -156,23 +159,35 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="college">College ID *</Label>
-              <Input
-                id="college"
-                type="number"
-                {...register('college', { required: 'College is required', valueAsNumber: true })}
+              <Controller
+                name="college"
+                control={control}
+                rules={{ required: 'College is required' }}
+                render={({ field }) => (
+                  <CollegeDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    error={errors.college?.message}
+                  />
+                )}
               />
-              {errors.college && <p className="text-sm text-red-500">{errors.college.message}</p>}
             </div>
 
             <div>
-              <Label htmlFor="central_store">Central Store ID *</Label>
-              <Input
-                id="central_store"
-                type="number"
-                {...register('central_store', { required: 'Central store is required', valueAsNumber: true })}
+              <Controller
+                name="central_store"
+                control={control}
+                rules={{ required: 'Central store is required' }}
+                render={({ field }) => (
+                  <CentralStoreDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    error={errors.central_store?.message}
+                  />
+                )}
               />
-              {errors.central_store && <p className="text-sm text-red-500">{errors.central_store.message}</p>}
             </div>
           </div>
 
@@ -279,23 +294,26 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor={`items.${index}.central_store_item`}>Central Store Item ID *</Label>
-                  <Input
-                    id={`items.${index}.central_store_item`}
-                    type="number"
-                    {...register(`items.${index}.central_store_item`, {
-                      required: 'Item is required',
-                      valueAsNumber: true,
-                    })}
+                  <Controller
+                    name={`items.${index}.central_store_item`}
+                    control={control}
+                    rules={{ required: 'Item is required' }}
+                    render={({ field }) => (
+                      <CentralStoreItemDropdown
+                        value={field.value}
+                        onChange={field.onChange}
+                        centralStoreId={watch('central_store')}
+                        required
+                        error={errors.items?.[index]?.central_store_item?.message}
+                        label="Central Store Item"
+                      />
+                    )}
                   />
-                  {errors.items?.[index]?.central_store_item && (
-                    <p className="text-sm text-red-500">{errors.items[index].central_store_item.message}</p>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor={`items.${index}.requested_quantity`}>Requested Qty *</Label>
+                    <Label htmlFor={`items.${index}.requested_quantity`} required>Requested Qty</Label>
                     <Input
                       id={`items.${index}.requested_quantity`}
                       type="number"
@@ -335,7 +353,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                 </div>
 
                 <div>
-                  <Label htmlFor={`items.${index}.unit`}>Unit *</Label>
+                  <Label htmlFor={`items.${index}.unit`} required>Unit</Label>
                   <Input
                     id={`items.${index}.unit`}
                     {...register(`items.${index}.unit`, { required: 'Unit is required' })}
