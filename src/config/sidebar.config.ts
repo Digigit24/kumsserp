@@ -789,6 +789,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin"],
       },
       {
+        name: "Store Indents",
+        href: "/store/indents",
+        icon: ClipboardList,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Store Items",
         href: "/store/items",
         icon: Store,

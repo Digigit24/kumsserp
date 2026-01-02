@@ -599,3 +599,68 @@ export const materialIssuesApi = {
     });
   },
 };
+
+// ============================================================================
+// STORE INDENTS API
+// ============================================================================
+
+export const storeIndentsApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/indents/${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/`));
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl('/api/v1/store/indents/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/store/indents/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+
+  approve: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/approve/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  reject: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/reject/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  submit: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/submit/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
