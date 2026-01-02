@@ -10,119 +10,70 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-// import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useApprovalNotifications, useApprovalNotificationUnreadCount, useMarkNotificationAsRead } from "@/hooks/useApprovals";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { LogOut, Menu, User, Bell, ArrowRight, CheckCheck } from "lucide-react";
+import { LogOut, Menu, User, Bell, ArrowRight, CheckCheck, FileText, Clock } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  getNotificationsByRole,
-  getUnreadCount,
-  getPriorityColor,
-  getNotificationIcon,
-  formatTimestamp,
-  type UserRole,
-  type Notification,
-} from "@/data/notificationsMockData";
 import { formatDistanceToNow } from "date-fns";
+import { ApprovalNotification } from "@/types/approvals.types";
 
 interface HeaderProps {
   toggleSidebar: () => void;
 }
 
+// Priority color mapping
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'urgent':
+      return 'destructive';
+    case 'high':
+      return 'default';
+    case 'medium':
+      return 'secondary';
+    case 'low':
+      return 'outline';
+    default:
+      return 'secondary';
+  }
+};
+
+// Get icon for notification type
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'approval':
+    case 'approval_request':
+      return <FileText className="h-5 w-5" />;
+    default:
+      return <Bell className="h-5 w-5" />;
+  }
+};
+
 export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
-  // const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch approval notifications
   const { data: approvalNotificationsData } = useApprovalNotifications({ page_size: 50 });
   const { data: approvalUnreadCountData } = useApprovalNotificationUnreadCount();
   const markNotificationAsReadMutation = useMarkNotificationAsRead();
 
-  // Get user role
-  const getUserRole = (): UserRole => {
-    const storedUser = localStorage.getItem('kumss_user');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        return userData.user_type || 'college_admin';
-      } catch {
-        return 'college_admin';
-      }
-    }
-    return 'college_admin';
-  };
+  const notifications = approvalNotificationsData?.results || [];
+  const unreadCount = approvalUnreadCountData?.unread_count || 0;
 
-  // Load notifications based on user role and merge with approval notifications
-  React.useEffect(() => {
-    const userRole = getUserRole();
-    const mockNotifications = getNotificationsByRole(userRole, false); // Only unread
-
-    // Convert approval notifications to Notification format
-    const approvalNotifications: Notification[] = (approvalNotificationsData?.results || [])
-      .filter(n => !n.is_read)
-      .map(approval => ({
-        id: `approval-${approval.id}`,
-        type: 'approval' as const,
-        priority: approval.priority,
-        title: approval.title,
-        message: approval.message,
-        timestamp: approval.created_at,
-        read: approval.is_read,
-        actionUrl: `/approvals/${approval.approval_request}`,
-        actionText: 'Review',
-        roles: ['super_admin', 'college_admin'] as UserRole[],
-        metadata: approval.metadata,
-        _approvalId: approval.id, // Store original approval notification ID
-      }));
-
-    // Merge notifications
-    const allNotifications = [...approvalNotifications, ...mockNotifications];
-    setNotifications(allNotifications);
-
-    // Calculate total unread count
-    const mockUnreadCount = getUnreadCount(userRole);
-    const approvalUnreadCount = approvalUnreadCountData?.unread_count || 0;
-    setUnreadCount(mockUnreadCount + approvalUnreadCount);
-  }, [approvalNotificationsData, approvalUnreadCountData]);
-
-  const handleNotificationClick = async (notification: Notification & { _approvalId?: number }) => {
-    // If it's an approval notification, mark it as read via API
-    if (notification._approvalId) {
-      try {
-        await markNotificationAsReadMutation.mutateAsync(notification._approvalId);
-      } catch (error) {
-        console.error('Failed to mark approval notification as read:', error);
-      }
-    } else {
-      // Mark mock notifications as read locally
-      setNotifications(notifications.map(n =>
-        n.id === notification.id ? { ...n, read: true } : n
-      ));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+  const handleNotificationClick = async (notification: ApprovalNotification) => {
+    // Mark notification as read via API
+    try {
+      await markNotificationAsReadMutation.mutateAsync(notification.id);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
     }
 
-    // Navigate to action URL if available
-    if (notification.actionUrl) {
-      navigate(notification.actionUrl);
-    }
-  };
-
-  const markAllAsRead = () => {
-    // Mark mock notifications as read
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
-
-    // Note: For approval notifications, we'd need a bulk mark as read endpoint
-    // For now, they'll be marked as read when clicked individually
+    // Navigate to approval detail page
+    navigate(`/approvals/${notification.approval_request}`);
   };
 
   const handleLogout = async () => {
@@ -172,17 +123,6 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                       </span>
                     )}
                   </DropdownMenuLabel>
-                  {unreadCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={markAllAsRead}
-                    >
-                      <CheckCheck className="h-3 w-3 mr-1" />
-                      Mark all read
-                    </Button>
-                  )}
                 </div>
                 <DropdownMenuSeparator />
                 <ScrollArea className="h-[400px]">
@@ -198,13 +138,13 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                           key={notification.id}
                           className={cn(
                             "flex flex-col items-start gap-2 p-3 cursor-pointer",
-                            !notification.read && "bg-accent/50"
+                            !notification.is_read && "bg-accent/50"
                           )}
                           onClick={() => handleNotificationClick(notification)}
                         >
                           <div className="flex items-start gap-3 w-full">
                             <span className="text-2xl flex-shrink-0">
-                              {getNotificationIcon(notification.type)}
+                              {getNotificationIcon(notification.request_type)}
                             </span>
                             <div className="flex-1 space-y-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
@@ -223,14 +163,12 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                               </p>
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">
-                                  {formatTimestamp(notification.timestamp)}
+                                  {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                 </span>
-                                {notification.actionText && (
-                                  <span className="text-xs text-primary font-medium flex items-center gap-1">
-                                    {notification.actionText}
-                                    <ArrowRight className="h-3 w-3" />
-                                  </span>
-                                )}
+                                <span className="text-xs text-primary font-medium flex items-center gap-1">
+                                  Review
+                                  <ArrowRight className="h-3 w-3" />
+                                </span>
                               </div>
                             </div>
                           </div>
