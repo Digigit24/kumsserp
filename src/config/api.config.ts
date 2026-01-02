@@ -931,14 +931,14 @@ export const API_ENDPOINTS = {
 
   // Assignment Submissions Module
   assignmentSubmissions: {
-    list: "/api/v1/teacher/assignment-submissions/",
-    create: "/api/v1/teacher/assignment-submissions/",
-    detail: (id: number) => `/api/v1/teacher/assignment-submissions/${id}/`,
-    update: (id: number) => `/api/v1/teacher/assignment-submissions/${id}/`,
-    patch: (id: number) => `/api/v1/teacher/assignment-submissions/${id}/`,
-    delete: (id: number) => `/api/v1/teacher/assignment-submissions/${id}/`,
-    grade: (id: number) => `/api/v1/teacher/assignment-submissions/${id}/grade/`,
-    mySubmissions: "/api/v1/teacher/assignment-submissions/my-submissions/",
+    list: "/api/v1/teachers/assignment-submissions/",
+    create: "/api/v1/teachers/assignment-submissions/",
+    detail: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
+    update: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
+    patch: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
+    delete: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
+    grade: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/grade/`,
+    mySubmissions: "/api/v1/teachers/assignment-submissions/my-submissions/",
   },
 
   // Approvals Module
