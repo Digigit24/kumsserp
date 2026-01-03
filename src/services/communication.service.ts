@@ -9,6 +9,14 @@ import type {
   ChatCreateInput,
   ChatUpdateInput,
   ChatFilters,
+  Event,
+  EventCreateInput,
+  EventUpdateInput,
+  EventFilters,
+  EventRegistration,
+  EventRegistrationCreateInput,
+  EventRegistrationUpdateInput,
+  EventRegistrationFilters,
   PaginatedResponse,
 } from '../types/communication.types';
 
@@ -256,6 +264,158 @@ export const chatsApi = {
           is_read: true,
           read_at: new Date().toISOString(),
         }),
+      }
+    );
+  },
+};
+
+// ============================================================================
+// EVENTS API
+// ============================================================================
+
+export const eventsApi = {
+  /**
+   * List all events with optional filters
+   */
+  list: (filters?: EventFilters): Promise<PaginatedResponse<Event>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<Event>>(
+      `${API_BASE_URL}/api/v1/communication/events/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single event by ID
+   */
+  get: (id: number): Promise<Event> => {
+    return fetchApi<Event>(
+      `${API_BASE_URL}/api/v1/communication/events/${id}/`
+    );
+  },
+
+  /**
+   * Create a new event
+   */
+  create: (data: EventCreateInput): Promise<Event> => {
+    return fetchApi<Event>(
+      `${API_BASE_URL}/api/v1/communication/events/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing event (PUT - full update)
+   */
+  update: (id: number, data: EventUpdateInput): Promise<Event> => {
+    return fetchApi<Event>(
+      `${API_BASE_URL}/api/v1/communication/events/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update an event (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<EventUpdateInput>): Promise<Event> => {
+    return fetchApi<Event>(
+      `${API_BASE_URL}/api/v1/communication/events/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete an event
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/events/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// EVENT REGISTRATIONS API
+// ============================================================================
+
+export const eventRegistrationsApi = {
+  /**
+   * List all event registrations with optional filters
+   */
+  list: (filters?: EventRegistrationFilters): Promise<PaginatedResponse<EventRegistration>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<EventRegistration>>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single event registration by ID
+   */
+  get: (id: number): Promise<EventRegistration> => {
+    return fetchApi<EventRegistration>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/${id}/`
+    );
+  },
+
+  /**
+   * Create a new event registration
+   */
+  create: (data: EventRegistrationCreateInput): Promise<EventRegistration> => {
+    return fetchApi<EventRegistration>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing event registration (PUT - full update)
+   */
+  update: (id: number, data: EventRegistrationUpdateInput): Promise<EventRegistration> => {
+    return fetchApi<EventRegistration>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update an event registration (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<EventRegistrationUpdateInput>): Promise<EventRegistration> => {
+    return fetchApi<EventRegistration>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete an event registration
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/event-registrations/${id}/`,
+      {
+        method: 'DELETE',
       }
     );
   },

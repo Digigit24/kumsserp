@@ -929,6 +929,18 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin", "teacher", "student"],
       },
       {
+        name: "Events",
+        href: "/communication/events",
+        icon: Calendar,
+        roles: ["super_admin", "college_admin", "teacher", "student"],
+      },
+      {
+        name: "Event Registrations",
+        href: "/communication/event-registrations",
+        icon: Users,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
         name: "Message Logs",
         href: "/communication/message-logs",
         icon: FileText,

@@ -1,6 +1,11 @@
 // Communication React Hooks
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { bulkMessagesApi, chatsApi } from '../services/communication.service';
+import {
+  bulkMessagesApi,
+  chatsApi,
+  eventsApi,
+  eventRegistrationsApi
+} from '../services/communication.service';
 import type {
   BulkMessageFilters,
   BulkMessageCreateInput,
@@ -8,6 +13,12 @@ import type {
   ChatFilters,
   ChatCreateInput,
   ChatUpdateInput,
+  EventFilters,
+  EventCreateInput,
+  EventUpdateInput,
+  EventRegistrationFilters,
+  EventRegistrationCreateInput,
+  EventRegistrationUpdateInput,
 } from '../types/communication.types';
 
 // ============================================================================
@@ -213,6 +224,198 @@ export const useMarkChatAsRead = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
       queryClient.invalidateQueries({ queryKey: chatKeys.detail(id) });
+    },
+  });
+};
+
+// ============================================================================
+// EVENTS HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for events
+ */
+export const eventKeys = {
+  all: ['events'] as const,
+  lists: () => [...eventKeys.all, 'list'] as const,
+  list: (filters?: EventFilters) => [...eventKeys.lists(), filters] as const,
+  details: () => [...eventKeys.all, 'detail'] as const,
+  detail: (id: number) => [...eventKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of events
+ */
+export const useEvents = (filters?: EventFilters) => {
+  return useQuery({
+    queryKey: eventKeys.list(filters),
+    queryFn: () => eventsApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single event
+ */
+export const useEvent = (id: number) => {
+  return useQuery({
+    queryKey: eventKeys.detail(id),
+    queryFn: () => eventsApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create an event
+ */
+export const useCreateEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: EventCreateInput) => eventsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update an event
+ */
+export const useUpdateEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: EventUpdateInput }) =>
+      eventsApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update an event
+ */
+export const usePartialUpdateEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<EventUpdateInput> }) =>
+      eventsApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete an event
+ */
+export const useDeleteEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => eventsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// EVENT REGISTRATIONS HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for event registrations
+ */
+export const eventRegistrationKeys = {
+  all: ['eventRegistrations'] as const,
+  lists: () => [...eventRegistrationKeys.all, 'list'] as const,
+  list: (filters?: EventRegistrationFilters) => [...eventRegistrationKeys.lists(), filters] as const,
+  details: () => [...eventRegistrationKeys.all, 'detail'] as const,
+  detail: (id: number) => [...eventRegistrationKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of event registrations
+ */
+export const useEventRegistrations = (filters?: EventRegistrationFilters) => {
+  return useQuery({
+    queryKey: eventRegistrationKeys.list(filters),
+    queryFn: () => eventRegistrationsApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single event registration
+ */
+export const useEventRegistration = (id: number) => {
+  return useQuery({
+    queryKey: eventRegistrationKeys.detail(id),
+    queryFn: () => eventRegistrationsApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create an event registration
+ */
+export const useCreateEventRegistration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: EventRegistrationCreateInput) => eventRegistrationsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update an event registration
+ */
+export const useUpdateEventRegistration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: EventRegistrationUpdateInput }) =>
+      eventRegistrationsApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update an event registration
+ */
+export const usePartialUpdateEventRegistration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<EventRegistrationUpdateInput> }) =>
+      eventRegistrationsApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete an event registration
+ */
+export const useDeleteEventRegistration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => eventRegistrationsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.lists() });
     },
   });
 };

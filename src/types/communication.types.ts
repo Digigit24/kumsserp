@@ -122,6 +122,122 @@ export interface ChatFilters {
 }
 
 // ============================================================================
+// EVENTS TYPES
+// ============================================================================
+
+export interface Event {
+  id: number;
+  is_active: boolean;
+  title: string;
+  description: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  venue: string;
+  organizer: string;
+  max_participants: number;
+  registration_required: boolean;
+  registration_deadline: string;
+  image: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  college: number;
+}
+
+export interface EventCreateInput {
+  is_active?: boolean;
+  title: string;
+  description: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  venue: string;
+  organizer: string;
+  max_participants: number;
+  registration_required?: boolean;
+  registration_deadline?: string;
+  image?: string | null;
+  created_by?: string;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface EventUpdateInput {
+  is_active?: boolean;
+  title?: string;
+  description?: string;
+  event_date?: string;
+  start_time?: string;
+  end_time?: string;
+  venue?: string;
+  organizer?: string;
+  max_participants?: number;
+  registration_required?: boolean;
+  registration_deadline?: string;
+  image?: string | null;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface EventFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  event_date?: string;
+  registration_required?: boolean;
+  college?: number;
+}
+
+// ============================================================================
+// EVENT REGISTRATIONS TYPES
+// ============================================================================
+
+export interface EventRegistration {
+  id: number;
+  is_active: boolean;
+  registration_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  event: number;
+  user: string;
+}
+
+export interface EventRegistrationCreateInput {
+  is_active?: boolean;
+  registration_date?: string;
+  status?: string;
+  created_by?: string;
+  updated_by?: string;
+  event: number;
+  user: string;
+}
+
+export interface EventRegistrationUpdateInput {
+  is_active?: boolean;
+  registration_date?: string;
+  status?: string;
+  updated_by?: string;
+  event?: number;
+  user?: string;
+}
+
+export interface EventRegistrationFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  status?: string;
+  event?: number;
+  user?: string;
+}
+
+// ============================================================================
 // SHARED TYPES
 // ============================================================================
 
@@ -140,3 +256,6 @@ export type RecipientType = 'student' | 'guardian' | 'teacher' | 'staff' | 'all'
 
 // Message Status
 export type MessageStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'delivered';
+
+// Event Registration Status
+export type RegistrationStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended' | 'no_show';
