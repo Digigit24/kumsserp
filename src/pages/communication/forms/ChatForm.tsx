@@ -6,6 +6,7 @@ import { Label } from '../../../components/ui/label';
 import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
 import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
+import { useAuth } from '../../../hooks/useAuth';
 import type { Chat, ChatCreateInput } from '../../../types/communication.types';
 
 interface ChatFormProps {
@@ -23,6 +24,8 @@ export const ChatForm = ({
   isLoading = false,
   defaultReceiver,
 }: ChatFormProps) => {
+  const { user } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -31,7 +34,7 @@ export const ChatForm = ({
   } = useForm<ChatCreateInput>({
     defaultValues: chat || {
       message: '',
-      sender: '',
+      sender: user?.id || '',
       receiver: defaultReceiver || '',
       attachment: null,
       is_read: false,
