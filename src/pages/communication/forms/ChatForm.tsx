@@ -1,10 +1,11 @@
 // Chat Form Component
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
+import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 import type { Chat, ChatCreateInput } from '../../../types/communication.types';
 
 interface ChatFormProps {
@@ -26,6 +27,7 @@ export const ChatForm = ({
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm<ChatCreateInput>({
     defaultValues: chat || {
       message: '',
@@ -47,17 +49,21 @@ export const ChatForm = ({
           {/* Receiver */}
           {!defaultReceiver && (
             <div className="space-y-2">
-              <Label htmlFor="receiver">
-                To (User ID) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="receiver"
-                {...register('receiver', { required: 'Receiver is required' })}
-                placeholder="Enter receiver user ID"
+              <Controller
+                name="receiver"
+                control={control}
+                rules={{ required: 'Receiver is required' }}
+                render={({ field }) => (
+                  <UserSearchableDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    label="To"
+                    placeholder="Search and select recipient..."
+                    error={errors.receiver?.message}
+                  />
+                )}
               />
-              {errors.receiver && (
-                <p className="text-sm text-red-500">{errors.receiver.message}</p>
-              )}
             </div>
           )}
 
