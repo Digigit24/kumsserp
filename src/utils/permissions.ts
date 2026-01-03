@@ -100,6 +100,34 @@ export const isParent = (): boolean => {
 };
 
 /**
+ * Check if user is staff
+ */
+export const isStaff = (): boolean => {
+  return hasAnyRole(['staff']);
+};
+
+/**
+ * Check if user is HR
+ */
+export const isHR = (): boolean => {
+  return hasAnyRole(['hr']);
+};
+
+/**
+ * Check if user is Store Manager
+ */
+export const isStoreManager = (): boolean => {
+  return hasAnyRole(['store_manager']);
+};
+
+/**
+ * Check if user is Library Manager
+ */
+export const isLibraryManager = (): boolean => {
+  return hasAnyRole(['library_manager']);
+};
+
+/**
  * Check if user has a specific permission
  * This is for future implementation when backend sends granular permissions
  */
@@ -244,4 +272,74 @@ export function getAccessibleModules(userPermissions: string[] | undefined): str
   });
 
   return Array.from(modules);
+}
+
+/**
+ * Check if user has permission for a specific module and action from backend permissions
+ * @param module - Module name (e.g., 'store', 'library', 'students')
+ * @param action - Action name (e.g., 'read', 'create', 'update', 'delete')
+ * @returns true if user has permission
+ */
+export function hasModulePermission(module: string, action: string = 'read'): boolean {
+  const user = getCurrentUser();
+  if (!user) return false;
+
+  // Admins have all permissions
+  if (isAdmin()) return true;
+
+  // Check user_permissions object from backend
+  const userPermissions = user.user_permissions as UserPermissions | undefined;
+  if (!userPermissions) return false;
+
+  // Check if module exists and action is enabled
+  const modulePerms = userPermissions[module];
+  if (!modulePerms) return false;
+
+  const actionPerm = modulePerms[action];
+  return actionPerm?.enabled === true;
+}
+
+/**
+ * Check if user has any permission for a module (any action)
+ * @param module - Module name
+ * @returns true if user has any permission for the module
+ */
+export function hasAnyModulePermission(module: string): boolean {
+  const user = getCurrentUser();
+  if (!user) return false;
+
+  // Admins have all permissions
+  if (isAdmin()) return true;
+
+  const userPermissions = user.user_permissions as UserPermissions | undefined;
+  if (!userPermissions) return false;
+
+  const modulePerms = userPermissions[module];
+  if (!modulePerms) return false;
+
+  // Check if any action is enabled
+  return Object.values(modulePerms).some(perm => perm.enabled === true);
+}
+
+/**
+ * Get modules that user has permission to access
+ * @returns Array of module names user can access
+ */
+export function getUserModules(): string[] {
+  const user = getCurrentUser();
+  if (!user) return [];
+
+  // Admins have access to all modules
+  if (isAdmin()) {
+    return ['students', 'library', 'hostel', 'store', 'academic', 'attendance', 'fees', 'hr', 'communication'];
+  }
+
+  const userPermissions = user.user_permissions as UserPermissions | undefined;
+  if (!userPermissions) return [];
+
+  // Get modules where user has at least one enabled permission
+  return Object.keys(userPermissions).filter(module => {
+    const modulePerms = userPermissions[module];
+    return Object.values(modulePerms).some(perm => perm.enabled === true);
+  });
 }
