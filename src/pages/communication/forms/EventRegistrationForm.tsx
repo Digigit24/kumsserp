@@ -1,5 +1,5 @@
 // Event Registration Form Component
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select';
+import { EventSearchableDropdown } from '../../../components/common/EventSearchableDropdown';
+import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 import type { EventRegistration, EventRegistrationCreateInput } from '../../../types/communication.types';
 
 interface EventRegistrationFormProps {
@@ -34,6 +36,7 @@ export const EventRegistrationForm = ({
     formState: { errors },
     setValue,
     watch,
+    control,
   } = useForm<EventRegistrationCreateInput>({
     defaultValues: registration || {
       event: defaultEventId || 0,
@@ -55,41 +58,41 @@ export const EventRegistrationForm = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Event ID */}
+          {/* Event Selection */}
           {!defaultEventId && (
-            <div className="space-y-2">
-              <Label htmlFor="event">
-                Event ID <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="event"
-                type="number"
-                {...register('event', {
-                  required: 'Event ID is required',
-                  min: { value: 1, message: 'Must be a valid event ID' },
-                })}
-                placeholder="Enter event ID"
-              />
-              {errors.event && (
-                <p className="text-sm text-red-500">{errors.event.message}</p>
+            <Controller
+              name="event"
+              control={control}
+              rules={{ required: 'Event is required' }}
+              render={({ field }) => (
+                <EventSearchableDropdown
+                  value={field.value}
+                  onChange={field.onChange}
+                  required
+                  label="Event"
+                  placeholder="Search and select event..."
+                  error={errors.event?.message}
+                />
               )}
-            </div>
+            />
           )}
 
-          {/* User ID */}
-          <div className="space-y-2">
-            <Label htmlFor="user">
-              User ID <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="user"
-              {...register('user', { required: 'User ID is required' })}
-              placeholder="Enter user ID (UUID)"
-            />
-            {errors.user && (
-              <p className="text-sm text-red-500">{errors.user.message}</p>
+          {/* User Selection */}
+          <Controller
+            name="user"
+            control={control}
+            rules={{ required: 'User is required' }}
+            render={({ field }) => (
+              <UserSearchableDropdown
+                value={field.value}
+                onChange={field.onChange}
+                required
+                label="User"
+                placeholder="Search and select user..."
+                error={errors.user?.message}
+              />
             )}
-          </div>
+          />
 
           {/* Registration Date */}
           <div className="space-y-2">
