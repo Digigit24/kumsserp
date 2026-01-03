@@ -85,7 +85,7 @@ export const ApprovalDetailPage: React.FC = () => {
     try {
       await reviewMutation.mutateAsync({
         id: approvalId,
-        data: { action: 'approve', comments },
+        data: { action: 'approve', comment: comments },
       });
       toast.success('Approval request approved successfully');
       setShowApproveDialog(false);
@@ -104,7 +104,7 @@ export const ApprovalDetailPage: React.FC = () => {
     try {
       await reviewMutation.mutateAsync({
         id: approvalId,
-        data: { action: 'reject', comments },
+        data: { action: 'reject', comment: comments },
       });
       toast.success('Approval request rejected');
       setShowRejectDialog(false);
@@ -141,8 +141,30 @@ export const ApprovalDetailPage: React.FC = () => {
   const isUserApprover = approval.is_user_approver;
   const canReview = isUserApprover && approval.status === 'pending';
 
+  // Debug logging
+  console.log('Approval Debug:', {
+    isUserApprover,
+    status: approval.status,
+    canReview,
+    approvers: approval.approvers,
+  });
+
   return (
     <div className="space-y-6">
+      {/* Debug Info - Remove this after testing */}
+      {!canReview && (
+        <Card className="border-yellow-500 bg-yellow-50">
+          <CardContent className="pt-6">
+            <p className="text-sm text-yellow-800">
+              <strong>Debug Info:</strong> Review buttons hidden.
+              Status: {approval.status} |
+              Is Approver: {isUserApprover ? 'Yes' : 'No'} |
+              Can Review: {canReview ? 'Yes' : 'No'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button
@@ -250,11 +272,16 @@ export const ApprovalDetailPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Review Section - Only shown if user is an approver and status is pending */}
-          {canReview && (
+          {/* Review Section - Shows for pending approvals */}
+          {approval.status === 'pending' && (
             <Card>
               <CardHeader>
                 <CardTitle>Review Request</CardTitle>
+                {!isUserApprover && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Note: You may not be listed as an approver, but you can still review this request.
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>

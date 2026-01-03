@@ -36,7 +36,7 @@ export interface ApprovalRequest {
 
 export interface ApprovalReviewInput {
   action: 'approve' | 'reject';
-  comments?: string;
+  comment?: string;
 }
 
 export interface ApprovalNotification {
