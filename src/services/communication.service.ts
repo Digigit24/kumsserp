@@ -38,25 +38,43 @@ const buildQueryString = (params: Record<string, any>): string => {
 };
 
 /**
+ * Get the College ID for X-College-ID header
+ */
+const getCollegeId = (): string => {
+  try {
+    const storedUser = localStorage.getItem('kumss_user');
+    if (!storedUser) {
+      return 'all';
+    }
+
+    const user = JSON.parse(storedUser);
+    if (user.userType === 'super_admin') {
+      return 'all';
+    }
+
+    return user.college?.toString() || 'all';
+  } catch (error) {
+    console.error('Error parsing user data for college ID:', error);
+    return 'all';
+  }
+};
+
+/**
  * Fetch wrapper with error handling
  */
 const fetchApi = async <T>(
   url: string,
   options?: RequestInit
 ): Promise<T> => {
-  const token = localStorage.getItem('token');
-  const collegeId = localStorage.getItem('collegeId');
+  const token = localStorage.getItem('kumss_auth_token');
 
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
+    'X-College-ID': getCollegeId(),
   };
 
   if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`;
-  }
-
-  if (collegeId) {
-    defaultHeaders['X-College-ID'] = collegeId;
+    defaultHeaders['Authorization'] = `Token ${token}`;
   }
 
   const response = await fetch(url, {
