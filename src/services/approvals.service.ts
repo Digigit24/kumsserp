@@ -126,6 +126,7 @@ export const approvalsApi = {
     approvers: string[];
     required_by_date: string;
     total_items: number;
+    requester: string;
   }): Promise<ApprovalRequest> => {
     return fetchApi<ApprovalRequest>(buildApiUrl(API_ENDPOINTS.approvals.list), {
       method: 'POST',
@@ -135,7 +136,9 @@ export const approvalsApi = {
         description: `Approval request for store indent ${data.indent_number} with ${data.total_items} items. Required by: ${new Date(data.required_by_date).toLocaleDateString()}`,
         priority: data.priority,
         college: data.college,
+        requester: data.requester,
         approvers: data.approvers,
+        deadline: data.required_by_date,
         metadata: JSON.stringify({
           indent_id: data.indent_id,
           indent_number: data.indent_number,

@@ -1,4 +1,4 @@
-import { CheckCircle, Edit, Plus, Send, Trash2, XCircle } from 'lucide-react';
+import { CheckCircle, Edit, ExternalLink, Plus, Send, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -17,11 +17,13 @@ import {
   useSubmitStoreIndent,
   useUpdateStoreIndent,
 } from '../../hooks/useStoreIndents';
+import { useAuth } from '../../hooks/useAuth';
 import { approvalsApi } from '../../services/approvals.service';
 import { StoreIndentForm } from './forms/StoreIndentForm';
 
 export const StoreIndentsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
@@ -103,13 +105,19 @@ export const StoreIndentsPage = () => {
 
   const handleSubmitIndent = async (indent: any) => {
     try {
+      // Check if user is authenticated
+      if (!user?.id) {
+        toast.error('User not authenticated. Please log in again.');
+        return;
+      }
+
       // Get college admins for this indent's college
       const adminsResponse = await fetch(
         buildApiUrl(`/api/v1/accounts/users/by-type/college_admin/?college=${indent.college}`),
         { headers: getDefaultHeaders(), credentials: 'include' }
       );
       const adminsData = await adminsResponse.json();
-      const adminIds = adminsData.results?.map((admin: any) => admin.id) || [];
+      const adminIds = adminsData.results?.map((admin: any) => admin.id) || adminsData.map((admin: any) => admin.id) || [];
 
       if (adminIds.length === 0) {
         toast.error('No college admins found for approval. Please contact administrator.');
@@ -128,6 +136,7 @@ export const StoreIndentsPage = () => {
         approvers: adminIds,
         required_by_date: indent.required_by_date,
         total_items: indent.items?.length || 0,
+        requester: user.id,
       });
 
       toast.success('Indent submitted for approval. Admins have been notified.');
