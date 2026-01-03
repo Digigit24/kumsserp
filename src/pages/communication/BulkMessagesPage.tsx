@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { BulkMessageForm } from './forms/BulkMessageForm';
+import { useAuth } from '../../hooks/useAuth';
 import {
   useBulkMessages,
   useCreateBulkMessage,
@@ -17,6 +18,7 @@ import {
 import type { BulkMessage, BulkMessageFilters } from '../../types/communication.types';
 
 export const BulkMessagesPage = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<BulkMessageFilters>({
     page: 1,
     page_size: 10,
@@ -43,14 +45,24 @@ export const BulkMessagesPage = () => {
 
   const handleSubmit = async (formData: any) => {
     try {
+      // Transform form data to match API requirements
+      const transformedData = {
+        ...formData,
+        // Convert empty strings to null for optional datetime fields
+        scheduled_at: formData.scheduled_at || null,
+        sent_at: formData.sent_at || null,
+        // Add college field from current user if not present
+        college: formData.college || user?.college || null,
+      };
+
       if (selectedMessage) {
         await updateMutation.mutateAsync({
           id: selectedMessage.id,
-          data: formData,
+          data: transformedData,
         });
         toast.success('Bulk message updated successfully');
       } else {
-        await createMutation.mutateAsync(formData);
+        await createMutation.mutateAsync(transformedData);
         toast.success('Bulk message created successfully');
       }
       setIsFormOpen(false);
