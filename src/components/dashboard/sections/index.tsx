@@ -36,6 +36,10 @@ export { StudentTodaysSchedule } from './StudentTodaysSchedule';
 export { StudentUpcomingExams } from './StudentUpcomingExams';
 export { StudentAssignments } from './StudentAssignments';
 
+// Staff Sections
+export { StaffQuickActions } from './StaffQuickActions';
+export { StaffModuleStats } from './StaffModuleStats';
+
 /**
  * Section Component Map
  *
@@ -62,6 +66,8 @@ import { StudentTestMarks } from './StudentTestMarks';
 import { StudentTodaysSchedule } from './StudentTodaysSchedule';
 import { StudentUpcomingExams } from './StudentUpcomingExams';
 import { StudentAssignments } from './StudentAssignments';
+import { StaffQuickActions } from './StaffQuickActions';
+import { StaffModuleStats } from './StaffModuleStats';
 
 export const SECTION_COMPONENTS: Record<string, React.ComponentType<any>> = {
   // Admin
@@ -87,4 +93,7 @@ export const SECTION_COMPONENTS: Record<string, React.ComponentType<any>> = {
   StudentTodaysSchedule,
   StudentUpcomingExams,
   StudentAssignments,
+  // Staff
+  StaffQuickActions,
+  StaffModuleStats,
 };

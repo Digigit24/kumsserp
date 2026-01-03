@@ -150,6 +150,20 @@ export const DASHBOARD_SECTIONS: DashboardSection[] = [
     allowedRoles: ['student'],
     order: 7,
   },
+
+  // ============== STAFF SECTIONS ==============
+  {
+    id: 'staff-quick-actions',
+    component: 'StaffQuickActions',
+    allowedRoles: ['staff', 'hr', 'store_manager', 'library_manager'],
+    order: 1,
+  },
+  {
+    id: 'staff-module-stats',
+    component: 'StaffModuleStats',
+    allowedRoles: ['staff', 'hr', 'store_manager', 'library_manager'],
+    order: 2,
+  },
 ];
 
 /**

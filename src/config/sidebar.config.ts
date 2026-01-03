@@ -50,13 +50,13 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Dashboard",
     icon: Home,
-    roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // ALL roles
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "staff", "hr", "store_manager", "library_manager"], // ALL roles
     items: [
       {
         name: "Dashboard",
         href: "/dashboard",
         icon: Home,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // ALL
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "staff", "hr", "store_manager", "library_manager"], // ALL
       },
     ],
   },
@@ -367,17 +367,17 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= STUDENTS (ADMIN + TEACHER) =================
+  // ================= STUDENTS (ADMIN + TEACHER + STAFF) =================
   {
     group: "Students",
     icon: GraduationCap,
-    roles: ["super_admin", "college_admin", "teacher"],
+    roles: ["super_admin", "college_admin", "teacher", "staff"],
     items: [
       {
         name: "Students",
         href: "/students/list",
         icon: GraduationCap,
-        roles: ["super_admin", "college_admin", "teacher"],
+        roles: ["super_admin", "college_admin", "teacher", "staff"],
       },
       {
         name: "Guardians",
@@ -625,41 +625,41 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= LIBRARY (ADMIN + TEACHER) =================
+  // ================= LIBRARY (ADMIN + TEACHER + STAFF) =================
   {
     group: "Library",
     icon: Library,
-    roles: ["super_admin", "college_admin", "teacher"],
+    roles: ["super_admin", "college_admin", "teacher", "staff", "library_manager"],
     items: [
       {
         name: "Books",
         href: "/library/books",
         icon: BookOpen,
-        roles: ["super_admin", "college_admin", "teacher"],
+        roles: ["super_admin", "college_admin", "teacher", "staff", "library_manager"],
       },
       {
         name: "Book Categories",
         href: "/library/categories",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "library_manager"],
       },
       {
         name: "Book Issues",
         href: "/library/issues",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "library_manager"],
       },
       {
         name: "Book Returns",
         href: "/library/returns",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "library_manager"],
       },
       {
         name: "Library Members",
         href: "/library/members",
         icon: Users,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "library_manager"],
       },
       {
         name: "My Books",
@@ -670,71 +670,71 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= HR (ADMIN ONLY) =================
+  // ================= HR (ADMIN + HR) =================
   {
     group: "HR",
     icon: Briefcase,
-    roles: ["super_admin", "college_admin"],
+    roles: ["super_admin", "college_admin", "hr"],
     items: [
       {
         name: "Leave Types",
         href: "/hr/leave-types",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Leave Applications",
         href: "/hr/leave-applications",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Leave Approvals",
         href: "/hr/leave-approvals",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Leave Balances",
         href: "/hr/leave-balances",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Salary Structures",
         href: "/hr/salary-structures",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Salary Components",
         href: "/hr/salary-components",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Deductions",
         href: "/hr/deductions",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Payrolls",
         href: "/hr/payrolls",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Payroll Items",
         href: "/hr/payroll-items",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
       {
         name: "Payslips",
         href: "/hr/payslips",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "hr"],
       },
     ],
   },
@@ -766,122 +766,122 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
-  // ================= STORE (ADMIN ONLY) =================
+  // ================= STORE (ADMIN + STAFF) =================
   {
     group: "Store",
     icon: Store,
-    roles: ["super_admin", "college_admin"],
+    roles: ["super_admin", "college_admin", "staff", "store_manager"],
     items: [
       {
         name: "Central Stores",
         href: "/store/central-stores",
         icon: Building2,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Central Inventory",
         href: "/store/central-inventory",
         icon: ShoppingCart,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Material Issues",
         href: "/store/material-issues",
         icon: ShoppingCart,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Store Indents",
         href: "/store/indents",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Store Items",
         href: "/store/items",
         icon: Store,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Categories",
         href: "/store/categories",
         icon: Folder,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Credits",
         href: "/store/credits",
         icon: Coins,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Sale Items",
         href: "/store/sale-items",
         icon: ShoppingCart,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Print Requests",
         href: "/store/print-requests",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Vendors",
         href: "/store/vendors",
         icon: Users,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Stock Receipts",
         href: "/store/stock-receipts",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Store Sales",
         href: "/store/sales",
         icon: CreditCard,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
     ],
   },
 
-  // ================= PROCUREMENT (ADMIN ONLY) =================
+  // ================= PROCUREMENT (ADMIN + STAFF) =================
   {
     group: "Procurement",
     icon: ShoppingCart,
-    roles: ["super_admin", "college_admin"],
+    roles: ["super_admin", "college_admin", "staff", "store_manager"],
     items: [
       {
         name: "Requirements",
         href: "/procurement/requirements",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Quotations",
         href: "/procurement/quotations",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Purchase Orders",
         href: "/procurement/purchase-orders",
         icon: ShoppingCart,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Goods Receipts",
         href: "/procurement/goods-receipts",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
         name: "Inspections",
         href: "/procurement/inspections",
         icon: CheckSquare,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
     ],
   },
@@ -953,19 +953,19 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Profile",
     icon: Users,
-    roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "staff", "hr", "store_manager", "library_manager"],
     items: [
       {
         name: "My Profile",
         href: "/profile",
         icon: Users,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "staff", "hr", "store_manager", "library_manager"],
       },
       {
         name: "Settings",
         href: "/profile/settings",
         icon: Settings,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "staff", "hr", "store_manager", "library_manager"],
       },
     ],
   },
