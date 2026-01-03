@@ -19,6 +19,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EventForm } from './forms/EventForm';
+import { useAuth } from '../../hooks/useAuth';
 import {
   useEvents,
   useCreateEvent,
@@ -28,6 +29,7 @@ import {
 import type { Event, EventFilters } from '../../types/communication.types';
 
 export const EventsPage = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<EventFilters>({
     page: 1,
     page_size: 10,
@@ -54,14 +56,24 @@ export const EventsPage = () => {
 
   const handleSubmit = async (formData: any) => {
     try {
+      // Transform form data to match API requirements
+      const transformedData = {
+        ...formData,
+        // Convert empty strings to null for optional fields
+        registration_deadline: formData.registration_deadline || null,
+        image: formData.image || null,
+        // Add college field from current user
+        college: user?.college || null,
+      };
+
       if (selectedEvent) {
         await updateMutation.mutateAsync({
           id: selectedEvent.id,
-          data: formData,
+          data: transformedData,
         });
         toast.success('Event updated successfully');
       } else {
-        await createMutation.mutateAsync(formData);
+        await createMutation.mutateAsync(transformedData);
         toast.success('Event created successfully');
       }
       setIsFormOpen(false);
