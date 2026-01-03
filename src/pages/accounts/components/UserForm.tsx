@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import type { User, UserCreateInput, UserUpdateInput, UserType, GenderChoices } from '../../../types/accounts.types';
 
 interface UserFormData {
@@ -36,6 +37,7 @@ interface UserFormProps {
 export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   const [formData, setFormData] = useState<UserFormData>({
     username: '',
@@ -54,6 +56,16 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Check if current user is super admin
+  useEffect(() => {
+    const storedUser = localStorage.getItem('kumss_user');
+    if (storedUser) {
+      const currentUser = JSON.parse(storedUser);
+      const userType = currentUser.user_type || currentUser.userType;
+      setIsSuperAdmin(userType === 'super_admin');
+    }
+  }, []);
 
   useEffect(() => {
     if (mode === 'edit' && user) {
@@ -82,7 +94,8 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
       else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
       if (!formData.password_confirm) newErrors.password_confirm = 'Please confirm password';
       else if (formData.password !== formData.password_confirm) newErrors.password_confirm = 'Passwords do not match';
-      if (!formData.college) newErrors.college = 'College is required';
+      // College is required only if super admin and no college selected
+      if (isSuperAdmin && !formData.college) newErrors.college = 'College is required';
     }
 
     if (!formData.email.trim()) newErrors.email = 'Email is required';
@@ -127,9 +140,22 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
         submitData.username = formData.username;
         submitData.password = formData.password;
         submitData.password_confirm = formData.password_confirm;
-        submitData.college = Number(formData.college);
         submitData.user_type = formData.user_type;
         submitData.is_active = formData.is_active;
+
+        // Handle college - for non-super admins, get from localStorage if not in formData
+        if (formData.college) {
+          submitData.college = Number(formData.college);
+        } else if (!isSuperAdmin) {
+          // Get current user's college for non-super admins
+          const storedUser = localStorage.getItem('kumss_user');
+          if (storedUser) {
+            const currentUser = JSON.parse(storedUser);
+            if (currentUser.college) {
+              submitData.college = Number(currentUser.college);
+            }
+          }
+        }
       }
 
       await onSubmit(submitData);
@@ -219,42 +245,40 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="college" className="block text-sm font-medium mb-2">
-                      College <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      id="college"
-                      type="number"
-                      value={formData.college}
-                      onChange={(e) => handleChange('college', e.target.value)}
-                      placeholder="Enter college ID"
-                      disabled={isSubmitting}
-                      className={errors.college ? 'border-destructive' : ''}
-                    />
-                    {errors.college && <p className="text-sm text-destructive mt-1">{errors.college}</p>}
-                  </div>
+                {/* Only show college dropdown for super admin */}
+                {isSuperAdmin && (
+                  <CollegeDropdown
+                    value={formData.college ? Number(formData.college) : null}
+                    onChange={(collegeId) => handleChange('college', collegeId || '')}
+                    disabled={isSubmitting}
+                    required={true}
+                    error={errors.college}
+                    label="College"
+                    showLabel={true}
+                  />
+                )}
 
-                  <div>
-                    <label htmlFor="user_type" className="block text-sm font-medium mb-2">
-                      User Type
-                    </label>
-                    <select
-                      id="user_type"
-                      value={formData.user_type}
-                      onChange={(e) => handleChange('user_type', e.target.value as UserType)}
-                      disabled={isSubmitting}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="student">Student</option>
-                      <option value="teacher">Teacher</option>
-                      <option value="staff">Staff</option>
-                      <option value="parent">Parent</option>
-                      <option value="college_admin">College Admin</option>
-                      <option value="super_admin">Super Admin</option>
-                    </select>
-                  </div>
+                <div>
+                  <label htmlFor="user_type" className="block text-sm font-medium mb-2">
+                    Role <span className="text-destructive">*</span>
+                  </label>
+                  <select
+                    id="user_type"
+                    value={formData.user_type}
+                    onChange={(e) => handleChange('user_type', e.target.value as UserType)}
+                    disabled={isSubmitting}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="staff">Staff</option>
+                    <option value="parent">Parent</option>
+                    <option value="hr">HR</option>
+                    <option value="store_manager">Store Manager</option>
+                    <option value="library_manager">Library Manager</option>
+                    <option value="college_admin">College Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
                 </div>
               </>
             )}

@@ -15,7 +15,10 @@ export type UserType =
   | 'teacher'
   | 'student'
   | 'parent'
-  | 'staff';
+  | 'staff'
+  | 'hr'
+  | 'store_manager'
+  | 'library_manager';
 
 export type GenderChoices = 'male' | 'female' | 'other';
 
