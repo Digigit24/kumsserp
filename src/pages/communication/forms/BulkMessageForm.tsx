@@ -1,5 +1,5 @@
 // Bulk Message Form Component
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select';
+import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import type { BulkMessage, BulkMessageCreateInput } from '../../../types/communication.types';
 
 interface BulkMessageFormProps {
@@ -33,6 +34,7 @@ export const BulkMessageForm = ({
     formState: { errors },
     setValue,
     watch,
+    control,
   } = useForm<BulkMessageCreateInput>({
     defaultValues: bulkMessage || {
       title: '',
@@ -43,6 +45,7 @@ export const BulkMessageForm = ({
       total_recipients: 0,
       sent_count: 0,
       failed_count: 0,
+      college: undefined,
     },
   });
 
@@ -70,6 +73,23 @@ export const BulkMessageForm = ({
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title.message}</p>
             )}
+          </div>
+
+          {/* College */}
+          <div className="space-y-2">
+            <Controller
+              name="college"
+              control={control}
+              rules={{ required: 'College is required' }}
+              render={({ field }) => (
+                <CollegeDropdown
+                  value={field.value}
+                  onChange={field.onChange}
+                  required
+                  error={errors.college?.message}
+                />
+              )}
+            />
           </div>
 
           {/* Message Type */}
