@@ -2,11 +2,12 @@
  * Central Store Form - Create/Edit central stores
  */
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
+import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 
 interface CentralStoreFormProps {
   store?: any;
@@ -15,7 +16,7 @@ interface CentralStoreFormProps {
 }
 
 export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreFormProps) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors }, control } = useForm({
     defaultValues: store || {
       name: '',
       code: '',
@@ -121,13 +122,22 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
       </div>
 
       <div>
-        <Label htmlFor="manager">Manager (UUID) *</Label>
-        <Input
-          id="manager"
-          {...register('manager', { required: 'Manager is required' })}
-          placeholder="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        <Controller
+          name="manager"
+          control={control}
+          rules={{ required: 'Manager is required' }}
+          render={({ field }) => (
+            <UserSearchableDropdown
+              value={field.value}
+              onChange={field.onChange}
+              userType="staff"
+              required
+              label="Store Manager"
+              placeholder="Search and select manager..."
+              error={errors.manager?.message}
+            />
+          )}
         />
-        {errors.manager && <p className="text-sm text-red-500">{errors.manager.message}</p>}
       </div>
 
       <div className="flex items-center space-x-2">
