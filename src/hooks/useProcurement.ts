@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  procurementRequirementsApi,
-  procurementQuotationsApi,
-  procurementPurchaseOrdersApi,
-  procurementGoodsReceiptsApi,
-  procurementInspectionsApi,
+    procurementGoodsReceiptsApi,
+    procurementInspectionsApi,
+    procurementPurchaseOrdersApi,
+    procurementQuotationsApi,
+    procurementRequirementsApi,
 } from '../services/store.service';
 
 // ============================================================================
@@ -46,7 +46,17 @@ export const useRequirementQuotations = (id: number) => {
 export const useCreateRequirement = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: procurementRequirementsApi.create,
+    mutationFn: (data: any) => {
+      // Clean up items before sending - remove requirement field as it will be auto-assigned
+      const cleanedData = { ...data };
+      if (cleanedData.items && Array.isArray(cleanedData.items)) {
+        cleanedData.items = cleanedData.items.map((item: any) => {
+          const { requirement, ...itemWithoutRequirement } = item;
+          return itemWithoutRequirement;
+        });
+      }
+      return procurementRequirementsApi.create(cleanedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
     },

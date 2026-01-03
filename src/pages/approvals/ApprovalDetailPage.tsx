@@ -4,17 +4,6 @@
  * Shows approve/reject buttons only if user is an approver
  */
 
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, CheckCircle2, XCircle, AlertCircle, User, FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useApproval, useReviewApproval } from '@/hooks/useApprovals';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +14,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useApproval, useReviewApproval } from '@/hooks/useApprovals';
+import { format } from 'date-fns';
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, User, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -62,6 +62,8 @@ const getTypeLabel = (type: string) => {
       return 'Leave Request';
     case 'document_request':
       return 'Document Request';
+    case 'store_indent':
+      return 'Store Indent';
     default:
       return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
@@ -199,6 +201,54 @@ export const ApprovalDetailPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Store Indent Details - Only shown for store_indent type */}
+          {approval.request_type === 'store_indent' && approval.metadata && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Indent Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Indent Number</Label>
+                    <p className="font-medium mt-1">
+                      {typeof approval.metadata === 'string'
+                        ? JSON.parse(approval.metadata).indent_number
+                        : approval.metadata.indent_number}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Required By</Label>
+                    <p className="mt-1">
+                      {new Date(
+                        typeof approval.metadata === 'string'
+                          ? JSON.parse(approval.metadata).required_by_date
+                          : approval.metadata.required_by_date
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Total Items</Label>
+                    <p className="mt-1">
+                      {typeof approval.metadata === 'string'
+                        ? JSON.parse(approval.metadata).total_items
+                        : approval.metadata.total_items}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2"
+                  onClick={() => navigate('/store/indents')}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Full Indent Details
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Review Section - Only shown if user is an approver and status is pending */}
           {canReview && (

@@ -1,23 +1,27 @@
+import { CheckCircle, Edit, Plus, Send, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { CheckCircle, XCircle, Send, Edit, Trash2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import {
-  useStoreIndents,
-  useCreateStoreIndent,
-  useUpdateStoreIndent,
-  useDeleteStoreIndent,
-  useApproveStoreIndent,
-  useRejectStoreIndent,
-  useSubmitStoreIndent,
-} from '../../hooks/useStoreIndents';
-import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { buildApiUrl, getDefaultHeaders } from '../../config/api.config';
+import {
+  useApproveStoreIndent,
+  useCreateStoreIndent,
+  useDeleteStoreIndent,
+  useRejectStoreIndent,
+  useStoreIndents,
+  useSubmitStoreIndent,
+  useUpdateStoreIndent,
+} from '../../hooks/useStoreIndents';
+import { approvalsApi } from '../../services/approvals.service';
 import { StoreIndentForm } from './forms/StoreIndentForm';
-import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 
 export const StoreIndentsPage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
@@ -99,8 +103,34 @@ export const StoreIndentsPage = () => {
 
   const handleSubmitIndent = async (indent: any) => {
     try {
-      await submitMutation.mutateAsync({ id: indent.id, data: indent });
-      toast.success('Indent submitted successfully');
+      // Get college admins for this indent's college
+      const adminsResponse = await fetch(
+        buildApiUrl(`/api/v1/accounts/users/by-type/college_admin/?college=${indent.college}`),
+        { headers: getDefaultHeaders(), credentials: 'include' }
+      );
+      const adminsData = await adminsResponse.json();
+      const adminIds = adminsData.results?.map((admin: any) => admin.id) || [];
+
+      if (adminIds.length === 0) {
+        toast.error('No college admins found for approval. Please contact administrator.');
+        return;
+      }
+
+      // 1. Submit the indent
+      await submitMutation.mutateAsync({ id: indent.id, data: { ...indent, approvers: adminIds } });
+
+      // 2. Create approval request
+      await approvalsApi.createStoreIndentApproval({
+        indent_id: indent.id,
+        indent_number: indent.indent_number,
+        college: indent.college,
+        priority: indent.priority,
+        approvers: adminIds,
+        required_by_date: indent.required_by_date,
+        total_items: indent.items?.length || 0,
+      });
+
+      toast.success('Indent submitted for approval. Admins have been notified.');
       refetch();
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit indent');
@@ -170,6 +200,30 @@ export const StoreIndentsPage = () => {
       key: 'central_store',
       label: 'Central Store',
       render: (row) => `Store #${row.central_store}`,
+    },
+    {
+      key: 'approval_status',
+      label: 'Approval',
+      render: (row) => {
+        if (row.approval_request) {
+          return (
+            <div className="flex items-center gap-2">
+              <Badge variant={getStatusVariant(row.approval_request.status)} className="capitalize">
+                {row.approval_request.status}
+              </Badge>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate(`/approvals/${row.approval_request.id}`)}
+                title="View approval details"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            </div>
+          );
+        }
+        return <span className="text-muted-foreground text-sm">-</span>;
+      },
     },
     {
       key: 'actions',

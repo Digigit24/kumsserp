@@ -3,16 +3,15 @@
  * Displays approvals awaiting current user's review
  */
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Clock, FileText, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePendingApprovals } from '@/hooks/useApprovals';
 import { ApprovalRequest } from '@/types/approvals.types';
 import { formatDistanceToNow } from 'date-fns';
-import { toast } from 'sonner';
+import { AlertCircle, CheckCircle2, Clock, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -37,6 +36,8 @@ const getTypeLabel = (type: string) => {
       return 'Leave Request';
     case 'document_request':
       return 'Document Request';
+    case 'store_indent':
+      return 'Store Indent';
     default:
       return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }

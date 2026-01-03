@@ -5,14 +5,14 @@
 
 import { API_ENDPOINTS, buildApiUrl, getDefaultHeaders } from '../config/api.config';
 import type {
-  ApprovalRequest,
-  ApprovalReviewInput,
-  ApprovalNotification,
-  ApprovalNotificationUnreadCount,
-  FeePaymentApprovalInput,
-  ApprovalListParams,
-  PaginatedApprovalRequests,
-  PaginatedApprovalNotifications,
+    ApprovalListParams,
+    ApprovalNotification,
+    ApprovalNotificationUnreadCount,
+    ApprovalRequest,
+    ApprovalReviewInput,
+    FeePaymentApprovalInput,
+    PaginatedApprovalNotifications,
+    PaginatedApprovalRequests,
 } from '../types/approvals.types';
 
 /**
@@ -112,6 +112,37 @@ export const approvalsApi = {
     return fetchApi<ApprovalRequest>(buildApiUrl(API_ENDPOINTS.approvals.feePayment), {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Create store indent approval request
+   */
+  createStoreIndentApproval: async (data: {
+    indent_id: number;
+    indent_number: string;
+    college: number;
+    priority: string;
+    approvers: string[];
+    required_by_date: string;
+    total_items: number;
+  }): Promise<ApprovalRequest> => {
+    return fetchApi<ApprovalRequest>(buildApiUrl(API_ENDPOINTS.approvals.list), {
+      method: 'POST',
+      body: JSON.stringify({
+        request_type: 'store_indent',
+        title: `Store Indent Approval - ${data.indent_number}`,
+        description: `Approval request for store indent ${data.indent_number} with ${data.total_items} items. Required by: ${new Date(data.required_by_date).toLocaleDateString()}`,
+        priority: data.priority,
+        college: data.college,
+        approvers: data.approvers,
+        metadata: JSON.stringify({
+          indent_id: data.indent_id,
+          indent_number: data.indent_number,
+          required_by_date: data.required_by_date,
+          total_items: data.total_items,
+        }),
+      }),
     });
   },
 };

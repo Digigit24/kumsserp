@@ -3,7 +3,7 @@
  */
 
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
-export type ApprovalType = 'fee_payment' | 'leave_request' | 'document_request' | 'other';
+export type ApprovalType = 'fee_payment' | 'leave_request' | 'document_request' | 'store_indent' | 'other';
 export type ApprovalPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Approver {
