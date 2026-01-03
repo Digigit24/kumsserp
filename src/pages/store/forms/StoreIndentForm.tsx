@@ -2,6 +2,7 @@
  * Store Indent Form - Create/Edit store indents
  */
 
+import { useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -9,11 +10,12 @@ import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
 import { Textarea } from '../../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 interface StoreIndentFormProps {
   indent?: any;
@@ -60,8 +62,29 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
     name: 'items',
   });
 
+  const centralStoreId = watch('central_store');
+
+  // Clear item selections when central store changes
+  useEffect(() => {
+    if (centralStoreId && !indent) {
+      // Only clear items for new forms, not when editing
+      fields.forEach((_, index) => {
+        setValue(`items.${index}.central_store_item`, '');
+      });
+    }
+  }, [centralStoreId, indent]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Warning when no central store selected */}
+      {!centralStoreId && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Please select a Central Store first before adding items.
+          </AlertDescription>
+        </Alert>
+      )}
       {/* Basic Information */}
       <Card>
         <CardHeader>

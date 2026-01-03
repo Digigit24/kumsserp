@@ -79,7 +79,37 @@ export const StoreIndentsPage = () => {
       setIsFormOpen(false);
       refetch();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save indent');
+      console.error('Store Indent Error:', error);
+
+      // Parse validation errors
+      let errorMessage = 'Failed to save indent';
+
+      if (error.response?.data) {
+        const errors = error.response.data;
+
+        // Handle items validation errors
+        if (errors.items && Array.isArray(errors.items)) {
+          errors.items.forEach((itemError: any, index: number) => {
+            if (itemError.central_store_item) {
+              toast.error(`Item ${index + 1}: ${itemError.central_store_item[0]}`);
+            }
+          });
+          return;
+        }
+
+        // Handle other field errors
+        const firstErrorKey = Object.keys(errors)[0];
+        if (firstErrorKey && errors[firstErrorKey]) {
+          const errorValue = Array.isArray(errors[firstErrorKey])
+            ? errors[firstErrorKey][0]
+            : errors[firstErrorKey];
+          errorMessage = `${firstErrorKey}: ${errorValue}`;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
