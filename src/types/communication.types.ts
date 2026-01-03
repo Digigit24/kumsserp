@@ -441,10 +441,9 @@ export interface MessageTemplate {
   id: number;
   is_active: boolean;
   name: string;
-  title: string;
-  content: string;
+  code: string;
   message_type: string;
-  category: string;
+  content: string;
   variables: string;
   created_at: string;
   updated_at: string;
@@ -456,10 +455,9 @@ export interface MessageTemplate {
 export interface MessageTemplateCreateInput {
   is_active?: boolean;
   name: string;
-  title: string;
-  content: string;
+  code: string;
   message_type: string;
-  category?: string;
+  content: string;
   variables?: string;
   created_by?: string;
   updated_by?: string;
@@ -469,10 +467,9 @@ export interface MessageTemplateCreateInput {
 export interface MessageTemplateUpdateInput {
   is_active?: boolean;
   name?: string;
-  title?: string;
-  content?: string;
+  code?: string;
   message_type?: string;
-  category?: string;
+  content?: string;
   variables?: string;
   updated_by?: string;
   college?: number;
@@ -484,6 +481,52 @@ export interface MessageTemplateFilters {
   search?: string;
   is_active?: boolean;
   message_type?: string;
-  category?: string;
   college?: number;
+}
+
+// ============================================================================
+// NOTICE VISIBILITY TYPES
+// ============================================================================
+
+export interface NoticeVisibility {
+  id: number;
+  is_active: boolean;
+  target_type: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  notice: number;
+  class_obj: number | null;
+  section: number | null;
+}
+
+export interface NoticeVisibilityCreateInput {
+  is_active?: boolean;
+  target_type: string;
+  created_by?: string;
+  updated_by?: string;
+  notice: number;
+  class_obj?: number | null;
+  section?: number | null;
+}
+
+export interface NoticeVisibilityUpdateInput {
+  is_active?: boolean;
+  target_type?: string;
+  updated_by?: string;
+  notice?: number;
+  class_obj?: number | null;
+  section?: number | null;
+}
+
+export interface NoticeVisibilityFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  target_type?: string;
+  notice?: number;
+  class_obj?: number;
+  section?: number;
 }

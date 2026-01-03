@@ -1,19 +1,17 @@
 /**
- * Message Template Searchable Dropdown Component
- * Reusable searchable dropdown for selecting message templates
+ * Notice Searchable Dropdown Component
+ * Reusable searchable dropdown for selecting notices
  */
 
-import { useMessageTemplates } from '../../hooks/useCommunication';
+import { useNotices } from '../../hooks/useCommunication';
 import { Label } from '../ui/label';
 import { SearchableSelect, SearchableSelectOption } from '../ui/searchable-select';
-import { FileText, AlertCircle } from 'lucide-react';
+import { Bell, AlertCircle } from 'lucide-react';
 
-interface MessageTemplateSearchableDropdownProps {
+interface NoticeSearchableDropdownProps {
     value?: number | null;
-    onChange: (templateId: number | null) => void;
-    messageType?: string; // Filter by message type
-    category?: string; // Filter by category
-    college?: number | null; // Filter by college
+    onChange: (noticeId: number | null) => void;
+    college?: number | null;
     disabled?: boolean;
     required?: boolean;
     error?: string;
@@ -23,35 +21,25 @@ interface MessageTemplateSearchableDropdownProps {
     className?: string;
 }
 
-export function MessageTemplateSearchableDropdown({
+export function NoticeSearchableDropdown({
     value,
     onChange,
-    messageType,
-    category,
     college,
     disabled = false,
     required = true,
     error,
-    label = "Template",
+    label = "Notice",
     showLabel = true,
-    placeholder = "Select template",
+    placeholder = "Select notice",
     className = "",
-}: MessageTemplateSearchableDropdownProps) {
+}: NoticeSearchableDropdownProps) {
     const filters: any = { page_size: 100, is_active: true };
-
-    if (messageType) {
-        filters.message_type = messageType;
-    }
-
-    if (category) {
-        filters.category = category;
-    }
 
     if (college) {
         filters.college = college;
     }
 
-    const { data: templatesData, isLoading } = useMessageTemplates(filters);
+    const { data: noticesData, isLoading } = useNotices(filters);
 
     const handleChange = (selectedValue: string | number) => {
         onChange(selectedValue as number);
@@ -62,20 +50,20 @@ export function MessageTemplateSearchableDropdown({
             <div className="space-y-2">
                 {showLabel && <Label required={required}>{label}</Label>}
                 <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted">
-                    <FileText className="h-4 w-4 animate-pulse text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Loading templates...</span>
+                    <Bell className="h-4 w-4 animate-pulse text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Loading notices...</span>
                 </div>
             </div>
         );
     }
 
-    const templates = templatesData?.results || [];
+    const notices = noticesData?.results || [];
 
-    // Transform templates to SearchableSelectOption format
-    const options: SearchableSelectOption[] = templates.map((template) => ({
-        value: template.id,
-        label: template.name,
-        subtitle: `${template.code} • ${template.message_type}`.trim(),
+    // Transform notices to SearchableSelectOption format
+    const options: SearchableSelectOption[] = notices.map((notice) => ({
+        value: notice.id,
+        label: notice.title,
+        subtitle: notice.is_published ? 'Published' : 'Draft',
     }));
 
     return (
@@ -91,8 +79,8 @@ export function MessageTemplateSearchableDropdown({
                 value={value || undefined}
                 onChange={handleChange}
                 placeholder={placeholder}
-                searchPlaceholder="Search by template name..."
-                emptyText="No templates found"
+                searchPlaceholder="Search by notice title..."
+                emptyText="No notices found"
                 disabled={disabled}
                 className={error ? 'border-destructive' : ''}
             />
@@ -109,7 +97,7 @@ export function MessageTemplateSearchableDropdown({
             {options.length === 0 && !isLoading && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    No templates available. Please create one first.
+                    No notices available. Please create one first.
                 </p>
             )}
         </div>

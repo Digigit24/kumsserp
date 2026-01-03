@@ -33,6 +33,10 @@ import type {
   MessageTemplateCreateInput,
   MessageTemplateUpdateInput,
   MessageTemplateFilters,
+  NoticeVisibility,
+  NoticeVisibilityCreateInput,
+  NoticeVisibilityUpdateInput,
+  NoticeVisibilityFilters,
   PaginatedResponse,
 } from '../types/communication.types';
 
@@ -734,6 +738,82 @@ export const messageTemplatesApi = {
   delete: (id: number): Promise<void> => {
     return fetchApi<void>(
       `${API_BASE_URL}/api/v1/communication/message-templates/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// NOTICE VISIBILITY API
+// ============================================================================
+
+export const noticeVisibilityApi = {
+  /**
+   * List all notice visibilities with optional filters
+   */
+  list: (filters?: NoticeVisibilityFilters): Promise<PaginatedResponse<NoticeVisibility>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<NoticeVisibility>>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single notice visibility by ID
+   */
+  get: (id: number): Promise<NoticeVisibility> => {
+    return fetchApi<NoticeVisibility>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/${id}/`
+    );
+  },
+
+  /**
+   * Create a new notice visibility
+   */
+  create: (data: NoticeVisibilityCreateInput): Promise<NoticeVisibility> => {
+    return fetchApi<NoticeVisibility>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing notice visibility (PUT - full update)
+   */
+  update: (id: number, data: NoticeVisibilityUpdateInput): Promise<NoticeVisibility> => {
+    return fetchApi<NoticeVisibility>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update a notice visibility (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<NoticeVisibilityUpdateInput>): Promise<NoticeVisibility> => {
+    return fetchApi<NoticeVisibility>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a notice visibility
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/notice-visibility/${id}/`,
       {
         method: 'DELETE',
       }

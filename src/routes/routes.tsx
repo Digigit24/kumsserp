@@ -181,6 +181,8 @@ const EventRegistrationsPage = lazy(() => import("../pages/communication").then(
 const MessageLogsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.MessageLogsPage })));
 const NoticesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.NoticesPage })));
 const NotificationRulesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.NotificationRulesPage })));
+const MessageTemplatesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.MessageTemplatesPage })));
+const NoticeVisibilityPage = lazy(() => import("../pages/communication").then(m => ({ default: m.NoticeVisibilityPage })));
 
 // Store Module
 const StoreItemsPage = lazy(() => import("../pages/store/StoreItemsPage"));
@@ -369,7 +371,6 @@ export default function AppRoutes() {
                     <Route path="profile/settings" element={<LazyRoute component={ProfileSettingsPage} />} />
 
                     {/* Communication Module */}
-                    <Route path="communication" element={<LazyRoute component={CommunicationPage} />} />
                     <Route path="communication/student" element={<LazyRoute component={StudentCommunicationPage} />} />
                     <Route path="communication/teacher" element={<LazyRoute component={TeacherCommunicationPage} />} />
                     <Route path="communication/bulk-messages" element={<LazyRoute component={BulkMessagesPage} />} />
@@ -379,6 +380,8 @@ export default function AppRoutes() {
                     <Route path="communication/message-logs" element={<LazyRoute component={MessageLogsPage} />} />
                     <Route path="communication/notices" element={<LazyRoute component={NoticesPage} />} />
                     <Route path="communication/notification-rules" element={<LazyRoute component={NotificationRulesPage} />} />
+                    <Route path="communication/message-templates" element={<LazyRoute component={MessageTemplatesPage} />} />
+                    <Route path="communication/notice-visibility" element={<LazyRoute component={NoticeVisibilityPage} />} />
 
                     {/* Store Module */}
                     <Route path="store/central-stores" element={<LazyRoute component={CentralStoresPage} />} />

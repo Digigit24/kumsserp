@@ -952,6 +952,18 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         icon: Settings,
         roles: ["super_admin", "college_admin"],
       },
+      {
+        name: "Message Templates",
+        href: "/communication/message-templates",
+        icon: FileText,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Notice Visibility",
+        href: "/communication/notice-visibility",
+        icon: Bell,
+        roles: ["super_admin", "college_admin"],
+      },
     ],
   },
 

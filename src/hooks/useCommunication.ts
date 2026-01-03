@@ -8,7 +8,8 @@ import {
   messageLogsApi,
   noticesApi,
   notificationRulesApi,
-  messageTemplatesApi
+  messageTemplatesApi,
+  noticeVisibilityApi
 } from '../services/communication.service';
 import type {
   BulkMessageFilters,
@@ -35,6 +36,9 @@ import type {
   MessageTemplateFilters,
   MessageTemplateCreateInput,
   MessageTemplateUpdateInput,
+  NoticeVisibilityFilters,
+  NoticeVisibilityCreateInput,
+  NoticeVisibilityUpdateInput,
 } from '../types/communication.types';
 
 // ============================================================================
@@ -816,6 +820,102 @@ export const useDeleteMessageTemplate = () => {
     mutationFn: (id: number) => messageTemplatesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messageTemplateKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// NOTICE VISIBILITY HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for notice visibility
+ */
+export const noticeVisibilityKeys = {
+  all: ['noticeVisibility'] as const,
+  lists: () => [...noticeVisibilityKeys.all, 'list'] as const,
+  list: (filters?: NoticeVisibilityFilters) => [...noticeVisibilityKeys.lists(), filters] as const,
+  details: () => [...noticeVisibilityKeys.all, 'detail'] as const,
+  detail: (id: number) => [...noticeVisibilityKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of notice visibilities
+ */
+export const useNoticeVisibilities = (filters?: NoticeVisibilityFilters) => {
+  return useQuery({
+    queryKey: noticeVisibilityKeys.list(filters),
+    queryFn: () => noticeVisibilityApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single notice visibility
+ */
+export const useNoticeVisibility = (id: number) => {
+  return useQuery({
+    queryKey: noticeVisibilityKeys.detail(id),
+    queryFn: () => noticeVisibilityApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create a notice visibility
+ */
+export const useCreateNoticeVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: NoticeVisibilityCreateInput) => noticeVisibilityApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update a notice visibility
+ */
+export const useUpdateNoticeVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: NoticeVisibilityUpdateInput }) =>
+      noticeVisibilityApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update a notice visibility
+ */
+export const usePartialUpdateNoticeVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<NoticeVisibilityUpdateInput> }) =>
+      noticeVisibilityApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete a notice visibility
+ */
+export const useDeleteNoticeVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => noticeVisibilityApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: noticeVisibilityKeys.lists() });
     },
   });
 };
