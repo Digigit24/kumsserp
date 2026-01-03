@@ -33,8 +33,13 @@ export const useCreateStoreIndent = () => {
       // Deep copy to avoid mutating original data
       const cleanedData = JSON.parse(JSON.stringify(data));
       
-      // Save items for later
-      const items = cleanedData.items || [];
+      // Remove indent field from items (backend no longer requires it)
+      if (cleanedData.items && Array.isArray(cleanedData.items)) {
+        cleanedData.items = cleanedData.items.map((item: any) => {
+          const { indent, ...itemWithoutIndent } = item;
+          return itemWithoutIndent;
+        });
+      }
       
       // Convert empty strings to null for optional fields
       const optionalFields = [
@@ -51,29 +56,9 @@ export const useCreateStoreIndent = () => {
         }
       });
       
-      // STEP 1: Create indent WITHOUT items
-      delete cleanedData.items;
-      console.log('=== STEP 1: Creating indent without items ===', JSON.stringify(cleanedData, null, 2));
+      console.log('=== STORE INDENT CREATE - CLEANED DATA ===', JSON.stringify(cleanedData, null, 2));
       
-      const createdIndent = await storeIndentsApi.create(cleanedData);
-      console.log('=== Indent created with ID ===', createdIndent.id);
-      
-      // STEP 2: Update indent with items (now we have the indent ID)
-      if (items.length > 0) {
-        const itemsWithIndentId = items.map((item: any) => ({
-          ...item,
-          indent: createdIndent.id, // Now we have the indent ID!
-        }));
-        
-        console.log('=== STEP 2: Updating with items ===', JSON.stringify(itemsWithIndentId, null, 2));
-        
-        await storeIndentsApi.update(createdIndent.id, {
-          ...createdIndent,
-          items: itemsWithIndentId,
-        });
-      }
-      
-      return createdIndent;
+      return storeIndentsApi.create(cleanedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
