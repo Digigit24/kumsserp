@@ -321,3 +321,169 @@ export interface MessageLogFilters {
   bulk_message?: number;
   recipient?: string;
 }
+
+// ============================================================================
+// NOTICES TYPES
+// ============================================================================
+
+export interface Notice {
+  id: number;
+  is_active: boolean;
+  title: string;
+  content: string;
+  publish_date: string;
+  expiry_date: string;
+  attachment: string | null;
+  is_urgent: boolean;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  college: number;
+}
+
+export interface NoticeCreateInput {
+  is_active?: boolean;
+  title: string;
+  content: string;
+  publish_date: string;
+  expiry_date: string;
+  attachment?: string | null;
+  is_urgent?: boolean;
+  is_published?: boolean;
+  created_by?: string;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface NoticeUpdateInput {
+  is_active?: boolean;
+  title?: string;
+  content?: string;
+  publish_date?: string;
+  expiry_date?: string;
+  attachment?: string | null;
+  is_urgent?: boolean;
+  is_published?: boolean;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface NoticeFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  is_urgent?: boolean;
+  is_published?: boolean;
+  college?: number;
+}
+
+// ============================================================================
+// NOTIFICATION RULES TYPES
+// ============================================================================
+
+export interface NotificationRule {
+  id: number;
+  is_active: boolean;
+  name: string;
+  event_type: string;
+  channels: string;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  college: number;
+  template: number;
+}
+
+export interface NotificationRuleCreateInput {
+  is_active?: boolean;
+  name: string;
+  event_type: string;
+  channels: string;
+  is_enabled?: boolean;
+  created_by?: string;
+  updated_by?: string;
+  college?: number;
+  template: number;
+}
+
+export interface NotificationRuleUpdateInput {
+  is_active?: boolean;
+  name?: string;
+  event_type?: string;
+  channels?: string;
+  is_enabled?: boolean;
+  updated_by?: string;
+  college?: number;
+  template?: number;
+}
+
+export interface NotificationRuleFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  is_enabled?: boolean;
+  event_type?: string;
+  college?: number;
+  template?: number;
+}
+
+// ============================================================================
+// MESSAGE TEMPLATES TYPES
+// ============================================================================
+
+export interface MessageTemplate {
+  id: number;
+  is_active: boolean;
+  name: string;
+  title: string;
+  content: string;
+  message_type: string;
+  category: string;
+  variables: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  college: number;
+}
+
+export interface MessageTemplateCreateInput {
+  is_active?: boolean;
+  name: string;
+  title: string;
+  content: string;
+  message_type: string;
+  category?: string;
+  variables?: string;
+  created_by?: string;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface MessageTemplateUpdateInput {
+  is_active?: boolean;
+  name?: string;
+  title?: string;
+  content?: string;
+  message_type?: string;
+  category?: string;
+  variables?: string;
+  updated_by?: string;
+  college?: number;
+}
+
+export interface MessageTemplateFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  message_type?: string;
+  category?: string;
+  college?: number;
+}

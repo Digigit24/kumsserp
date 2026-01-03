@@ -21,6 +21,18 @@ import type {
   MessageLogCreateInput,
   MessageLogUpdateInput,
   MessageLogFilters,
+  Notice,
+  NoticeCreateInput,
+  NoticeUpdateInput,
+  NoticeFilters,
+  NotificationRule,
+  NotificationRuleCreateInput,
+  NotificationRuleUpdateInput,
+  NotificationRuleFilters,
+  MessageTemplate,
+  MessageTemplateCreateInput,
+  MessageTemplateUpdateInput,
+  MessageTemplateFilters,
   PaginatedResponse,
 } from '../types/communication.types';
 
@@ -494,6 +506,234 @@ export const messageLogsApi = {
   delete: (id: number): Promise<void> => {
     return fetchApi<void>(
       `${API_BASE_URL}/api/v1/communication/message-logs/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// NOTICES API
+// ============================================================================
+
+export const noticesApi = {
+  /**
+   * List all notices with optional filters
+   */
+  list: (filters?: NoticeFilters): Promise<PaginatedResponse<Notice>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<Notice>>(
+      `${API_BASE_URL}/api/v1/communication/notices/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single notice by ID
+   */
+  get: (id: number): Promise<Notice> => {
+    return fetchApi<Notice>(
+      `${API_BASE_URL}/api/v1/communication/notices/${id}/`
+    );
+  },
+
+  /**
+   * Create a new notice
+   */
+  create: (data: NoticeCreateInput): Promise<Notice> => {
+    return fetchApi<Notice>(
+      `${API_BASE_URL}/api/v1/communication/notices/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing notice (PUT - full update)
+   */
+  update: (id: number, data: NoticeUpdateInput): Promise<Notice> => {
+    return fetchApi<Notice>(
+      `${API_BASE_URL}/api/v1/communication/notices/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update a notice (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<NoticeUpdateInput>): Promise<Notice> => {
+    return fetchApi<Notice>(
+      `${API_BASE_URL}/api/v1/communication/notices/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a notice
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/notices/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// NOTIFICATION RULES API
+// ============================================================================
+
+export const notificationRulesApi = {
+  /**
+   * List all notification rules with optional filters
+   */
+  list: (filters?: NotificationRuleFilters): Promise<PaginatedResponse<NotificationRule>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<NotificationRule>>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single notification rule by ID
+   */
+  get: (id: number): Promise<NotificationRule> => {
+    return fetchApi<NotificationRule>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/${id}/`
+    );
+  },
+
+  /**
+   * Create a new notification rule
+   */
+  create: (data: NotificationRuleCreateInput): Promise<NotificationRule> => {
+    return fetchApi<NotificationRule>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing notification rule (PUT - full update)
+   */
+  update: (id: number, data: NotificationRuleUpdateInput): Promise<NotificationRule> => {
+    return fetchApi<NotificationRule>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update a notification rule (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<NotificationRuleUpdateInput>): Promise<NotificationRule> => {
+    return fetchApi<NotificationRule>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a notification rule
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/notification-rules/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// MESSAGE TEMPLATES API
+// ============================================================================
+
+export const messageTemplatesApi = {
+  /**
+   * List all message templates with optional filters
+   */
+  list: (filters?: MessageTemplateFilters): Promise<PaginatedResponse<MessageTemplate>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<MessageTemplate>>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single message template by ID
+   */
+  get: (id: number): Promise<MessageTemplate> => {
+    return fetchApi<MessageTemplate>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/${id}/`
+    );
+  },
+
+  /**
+   * Create a new message template
+   */
+  create: (data: MessageTemplateCreateInput): Promise<MessageTemplate> => {
+    return fetchApi<MessageTemplate>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing message template (PUT - full update)
+   */
+  update: (id: number, data: MessageTemplateUpdateInput): Promise<MessageTemplate> => {
+    return fetchApi<MessageTemplate>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update a message template (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<MessageTemplateUpdateInput>): Promise<MessageTemplate> => {
+    return fetchApi<MessageTemplate>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a message template
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/message-templates/${id}/`,
       {
         method: 'DELETE',
       }

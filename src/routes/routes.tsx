@@ -179,6 +179,8 @@ const ChatsPage = lazy(() => import("../pages/communication").then(m => ({ defau
 const EventsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.EventsPage })));
 const EventRegistrationsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.EventRegistrationsPage })));
 const MessageLogsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.MessageLogsPage })));
+const NoticesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.NoticesPage })));
+const NotificationRulesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.NotificationRulesPage })));
 
 // Store Module
 const StoreItemsPage = lazy(() => import("../pages/store/StoreItemsPage"));
@@ -375,6 +377,8 @@ export default function AppRoutes() {
                     <Route path="communication/events" element={<LazyRoute component={EventsPage} />} />
                     <Route path="communication/event-registrations" element={<LazyRoute component={EventRegistrationsPage} />} />
                     <Route path="communication/message-logs" element={<LazyRoute component={MessageLogsPage} />} />
+                    <Route path="communication/notices" element={<LazyRoute component={NoticesPage} />} />
+                    <Route path="communication/notification-rules" element={<LazyRoute component={NotificationRulesPage} />} />
 
                     {/* Store Module */}
                     <Route path="store/central-stores" element={<LazyRoute component={CentralStoresPage} />} />

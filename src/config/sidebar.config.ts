@@ -946,6 +946,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         icon: FileText,
         roles: ["super_admin", "college_admin"],
       },
+      {
+        name: "Notification Rules",
+        href: "/communication/notification-rules",
+        icon: Settings,
+        roles: ["super_admin", "college_admin"],
+      },
     ],
   },
 

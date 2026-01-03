@@ -5,7 +5,10 @@ import {
   chatsApi,
   eventsApi,
   eventRegistrationsApi,
-  messageLogsApi
+  messageLogsApi,
+  noticesApi,
+  notificationRulesApi,
+  messageTemplatesApi
 } from '../services/communication.service';
 import type {
   BulkMessageFilters,
@@ -23,6 +26,15 @@ import type {
   MessageLogFilters,
   MessageLogCreateInput,
   MessageLogUpdateInput,
+  NoticeFilters,
+  NoticeCreateInput,
+  NoticeUpdateInput,
+  NotificationRuleFilters,
+  NotificationRuleCreateInput,
+  NotificationRuleUpdateInput,
+  MessageTemplateFilters,
+  MessageTemplateCreateInput,
+  MessageTemplateUpdateInput,
 } from '../types/communication.types';
 
 // ============================================================================
@@ -516,6 +528,294 @@ export const useDeleteMessageLog = () => {
     mutationFn: (id: number) => messageLogsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messageLogKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// NOTICES HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for notices
+ */
+export const noticeKeys = {
+  all: ['notices'] as const,
+  lists: () => [...noticeKeys.all, 'list'] as const,
+  list: (filters?: NoticeFilters) => [...noticeKeys.lists(), filters] as const,
+  details: () => [...noticeKeys.all, 'detail'] as const,
+  detail: (id: number) => [...noticeKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of notices
+ */
+export const useNotices = (filters?: NoticeFilters) => {
+  return useQuery({
+    queryKey: noticeKeys.list(filters),
+    queryFn: () => noticesApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single notice
+ */
+export const useNotice = (id: number) => {
+  return useQuery({
+    queryKey: noticeKeys.detail(id),
+    queryFn: () => noticesApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create a notice
+ */
+export const useCreateNotice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: NoticeCreateInput) => noticesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: noticeKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update a notice
+ */
+export const useUpdateNotice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: NoticeUpdateInput }) =>
+      noticesApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: noticeKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: noticeKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update a notice
+ */
+export const usePartialUpdateNotice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<NoticeUpdateInput> }) =>
+      noticesApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: noticeKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: noticeKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete a notice
+ */
+export const useDeleteNotice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => noticesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: noticeKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// NOTIFICATION RULES HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for notification rules
+ */
+export const notificationRuleKeys = {
+  all: ['notificationRules'] as const,
+  lists: () => [...notificationRuleKeys.all, 'list'] as const,
+  list: (filters?: NotificationRuleFilters) => [...notificationRuleKeys.lists(), filters] as const,
+  details: () => [...notificationRuleKeys.all, 'detail'] as const,
+  detail: (id: number) => [...notificationRuleKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of notification rules
+ */
+export const useNotificationRules = (filters?: NotificationRuleFilters) => {
+  return useQuery({
+    queryKey: notificationRuleKeys.list(filters),
+    queryFn: () => notificationRulesApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single notification rule
+ */
+export const useNotificationRule = (id: number) => {
+  return useQuery({
+    queryKey: notificationRuleKeys.detail(id),
+    queryFn: () => notificationRulesApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create a notification rule
+ */
+export const useCreateNotificationRule = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: NotificationRuleCreateInput) => notificationRulesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update a notification rule
+ */
+export const useUpdateNotificationRule = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: NotificationRuleUpdateInput }) =>
+      notificationRulesApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update a notification rule
+ */
+export const usePartialUpdateNotificationRule = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<NotificationRuleUpdateInput> }) =>
+      notificationRulesApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete a notification rule
+ */
+export const useDeleteNotificationRule = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => notificationRulesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationRuleKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// MESSAGE TEMPLATES HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for message templates
+ */
+export const messageTemplateKeys = {
+  all: ['messageTemplates'] as const,
+  lists: () => [...messageTemplateKeys.all, 'list'] as const,
+  list: (filters?: MessageTemplateFilters) => [...messageTemplateKeys.lists(), filters] as const,
+  details: () => [...messageTemplateKeys.all, 'detail'] as const,
+  detail: (id: number) => [...messageTemplateKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of message templates
+ */
+export const useMessageTemplates = (filters?: MessageTemplateFilters) => {
+  return useQuery({
+    queryKey: messageTemplateKeys.list(filters),
+    queryFn: () => messageTemplatesApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single message template
+ */
+export const useMessageTemplate = (id: number) => {
+  return useQuery({
+    queryKey: messageTemplateKeys.detail(id),
+    queryFn: () => messageTemplatesApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create a message template
+ */
+export const useCreateMessageTemplate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MessageTemplateCreateInput) => messageTemplatesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update a message template
+ */
+export const useUpdateMessageTemplate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: MessageTemplateUpdateInput }) =>
+      messageTemplatesApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update a message template
+ */
+export const usePartialUpdateMessageTemplate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<MessageTemplateUpdateInput> }) =>
+      messageTemplatesApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete a message template
+ */
+export const useDeleteMessageTemplate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => messageTemplatesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageTemplateKeys.lists() });
     },
   });
 };
