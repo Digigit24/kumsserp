@@ -1,0 +1,142 @@
+// Communication Module Type Definitions
+
+// ============================================================================
+// BULK MESSAGES TYPES
+// ============================================================================
+
+export interface BulkMessage {
+  id: number;
+  is_active: boolean;
+  title: string;
+  message_type: string;
+  recipient_type: string;
+  total_recipients: number;
+  sent_count: number;
+  failed_count: number;
+  status: string;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  college: number;
+  template: number | null;
+}
+
+export interface BulkMessageCreateInput {
+  is_active?: boolean;
+  title: string;
+  message_type: string;
+  recipient_type: string;
+  total_recipients?: number;
+  sent_count?: number;
+  failed_count?: number;
+  status?: string;
+  scheduled_at?: string | null;
+  sent_at?: string | null;
+  created_by?: string;
+  updated_by?: string;
+  college?: number;
+  template?: number | null;
+}
+
+export interface BulkMessageUpdateInput {
+  is_active?: boolean;
+  title?: string;
+  message_type?: string;
+  recipient_type?: string;
+  total_recipients?: number;
+  sent_count?: number;
+  failed_count?: number;
+  status?: string;
+  scheduled_at?: string | null;
+  sent_at?: string | null;
+  updated_by?: string;
+  college?: number;
+  template?: number | null;
+}
+
+export interface BulkMessageFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  message_type?: string;
+  recipient_type?: string;
+  status?: string;
+  college?: number;
+  created_by?: string;
+}
+
+// ============================================================================
+// CHATS TYPES
+// ============================================================================
+
+export interface Chat {
+  id: number;
+  is_active: boolean;
+  message: string;
+  attachment: string | null;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  sender: string;
+  receiver: string;
+}
+
+export interface ChatCreateInput {
+  is_active?: boolean;
+  message: string;
+  attachment?: string | null;
+  is_read?: boolean;
+  read_at?: string | null;
+  created_by?: string;
+  updated_by?: string;
+  sender: string;
+  receiver: string;
+}
+
+export interface ChatUpdateInput {
+  is_active?: boolean;
+  message?: string;
+  attachment?: string | null;
+  is_read?: boolean;
+  read_at?: string | null;
+  updated_by?: string;
+  sender?: string;
+  receiver?: string;
+}
+
+export interface ChatFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  is_read?: boolean;
+  sender?: string;
+  receiver?: string;
+}
+
+// ============================================================================
+// SHARED TYPES
+// ============================================================================
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Message Types
+export type MessageType = 'sms' | 'email' | 'push' | 'notification' | 'all';
+
+// Recipient Types
+export type RecipientType = 'student' | 'guardian' | 'teacher' | 'staff' | 'all' | 'custom';
+
+// Message Status
+export type MessageStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'delivered';

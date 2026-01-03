@@ -15,9 +15,11 @@ import {
   GraduationCap,
   Home,
   Library,
+  Mail,
   MessageSquare,
   PenTool,
   School,
+  Send,
   Settings,
   Shield,
   ShoppingCart,
@@ -913,6 +915,18 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/communication/notices",
         icon: Bell,
         roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // All can view
+      },
+      {
+        name: "Bulk Messages",
+        href: "/communication/bulk-messages",
+        icon: Send,
+        roles: ["super_admin", "college_admin"],
+      },
+      {
+        name: "Chats",
+        href: "/communication/chats",
+        icon: Mail,
+        roles: ["super_admin", "college_admin", "teacher", "student"],
       },
       {
         name: "Message Logs",
