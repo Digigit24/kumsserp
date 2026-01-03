@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useApproval, useReviewApproval } from '@/hooks/useApprovals';
 import { format } from 'date-fns';
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock, User, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, FileText, User, XCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
