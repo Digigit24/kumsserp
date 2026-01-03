@@ -4,7 +4,8 @@ import {
   bulkMessagesApi,
   chatsApi,
   eventsApi,
-  eventRegistrationsApi
+  eventRegistrationsApi,
+  messageLogsApi
 } from '../services/communication.service';
 import type {
   BulkMessageFilters,
@@ -19,6 +20,9 @@ import type {
   EventRegistrationFilters,
   EventRegistrationCreateInput,
   EventRegistrationUpdateInput,
+  MessageLogFilters,
+  MessageLogCreateInput,
+  MessageLogUpdateInput,
 } from '../types/communication.types';
 
 // ============================================================================
@@ -416,6 +420,102 @@ export const useDeleteEventRegistration = () => {
     mutationFn: (id: number) => eventRegistrationsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventRegistrationKeys.lists() });
+    },
+  });
+};
+
+// ============================================================================
+// MESSAGE LOGS HOOKS
+// ============================================================================
+
+/**
+ * Query key factory for message logs
+ */
+export const messageLogKeys = {
+  all: ['messageLogs'] as const,
+  lists: () => [...messageLogKeys.all, 'list'] as const,
+  list: (filters?: MessageLogFilters) => [...messageLogKeys.lists(), filters] as const,
+  details: () => [...messageLogKeys.all, 'detail'] as const,
+  detail: (id: number) => [...messageLogKeys.details(), id] as const,
+};
+
+/**
+ * Hook to fetch list of message logs
+ */
+export const useMessageLogs = (filters?: MessageLogFilters) => {
+  return useQuery({
+    queryKey: messageLogKeys.list(filters),
+    queryFn: () => messageLogsApi.list(filters),
+  });
+};
+
+/**
+ * Hook to fetch a single message log
+ */
+export const useMessageLog = (id: number) => {
+  return useQuery({
+    queryKey: messageLogKeys.detail(id),
+    queryFn: () => messageLogsApi.get(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook to create a message log
+ */
+export const useCreateMessageLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MessageLogCreateInput) => messageLogsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook to update a message log
+ */
+export const useUpdateMessageLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: MessageLogUpdateInput }) =>
+      messageLogsApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to partially update a message log
+ */
+export const usePartialUpdateMessageLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<MessageLogUpdateInput> }) =>
+      messageLogsApi.partialUpdate(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.detail(variables.id) });
+    },
+  });
+};
+
+/**
+ * Hook to delete a message log
+ */
+export const useDeleteMessageLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => messageLogsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageLogKeys.lists() });
     },
   });
 };

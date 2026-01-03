@@ -17,6 +17,10 @@ import type {
   EventRegistrationCreateInput,
   EventRegistrationUpdateInput,
   EventRegistrationFilters,
+  MessageLog,
+  MessageLogCreateInput,
+  MessageLogUpdateInput,
+  MessageLogFilters,
   PaginatedResponse,
 } from '../types/communication.types';
 
@@ -414,6 +418,82 @@ export const eventRegistrationsApi = {
   delete: (id: number): Promise<void> => {
     return fetchApi<void>(
       `${API_BASE_URL}/api/v1/communication/event-registrations/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+};
+
+// ============================================================================
+// MESSAGE LOGS API
+// ============================================================================
+
+export const messageLogsApi = {
+  /**
+   * List all message logs with optional filters
+   */
+  list: (filters?: MessageLogFilters): Promise<PaginatedResponse<MessageLog>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<MessageLog>>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/${queryString}`
+    );
+  },
+
+  /**
+   * Get a single message log by ID
+   */
+  get: (id: number): Promise<MessageLog> => {
+    return fetchApi<MessageLog>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/${id}/`
+    );
+  },
+
+  /**
+   * Create a new message log
+   */
+  create: (data: MessageLogCreateInput): Promise<MessageLog> => {
+    return fetchApi<MessageLog>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update an existing message log (PUT - full update)
+   */
+  update: (id: number, data: MessageLogUpdateInput): Promise<MessageLog> => {
+    return fetchApi<MessageLog>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/${id}/`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Partially update a message log (PATCH)
+   */
+  partialUpdate: (id: number, data: Partial<MessageLogUpdateInput>): Promise<MessageLog> => {
+    return fetchApi<MessageLog>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/${id}/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a message log
+   */
+  delete: (id: number): Promise<void> => {
+    return fetchApi<void>(
+      `${API_BASE_URL}/api/v1/communication/message-logs/${id}/`,
       {
         method: 'DELETE',
       }

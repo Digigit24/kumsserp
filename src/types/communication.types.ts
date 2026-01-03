@@ -259,3 +259,65 @@ export type MessageStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed
 
 // Event Registration Status
 export type RegistrationStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended' | 'no_show';
+
+// ============================================================================
+// MESSAGE LOGS TYPES
+// ============================================================================
+
+export interface MessageLog {
+  id: number;
+  is_active: boolean;
+  message_type: string;
+  phone_email: string;
+  message: string;
+  status: string;
+  sent_at: string | null;
+  delivered_at: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  bulk_message: number | null;
+  recipient: string;
+}
+
+export interface MessageLogCreateInput {
+  is_active?: boolean;
+  message_type: string;
+  phone_email: string;
+  message: string;
+  status?: string;
+  sent_at?: string | null;
+  delivered_at?: string | null;
+  error_message?: string | null;
+  created_by?: string;
+  updated_by?: string;
+  bulk_message?: number | null;
+  recipient: string;
+}
+
+export interface MessageLogUpdateInput {
+  is_active?: boolean;
+  message_type?: string;
+  phone_email?: string;
+  message?: string;
+  status?: string;
+  sent_at?: string | null;
+  delivered_at?: string | null;
+  error_message?: string | null;
+  updated_by?: string;
+  bulk_message?: number | null;
+  recipient?: string;
+}
+
+export interface MessageLogFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  is_active?: boolean;
+  message_type?: string;
+  status?: string;
+  bulk_message?: number;
+  recipient?: string;
+}
