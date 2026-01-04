@@ -43,11 +43,22 @@ interface AttendanceRecord {
 }
 
 export const TeacherAttendanceMarkingPage: React.FC = () => {
+  console.log('=== TEACHER ATTENDANCE MARKING PAGE MOUNTED ===');
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { selectedClass, selectedSection, setSelectedClass, setSelectedSection } = useHierarchicalContext();
   const { permissions } = usePermissions();
+
+  console.log('Initial state:', {
+    selectedClass,
+    selectedSection,
+    permissions: {
+      canChooseClass: permissions?.canChooseClass,
+      canChooseSection: permissions?.canChooseSection,
+      canMarkAttendance: permissions?.canMarkAttendance,
+    }
+  });
 
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
 
@@ -98,6 +109,17 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
 
   const subjects = subjectsData?.results || [];
   const students = studentsData?.results || [];
+
+  // Debug: Log when data changes
+  useEffect(() => {
+    console.log('Data updated:', {
+      sections: sectionsData?.results?.length || 0,
+      students: students.length,
+      subjects: subjects.length,
+      selectedClass,
+      selectedSection,
+    });
+  }, [sectionsData, students, subjects, selectedClass, selectedSection]);
 
   // Initialize attendance records when students data changes
   useEffect(() => {
