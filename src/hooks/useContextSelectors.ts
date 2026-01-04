@@ -92,6 +92,7 @@ export const useContextSections = () => {
   const { selectedClass } = useClassContext();
   const { setSections, setIsLoadingSections, setSelectedSection } = useSectionContext();
   const { permissions } = usePermissions();
+  const previousClassRef = useRef<number | null>(null);
 
   const query = useQuery({
     queryKey: ['context', 'sections', selectedClass],
@@ -108,9 +109,13 @@ export const useContextSections = () => {
     setIsLoadingSections(query.isLoading);
   }, [query.data, query.isLoading, setSections, setIsLoadingSections]);
 
-  // Reset section selection when class changes
+  // Reset section selection ONLY when class actually changes value (not on first render)
   useEffect(() => {
-    setSelectedSection(null);
+    if (previousClassRef.current !== null && previousClassRef.current !== selectedClass) {
+      console.log('🔴 [useContextSections] Class changed from', previousClassRef.current, 'to', selectedClass, '- resetting section');
+      setSelectedSection(null);
+    }
+    previousClassRef.current = selectedClass;
   }, [selectedClass, setSelectedSection]);
 
   return query;

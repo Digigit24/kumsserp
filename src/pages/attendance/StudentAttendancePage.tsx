@@ -54,7 +54,7 @@ const StudentAttendancePage = () => {
     markedCount: Object.values(attendanceMap).filter(status => status !== null).length,
     isSubmitting,
     noClass: !selectedClass,
-    needsSection: permissions?.canChooseSection && !selectedSection,
+    noSection: !selectedSection,
   });
 
   // Fetch students for marking attendance
@@ -95,13 +95,16 @@ const StudentAttendancePage = () => {
       return;
     }
 
-    // Only require class (section is always optional)
+    // Require both class and section (backend requires section)
     if (!selectedClass) {
       toast.error('Please select class');
       return;
     }
 
-    // Section is optional - no validation needed
+    if (!selectedSection) {
+      toast.error('Please select section');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -281,7 +284,7 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('present')}
-            disabled={isSubmitting || !selectedClass}
+            disabled={isSubmitting || !selectedClass || !selectedSection}
           >
             <Check className="h-4 w-4 mr-2" />
             Select All Present
@@ -290,14 +293,14 @@ const StudentAttendancePage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll('absent')}
-            disabled={isSubmitting || !selectedClass}
+            disabled={isSubmitting || !selectedClass || !selectedSection}
           >
             <X className="h-4 w-4 mr-2" />
             Select All Absent
           </Button>
           <Button
             onClick={handleSubmitAttendance}
-            disabled={markedCount === 0 || isSubmitting || !selectedClass || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
+            disabled={markedCount === 0 || isSubmitting || !selectedClass || !selectedSection || (bulkMarkMutation.isPending || markSingleMutation.isPending)}
             className="bg-primary"
           >
             <Save className="h-4 w-4 mr-2" />
