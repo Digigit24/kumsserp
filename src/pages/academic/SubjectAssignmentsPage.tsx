@@ -3,10 +3,13 @@
  */
 
 import { useState } from 'react';
-import { useSubjectAssignments } from '../../hooks/useAcademic';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSubjectAssignments, useDeleteSubjectAssignment } from '../../hooks/useAcademic';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { SubjectAssignmentForm } from './components/SubjectAssignmentForm';
 import type { SubjectAssignmentListItem, SubjectAssignmentFilters } from '../../types/academic.types';
 
@@ -17,6 +20,9 @@ export default function SubjectAssignmentsPage() {
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [selectedSubjectAssignment, setSelectedSubjectAssignment] = useState<SubjectAssignmentListItem | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const deleteMutation = useDeleteSubjectAssignment();
 
     const columns: Column<SubjectAssignmentListItem>[] = [
         { key: 'subject_name', label: 'Subject', sortable: true, className: 'font-semibold' },
@@ -55,6 +61,20 @@ export default function SubjectAssignmentsPage() {
         setIsSidebarOpen(true);
     };
 
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteMutation.mutate(deleteId);
+            toast.success('Subject assignment deleted successfully');
+            setDeleteId(null);
+            setIsSidebarOpen(false);
+            refetch();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete subject assignment');
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 animate-fade-in">
             <DataTable
@@ -79,8 +99,28 @@ export default function SubjectAssignmentsPage() {
                 title={sidebarMode === 'create' ? 'Create Subject Assignment' : 'Edit Subject Assignment'}
                 mode={sidebarMode}
             >
+                {sidebarMode === 'edit' && selectedSubjectAssignment && (
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => setDeleteId(selectedSubjectAssignment.id)}
+                            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </div>
+                )}
                 <SubjectAssignmentForm mode={sidebarMode} subjectAssignmentId={selectedSubjectAssignment?.id} onSuccess={() => { setIsSidebarOpen(false); refetch(); }} onCancel={() => setIsSidebarOpen(false)} />
             </DetailSidebar>
+
+            <ConfirmDialog
+                open={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Subject Assignment"
+                description="Are you sure you want to delete this subject assignment? This action cannot be undone."
+                variant="destructive"
+            />
         </div>
     );
 }

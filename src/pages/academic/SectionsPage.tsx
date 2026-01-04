@@ -3,10 +3,13 @@
  */
 
 import { useState } from 'react';
-import { useSections } from '../../hooks/useAcademic';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSections, useDeleteSection } from '../../hooks/useAcademic';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { SectionForm } from './components/SectionForm';
 import type { Section, SectionFilters } from '../../types/academic.types';
 
@@ -17,6 +20,9 @@ export default function SectionsPage() {
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const deleteMutation = useDeleteSection();
 
     const columns: Column<Section>[] = [
         { key: 'name', label: 'Section Name', sortable: true, className: 'font-semibold' },
@@ -39,6 +45,20 @@ export default function SectionsPage() {
         setSelectedSection(null);
         setSidebarMode('create');
         setIsSidebarOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteMutation.mutate(deleteId);
+            toast.success('Section deleted successfully');
+            setDeleteId(null);
+            setIsSidebarOpen(false);
+            refetch();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete section');
+        }
     };
 
     return (
@@ -65,8 +85,28 @@ export default function SectionsPage() {
                 title={sidebarMode === 'create' ? 'Create Section' : 'Edit Section'}
                 mode={sidebarMode}
             >
+                {sidebarMode === 'edit' && selectedSection && (
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => setDeleteId(selectedSection.id)}
+                            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </div>
+                )}
                 <SectionForm mode={sidebarMode} sectionId={selectedSection?.id} onSuccess={() => { setIsSidebarOpen(false); refetch(); }} onCancel={() => setIsSidebarOpen(false)} />
             </DetailSidebar>
+
+            <ConfirmDialog
+                open={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Section"
+                description="Are you sure you want to delete this section? This action cannot be undone."
+                variant="destructive"
+            />
         </div>
     );
 }

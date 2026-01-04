@@ -47,7 +47,7 @@ import type {
 import { PaginatedResponse } from '../types/core.types';
 
 // ============================================================================
-// BASE HOOK TYPE
+// BASE HOOK TYPES
 // ============================================================================
 
 interface UseQueryResult<T> {
@@ -55,6 +55,13 @@ interface UseQueryResult<T> {
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+}
+
+interface UseMutationResult<TData, TInput> {
+  mutate: (input: TInput) => Promise<TData | null>;
+  isLoading: boolean;
+  error: string | null;
+  data: TData | null;
 }
 
 // ============================================================================
@@ -415,4 +422,296 @@ export const useClassTeachers = (filters?: ClassTeacherFilters): UseQueryResult<
   }, [JSON.stringify(filters)]);
 
   return { data, isLoading, error, refetch: fetchData };
+};
+
+// ============================================================================
+// DELETE HOOKS
+// ============================================================================
+
+export const useDeleteFaculty = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await facultyApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete faculty';
+      setError(errorMessage);
+      console.error('Delete faculty error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteProgram = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await programApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete program';
+      setError(errorMessage);
+      console.error('Delete program error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteClass = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await classApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete class';
+      setError(errorMessage);
+      console.error('Delete class error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteSection = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await sectionApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete section';
+      setError(errorMessage);
+      console.error('Delete section error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteSubject = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await subjectApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete subject';
+      setError(errorMessage);
+      console.error('Delete subject error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteOptionalSubject = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await optionalSubjectApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete optional subject';
+      setError(errorMessage);
+      console.error('Delete optional subject error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteSubjectAssignment = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await subjectAssignmentApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete subject assignment';
+      setError(errorMessage);
+      console.error('Delete subject assignment error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteClassroom = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await classroomApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete classroom';
+      setError(errorMessage);
+      console.error('Delete classroom error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteClassTime = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await classTimeApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete class time';
+      setError(errorMessage);
+      console.error('Delete class time error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteTimetable = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await timetableApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete timetable';
+      setError(errorMessage);
+      console.error('Delete timetable error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteLabSchedule = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await labScheduleApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete lab schedule';
+      setError(errorMessage);
+      console.error('Delete lab schedule error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+export const useDeleteClassTeacher = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await classTeacherApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete class teacher';
+      setError(errorMessage);
+      console.error('Delete class teacher error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
 };

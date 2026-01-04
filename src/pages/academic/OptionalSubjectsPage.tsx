@@ -3,10 +3,13 @@
  */
 
 import { useState } from 'react';
-import { useOptionalSubjects } from '../../hooks/useAcademic';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useOptionalSubjects, useDeleteOptionalSubject } from '../../hooks/useAcademic';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { OptionalSubjectForm } from './components/OptionalSubjectForm';
 import type { OptionalSubject, OptionalSubjectFilters } from '../../types/academic.types';
 
@@ -17,6 +20,9 @@ export default function OptionalSubjectsPage() {
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [selectedOptionalSubject, setSelectedOptionalSubject] = useState<OptionalSubject | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const deleteMutation = useDeleteOptionalSubject();
 
     const columns: Column<OptionalSubject>[] = [
         { key: 'name', label: 'Group Name', sortable: true, className: 'font-semibold' },
@@ -43,6 +49,20 @@ export default function OptionalSubjectsPage() {
         setIsSidebarOpen(true);
     };
 
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteMutation.mutate(deleteId);
+            toast.success('Optional subject group deleted successfully');
+            setDeleteId(null);
+            setIsSidebarOpen(false);
+            refetch();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete optional subject group');
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 animate-fade-in">
             <DataTable
@@ -67,8 +87,28 @@ export default function OptionalSubjectsPage() {
                 title={sidebarMode === 'create' ? 'Create Optional Subject Group' : 'Edit Optional Subject Group'}
                 mode={sidebarMode}
             >
+                {sidebarMode === 'edit' && selectedOptionalSubject && (
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => setDeleteId(selectedOptionalSubject.id)}
+                            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </div>
+                )}
                 <OptionalSubjectForm mode={sidebarMode} optionalSubjectId={selectedOptionalSubject?.id} onSuccess={() => { setIsSidebarOpen(false); refetch(); }} onCancel={() => setIsSidebarOpen(false)} />
             </DetailSidebar>
+
+            <ConfirmDialog
+                open={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Optional Subject Group"
+                description="Are you sure you want to delete this optional subject group? This action cannot be undone."
+                variant="destructive"
+            />
         </div>
     );
 }

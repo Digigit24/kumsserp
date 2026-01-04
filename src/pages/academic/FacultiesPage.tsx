@@ -4,10 +4,13 @@
  */
 
 import { useState } from 'react';
-import { useFaculties } from '../../hooks/useAcademic';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useFaculties, useDeleteFaculty } from '../../hooks/useAcademic';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { FacultyForm } from './components/FacultyForm';
 import type { FacultyListItem, FacultyFilters } from '../../types/academic.types';
 
@@ -18,6 +21,9 @@ export default function FacultiesPage() {
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [selectedFaculty, setSelectedFaculty] = useState<FacultyListItem | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const deleteMutation = useDeleteFaculty();
 
     const columns: Column<FacultyListItem>[] = [
         {
@@ -75,6 +81,20 @@ export default function FacultiesPage() {
         refetch();
     };
 
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteMutation.mutate(deleteId);
+            toast.success('Faculty deleted successfully');
+            setDeleteId(null);
+            setIsSidebarOpen(false);
+            refetch();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete faculty');
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 animate-fade-in">
             <DataTable
@@ -105,6 +125,17 @@ export default function FacultiesPage() {
                 }
                 mode={sidebarMode}
             >
+                {sidebarMode === 'edit' && selectedFaculty && (
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => setDeleteId(selectedFaculty.id)}
+                            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </div>
+                )}
                 <FacultyForm
                     mode={sidebarMode}
                     facultyId={selectedFaculty?.id}
@@ -112,6 +143,15 @@ export default function FacultiesPage() {
                     onCancel={() => setIsSidebarOpen(false)}
                 />
             </DetailSidebar>
+
+            <ConfirmDialog
+                open={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Faculty"
+                description="Are you sure you want to delete this faculty? This action cannot be undone."
+                variant="destructive"
+            />
         </div>
     );
 }
