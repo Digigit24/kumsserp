@@ -72,6 +72,14 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     }
   }, [permissions?.canChooseCollege, userContext?.college_id, selectedCollege, setSelectedCollege]);
 
+  // Auto-select class if teacher has only one class
+  React.useEffect(() => {
+    if (permissions?.isTeacher && !selectedClass && classes.length === 1 && !isLoadingClasses) {
+      console.log('[ClassSelector] Auto-selecting single class for teacher:', classes[0].id);
+      setSelectedClass(classes[0].id);
+    }
+  }, [permissions?.isTeacher, selectedClass, classes, isLoadingClasses, setSelectedClass]);
+
   // Fetch classes (hook updates context automatically)
   useContextClasses();
 
