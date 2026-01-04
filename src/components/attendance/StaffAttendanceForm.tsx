@@ -56,7 +56,7 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<StaffAttendanceCreateInput>({
     defaultValues: {
-      teacher: teacherId || 0,
+      teacher: teacherId || undefined,
       date: format(new Date(), 'yyyy-MM-dd'),
       status: 'present',
     },
@@ -81,6 +81,12 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
   }, [attendance, setValue]);
 
   const onSubmit = async (data: StaffAttendanceCreateInput) => {
+    // Validate teacher is selected
+    if (!data.teacher || data.teacher === 0) {
+      console.error('Teacher is required');
+      return;
+    }
+
     try {
       if (isEdit && attendance) {
         await updateMutation.mutateAsync({
@@ -113,10 +119,11 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="teacher">Teacher *</Label>
             <Select
-              value={teacherValue ? String(teacherValue) : ''}
+              value={teacherValue && teacherValue !== 0 ? String(teacherValue) : ''}
               onValueChange={(value) => setValue('teacher', Number(value))}
+              required
             >
-              <SelectTrigger>
+              <SelectTrigger className={!teacherValue || teacherValue === 0 ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Select teacher" />
               </SelectTrigger>
               <SelectContent>
@@ -127,7 +134,7 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            {errors.teacher && <p className="text-sm text-red-500">Teacher is required</p>}
+            {(!teacherValue || teacherValue === 0) && <p className="text-sm text-red-500">Teacher is required</p>}
           </div>
 
           {/* Date */}
