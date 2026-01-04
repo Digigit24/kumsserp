@@ -6,18 +6,22 @@
 import { useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
-import { useStudentIDCards } from '../../hooks/useStudents';
+import { useStudentIDCards, useDeleteStudentIDCard } from '../../hooks/useStudents';
 import type { StudentIDCardFilters, StudentIDCardListItem } from '../../types/students.types';
 import { StudentIDCardForm } from './components/StudentIDCardForm';
 
 export const StudentIDCardsPage = () => {
   const [filters, setFilters] = useState<StudentIDCardFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentIDCards(filters);
+  const deleteMutation = useDeleteStudentIDCard();
 
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedIDCard, setSelectedIDCard] = useState<StudentIDCardListItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [idCardToDelete, setIdCardToDelete] = useState<StudentIDCardListItem | null>(null);
 
   const columns: Column<StudentIDCardListItem>[] = [
     {
@@ -82,6 +86,20 @@ export const StudentIDCardsPage = () => {
     setIsSidebarOpen(true);
   };
 
+  const handleDelete = (idCard: StudentIDCardListItem) => {
+    setIdCardToDelete(idCard);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (idCardToDelete) {
+      await deleteMutation.mutateAsync(idCardToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setIdCardToDelete(null);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <DataTable
@@ -93,6 +111,7 @@ export const StudentIDCardsPage = () => {
         error={error}
         onRefresh={refetch}
         onAdd={handleAdd}
+        onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -122,6 +141,17 @@ export const StudentIDCardsPage = () => {
           onCancel={() => setIsSidebarOpen(false)}
         />
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Student ID Card"
+        description={`Are you sure you want to delete the ID card "${idCardToDelete?.card_number}" for "${idCardToDelete?.student_name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

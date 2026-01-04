@@ -6,18 +6,22 @@
 import { useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
-import { useStudentPromotions } from '../../hooks/useStudents';
+import { useStudentPromotions, useDeleteStudentPromotion } from '../../hooks/useStudents';
 import type { StudentPromotionFilters, StudentPromotionListItem } from '../../types/students.types';
 import { StudentPromotionForm } from './components/StudentPromotionForm';
 
 export const StudentPromotionsPage = () => {
   const [filters, setFilters] = useState<StudentPromotionFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentPromotions(filters);
+  const deleteMutation = useDeleteStudentPromotion();
 
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedPromotion, setSelectedPromotion] = useState<StudentPromotionListItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [promotionToDelete, setPromotionToDelete] = useState<StudentPromotionListItem | null>(null);
 
   const columns: Column<StudentPromotionListItem>[] = [
     {
@@ -62,6 +66,20 @@ export const StudentPromotionsPage = () => {
     setIsSidebarOpen(true);
   };
 
+  const handleDelete = (promotion: StudentPromotionListItem) => {
+    setPromotionToDelete(promotion);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (promotionToDelete) {
+      await deleteMutation.mutateAsync(promotionToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setPromotionToDelete(null);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <DataTable
@@ -73,6 +91,7 @@ export const StudentPromotionsPage = () => {
         error={error}
         onRefresh={refetch}
         onAdd={handleAdd}
+        onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -102,6 +121,17 @@ export const StudentPromotionsPage = () => {
           onCancel={() => setIsSidebarOpen(false)}
         />
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Student Promotion"
+        description={`Are you sure you want to delete the promotion for "${promotionToDelete?.student_name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

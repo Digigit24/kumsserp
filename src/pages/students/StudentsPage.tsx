@@ -5,9 +5,10 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudents } from '../../hooks/useStudents';
+import { useStudents, useDeleteStudent } from '../../hooks/useStudents';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { StudentForm } from './components/StudentForm';
@@ -27,9 +28,12 @@ export const StudentsPage = () => {
         class_obj: selectedClass || undefined,
         section: selectedSection || undefined,
     });
+    const deleteMutation = useDeleteStudent();
 
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // Update filters when context changes
     useEffect(() => {
@@ -168,6 +172,20 @@ export const StudentsPage = () => {
         setIsSidebarOpen(true);
     };
 
+    const handleDelete = (student: StudentListItem) => {
+        setSelectedStudent(student);
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (selectedStudent) {
+            await deleteMutation.mutateAsync(selectedStudent.id);
+            refetch();
+            setDeleteDialogOpen(false);
+            setSelectedStudent(null);
+        }
+    };
+
     const handleCloseSidebar = () => {
         setIsSidebarOpen(false);
     };
@@ -191,6 +209,7 @@ export const StudentsPage = () => {
                 error={error || null}
                 onRefresh={refetch}
                 onAdd={permissions?.canCreateStudents ? handleAdd : undefined}
+                onDelete={permissions?.canDeleteStudents ? handleDelete : undefined}
                 onRowClick={handleRowClick}
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -215,6 +234,17 @@ export const StudentsPage = () => {
                     />
                 </DetailSidebar>
             )}
+
+            {/* Delete Confirmation */}
+            <ConfirmDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                title="Delete Student"
+                description={`Are you sure you want to delete ${selectedStudent?.full_name}? This action cannot be undone.`}
+                confirmLabel="Delete"
+                onConfirm={confirmDelete}
+                loading={deleteMutation.isPending}
+            />
         </div>
     );
 };

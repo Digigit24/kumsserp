@@ -6,18 +6,22 @@
 import { useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
-import { useCertificates } from '../../hooks/useStudents';
+import { useCertificates, useDeleteCertificate } from '../../hooks/useStudents';
 import type { CertificateFilters, CertificateListItem } from '../../types/students.types';
 import { CertificateForm } from './components/CertificateForm';
 
 export const CertificatesPage = () => {
   const [filters, setFilters] = useState<CertificateFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useCertificates(filters);
+  const deleteMutation = useDeleteCertificate();
 
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateListItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [certificateToDelete, setCertificateToDelete] = useState<CertificateListItem | null>(null);
 
   const columns: Column<CertificateListItem>[] = [
     {
@@ -71,6 +75,20 @@ export const CertificatesPage = () => {
     setIsSidebarOpen(true);
   };
 
+  const handleDelete = (certificate: CertificateListItem) => {
+    setCertificateToDelete(certificate);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (certificateToDelete) {
+      await deleteMutation.mutateAsync(certificateToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setCertificateToDelete(null);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <DataTable
@@ -82,6 +100,7 @@ export const CertificatesPage = () => {
         error={error}
         onRefresh={refetch}
         onAdd={handleAdd}
+        onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -111,6 +130,17 @@ export const CertificatesPage = () => {
           onCancel={() => setIsSidebarOpen(false)}
         />
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Certificate"
+        description={`Are you sure you want to delete the certificate "${certificateToDelete?.certificate_number}" for "${certificateToDelete?.student_name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

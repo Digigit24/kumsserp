@@ -1,54 +1,102 @@
 /**
  * Previous Academic Records Page
- * Displays all previous academic records from API
+ * Manages student previous academic records with CRUD operations
  */
 
 import { useState } from 'react';
-import { usePreviousAcademicRecords } from '../../hooks/useStudents';
-import type { PreviousAcademicRecordFilters } from '../../types/students.types';
+import { Column, DataTable } from '../../components/common/DataTable';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Badge } from '../../components/ui/badge';
+import { usePreviousAcademicRecords, useDeletePreviousAcademicRecord } from '../../hooks/useStudents';
+import type { PreviousAcademicRecordFilters, PreviousAcademicRecordListItem } from '../../types/students.types';
 
 export const PreviousAcademicRecordsPage = () => {
   const [filters, setFilters] = useState<PreviousAcademicRecordFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = usePreviousAcademicRecords(filters);
+  const deleteMutation = useDeletePreviousAcademicRecord();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<PreviousAcademicRecordListItem | null>(null);
+
+  const columns: Column<PreviousAcademicRecordListItem>[] = [
+    {
+      key: 'student_name',
+      label: 'Student Name',
+      sortable: true,
+      className: 'font-semibold',
+    },
+    {
+      key: 'level',
+      label: 'Level',
+      sortable: true,
+      render: (record) => (
+        <Badge variant="outline" className="capitalize">
+          {record.level}
+        </Badge>
+      ),
+    },
+    {
+      key: 'institution_name',
+      label: 'Institution',
+      sortable: true,
+    },
+    {
+      key: 'year_of_passing',
+      label: 'Year of Passing',
+      sortable: true,
+    },
+    {
+      key: 'percentage',
+      label: 'Percentage',
+      render: (record) => record.percentage || '-',
+    },
+    {
+      key: 'grade',
+      label: 'Grade',
+      render: (record) => record.grade || '-',
+    },
+  ];
+
+  const handleDelete = (record: PreviousAcademicRecordListItem) => {
+    setRecordToDelete(record);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (recordToDelete) {
+      await deleteMutation.mutateAsync(recordToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setRecordToDelete(null);
+    }
+  };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Previous Academic Records</h1>
-        <p className="text-gray-600">List of all student previous academic records (10th, 12th, UG, PG)</p>
-      </div>
+    <div className="p-4 md:p-6 animate-fade-in">
+      <DataTable
+        title="Previous Academic Records"
+        description="Manage student previous academic records (10th, 12th, UG, PG). Click on any row to view details."
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={refetch}
+        onDelete={handleDelete}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchPlaceholder="Search academic records..."
+      />
 
-      <div className="mb-4 flex gap-4">
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Refresh
-        </button>
-      </div>
-
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-lg">Loading previous academic records...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-          <p className="text-red-800">Error: {error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && data && (
-        <div className="bg-white border border-gray-200 rounded">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Full API Response (JSON)</h2>
-          </div>
-          <pre className="p-4 overflow-auto max-h-[600px] text-xs">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Previous Academic Record"
+        description={`Are you sure you want to delete the ${recordToDelete?.level} record for "${recordToDelete?.student_name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

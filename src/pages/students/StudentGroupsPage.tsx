@@ -4,9 +4,10 @@
  */
 
 import { useState } from 'react';
-import { useStudentGroups, useStudentGroup } from '../../hooks/useStudents';
+import { useStudentGroups, useStudentGroup, useDeleteStudentGroup } from '../../hooks/useStudents';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
 import { StudentGroupForm } from './components/StudentGroupForm';
 import type { StudentGroupListItem, StudentGroupFilters, StudentGroup } from '../../types/students.types';
@@ -14,10 +15,13 @@ import type { StudentGroupListItem, StudentGroupFilters, StudentGroup } from '..
 export const StudentGroupsPage = () => {
   const [filters, setFilters] = useState<StudentGroupFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentGroups(filters);
+  const deleteMutation = useDeleteStudentGroup();
 
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<StudentGroupListItem | null>(null);
 
   const { data: selectedGroup } = useStudentGroup(selectedGroupId);
 
@@ -79,6 +83,20 @@ export const StudentGroupsPage = () => {
     setSidebarMode('edit');
   };
 
+  const handleDelete = (group: StudentGroupListItem) => {
+    setGroupToDelete(group);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (groupToDelete) {
+      await deleteMutation.mutateAsync(groupToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setGroupToDelete(null);
+    }
+  };
+
   const handleCloseSidebar = () => {
     setIsSidebarOpen(false);
     setSelectedGroupId(null);
@@ -100,6 +118,7 @@ export const StudentGroupsPage = () => {
         error={error}
         onRefresh={refetch}
         onAdd={handleAdd}
+        onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -221,6 +240,17 @@ export const StudentGroupsPage = () => {
           </div>
         )}
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Student Group"
+        description={`Are you sure you want to delete the group "${groupToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };

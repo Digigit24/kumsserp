@@ -4,9 +4,10 @@
  */
 
 import { useState } from 'react';
-import { useStudentCategories, useStudentCategory } from '../../hooks/useStudents';
+import { useStudentCategories, useStudentCategory, useDeleteStudentCategory } from '../../hooks/useStudents';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
 import { StudentCategoryForm } from './components/StudentCategoryForm';
 import type { StudentCategoryListItem, StudentCategoryFilters, StudentCategory } from '../../types/students.types';
@@ -14,10 +15,13 @@ import type { StudentCategoryListItem, StudentCategoryFilters, StudentCategory }
 export const StudentCategoriesPage = () => {
   const [filters, setFilters] = useState<StudentCategoryFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentCategories(filters);
+  const deleteMutation = useDeleteStudentCategory();
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<StudentCategoryListItem | null>(null);
 
   const { data: selectedCategory } = useStudentCategory(selectedCategoryId);
 
@@ -90,6 +94,20 @@ export const StudentCategoriesPage = () => {
     setSidebarMode('edit');
   };
 
+  const handleDelete = (category: StudentCategoryListItem) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (categoryToDelete) {
+      await deleteMutation.mutateAsync(categoryToDelete.id);
+      refetch();
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+    }
+  };
+
   const handleCloseSidebar = () => {
     setIsSidebarOpen(false);
     setSelectedCategoryId(null);
@@ -111,6 +129,7 @@ export const StudentCategoriesPage = () => {
         error={error}
         onRefresh={refetch}
         onAdd={handleAdd}
+        onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
         onFiltersChange={setFilters}
@@ -240,6 +259,17 @@ export const StudentCategoriesPage = () => {
           </div>
         )}
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Student Category"
+        description={`Are you sure you want to delete the category "${categoryToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 };
