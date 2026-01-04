@@ -37,10 +37,18 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   className = '',
   onValueChange,
 }) => {
-  const { selectedCollege } = useCollegeContext();
+  const { selectedCollege, setSelectedCollege } = useCollegeContext();
   const { selectedClass, setSelectedClass, classes, isLoadingClasses } =
     useClassContext();
-  const { permissions } = usePermissions();
+  const { permissions, userContext } = usePermissions();
+
+  // Auto-select college for users who can't choose college (teachers)
+  React.useEffect(() => {
+    if (!permissions?.canChooseCollege && userContext?.college_id && !selectedCollege) {
+      console.log('[ClassSelector] Auto-selecting college for teacher:', userContext.college_id);
+      setSelectedCollege(userContext.college_id);
+    }
+  }, [permissions?.canChooseCollege, userContext?.college_id, selectedCollege, setSelectedCollege]);
 
   // Fetch classes (hook updates context automatically)
   useContextClasses();
