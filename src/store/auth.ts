@@ -45,6 +45,8 @@ export const useAuthStore = create<AuthState>()(
         },
         reset: () => {
           // Clear all auth-related data from localStorage
+          localStorage.removeItem('access');
+          localStorage.removeItem('refresh');
           localStorage.removeItem('kumss_auth_token');
           localStorage.removeItem('kumss_user_id');
           localStorage.removeItem('kumss_college_id');
