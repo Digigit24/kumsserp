@@ -151,9 +151,9 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
       return;
     }
 
-    if (!selectedClass || !selectedSection) {
-      console.error('BLOCKED: Class or section not selected');
-      toast.error('Please select class and section');
+    if (!selectedClass) {
+      console.error('BLOCKED: Class not selected');
+      toast.error('Please select class');
       return;
     }
 
@@ -331,7 +331,7 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {selectedClass && selectedSection && (
+      {selectedClass && (
         <>
           {/* Statistics */}
           <div className="grid gap-4 md:grid-cols-6">
