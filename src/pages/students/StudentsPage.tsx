@@ -22,6 +22,15 @@ export const StudentsPage = () => {
     const { selectedClass, selectedSection } = useHierarchicalContext();
     const { permissions } = usePermissions();
 
+    // Debug: Log permissions for students
+    console.log('🔷 [StudentsPage] Permissions:', {
+        canCreateStudents: permissions?.canCreateStudents,
+        canViewStudents: permissions?.canViewStudents,
+        canEditStudents: permissions?.canEditStudents,
+        canDeleteStudents: permissions?.canDeleteStudents,
+        allPermissions: permissions
+    });
+
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
     const { data, isLoading, error, refetch } = useStudents({
         ...filters,
