@@ -81,9 +81,13 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
   }, [attendance, setValue]);
 
   const onSubmit = async (data: StaffAttendanceCreateInput) => {
+    // Debug: Log the submitted data
+    console.log('Submitting attendance data:', data);
+
     // Validate teacher is selected
     if (!data.teacher || data.teacher === 0) {
-      console.error('Teacher is required');
+      alert('Please select a teacher before submitting');
+      console.error('Teacher is required. Current value:', data.teacher);
       return;
     }
 
@@ -101,6 +105,7 @@ export const StaffAttendanceForm: React.FC<StaffAttendanceFormProps> = ({
       reset();
     } catch (error) {
       console.error('Failed to save staff attendance:', error);
+      alert('Failed to save staff attendance. Check console for details.');
     }
   };
 
