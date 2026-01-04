@@ -137,20 +137,33 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
   };
 
   const handleSaveAttendance = async () => {
+    console.log('=== SAVE ATTENDANCE DEBUG ===');
+    console.log('permissions:', permissions);
+    console.log('canMarkAttendance:', permissions?.canMarkAttendance);
+    console.log('selectedClass:', selectedClass);
+    console.log('selectedSection:', selectedSection);
+    console.log('attendanceRecords:', attendanceRecords);
+    console.log('attendanceRecords.length:', attendanceRecords.length);
+
     if (!permissions?.canMarkAttendance) {
+      console.error('BLOCKED: No permission to mark attendance');
       toast.error('You do not have permission to mark attendance');
       return;
     }
 
     if (!selectedClass || !selectedSection) {
+      console.error('BLOCKED: Class or section not selected');
       toast.error('Please select class and section');
       return;
     }
 
     if (attendanceRecords.length === 0) {
+      console.error('BLOCKED: No attendance records');
       toast.error('No students to mark attendance for');
       return;
     }
+
+    console.log('✅ All validations passed, submitting...');
 
     try {
       // Group students by status for optimized API calls
