@@ -209,7 +209,7 @@ export const StudentsPage = () => {
                 error={error || null}
                 onRefresh={refetch}
                 onAdd={permissions?.canCreateStudents ? handleAdd : undefined}
-                onDelete={permissions?.canDeleteStudents ? handleDelete : undefined}
+                onDelete={handleDelete}
                 onRowClick={handleRowClick}
                 filters={filters}
                 onFiltersChange={setFilters}
