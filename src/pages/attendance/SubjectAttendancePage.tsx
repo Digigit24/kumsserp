@@ -70,7 +70,7 @@ const SubjectAttendancePage = () => {
         isLoading={isLoading}
         error={error?.message || null}
         onRefresh={() => refetch()}
-        onAdd={() => navigate('/attendance/mark')}
+        onAdd={() => navigate('/attendance/teacher-marking')}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search subjects..."
