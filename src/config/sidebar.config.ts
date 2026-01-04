@@ -892,12 +892,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     icon: MessageSquare,
     roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
     items: [
-      {
-        name: "Communication Center",
-        href: "/communication",
-        icon: MessageSquare,
-        roles: ["super_admin", "college_admin"], // Admin communication center
-      },
+      // {
+      //   name: "Communication Center",
+      //   href: "/communication",
+      //   icon: MessageSquare,
+      //   roles: ["super_admin", "college_admin"], // Admin communication center
+      // },
       {
         name: "Teacher Messages",
         href: "/communication/teacher",
