@@ -64,10 +64,32 @@ const StudentAttendancePage = () => {
     section: selectedSection || undefined,
   });
 
+  // Fetch existing attendance for the selected date
+  const { data: existingAttendanceData, refetch: refetchAttendance } = useStudentAttendance({
+    class_obj: selectedClass || undefined,
+    section: selectedSection || undefined,
+    date: selectedDate,
+    page_size: 200,
+  });
+
   // Clear attendance map when class or section changes
   useEffect(() => {
     setAttendanceMap({});
   }, [selectedClass, selectedSection]);
+
+  // Initialize attendance map with existing attendance records
+  useEffect(() => {
+    if (existingAttendanceData?.results) {
+      const existingMap: Record<number, AttendanceStatus> = {};
+      existingAttendanceData.results.forEach((record: any) => {
+        if (record.student && record.status) {
+          existingMap[record.student] = record.status as AttendanceStatus;
+        }
+      });
+      setAttendanceMap(existingMap);
+      console.log('Loaded existing attendance:', existingMap);
+    }
+  }, [existingAttendanceData]);
 
   // Attendance mutations
   const bulkMarkMutation = useBulkMarkAttendance();
@@ -152,8 +174,10 @@ const StudentAttendancePage = () => {
       await Promise.all(promises);
 
       toast.success(`Attendance submitted successfully for ${markedStudents.length} student(s)`);
-      setAttendanceMap({});
-      refetch(); // Refresh the student list
+
+      // Refresh both students and existing attendance
+      await refetchAttendance();
+      refetch();
     } catch (err: any) {
       toast.error(err?.message || 'Failed to submit attendance');
       console.error(err);
