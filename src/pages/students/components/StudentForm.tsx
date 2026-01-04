@@ -128,6 +128,26 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
     useEffect(() => {
         if ((mode === 'edit' || mode === 'view') && studentId) {
             fetchStudent();
+        } else if (mode === 'create') {
+            // Auto-populate college from logged-in user
+            const storedUser = localStorage.getItem('kumss_user');
+            let collegeId = 1;
+
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    if (user?.college) {
+                        collegeId = user.college;
+                    } else if (user?.user_roles && user.user_roles.length > 0) {
+                        const primaryRole = user.user_roles.find((r: any) => r.is_primary) || user.user_roles[0];
+                        collegeId = primaryRole.college_id || 1;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse user data:', e);
+                }
+            }
+
+            setFormData(prev => ({ ...prev, college: collegeId }));
         }
     }, [mode, studentId]);
 
