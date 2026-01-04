@@ -80,8 +80,8 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
   });
   const { data: studentsData, isLoading: studentsLoading } = useStudents({
     page_size: 200,
-    class_obj: selectedClass || undefined,
-    section: selectedSection || undefined,
+    current_class: selectedClass || undefined,
+    current_section: selectedSection || undefined,
     is_active: true
   });
 
