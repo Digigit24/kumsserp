@@ -3,12 +3,14 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSubjectAttendance } from '../../hooks/useAttendance';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import type { SubjectAttendanceFilters } from '../../types/attendance.types';
 
 const SubjectAttendancePage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<SubjectAttendanceFilters>({
     page: 1,
     page_size: 10,
@@ -68,7 +70,7 @@ const SubjectAttendancePage = () => {
         isLoading={isLoading}
         error={error?.message || null}
         onRefresh={() => refetch()}
-        onAdd={() => {}}
+        onAdd={() => navigate('/attendance/mark')}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search subjects..."
