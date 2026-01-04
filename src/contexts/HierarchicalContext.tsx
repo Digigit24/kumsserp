@@ -138,6 +138,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({
   const [isLoadingClasses, setIsLoadingClasses] = useState(false);
 
   const setSelectedClass = (classId: number | null) => {
+    console.log('🟢 [ClassContext] setSelectedClass called:', { classId, currentValue: selectedClass });
     setSelectedClassState(classId);
 
     // Update URL if sync is enabled
@@ -152,6 +153,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({
       newParams.delete('section');
       setSearchParams(newParams);
     }
+    console.log('🟢 [ClassContext] setSelectedClass completed:', classId);
   };
 
   return (

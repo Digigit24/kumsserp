@@ -19,7 +19,7 @@ import {
 } from '@/services/permissions.service';
 import { useCollegeContext, useClassContext, useSectionContext } from '@/contexts/HierarchicalContext';
 import { usePermissions } from '@/contexts/PermissionsContext';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 // ============================================================================
 // COLLEGES HOOK
@@ -55,6 +55,7 @@ export const useContextClasses = () => {
   const { selectedCollege } = useCollegeContext();
   const { setClasses, setIsLoadingClasses, setSelectedClass } = useClassContext();
   const { permissions } = usePermissions();
+  const previousCollegeRef = useRef<number | null>(null);
 
   const query = useQuery({
     queryKey: ['context', 'classes', selectedCollege],
@@ -71,9 +72,13 @@ export const useContextClasses = () => {
     setIsLoadingClasses(query.isLoading);
   }, [query.data, query.isLoading, setClasses, setIsLoadingClasses]);
 
-  // Reset class selection when college changes
+  // Reset class selection ONLY when college actually changes value (not on first render)
   useEffect(() => {
-    setSelectedClass(null);
+    if (previousCollegeRef.current !== null && previousCollegeRef.current !== selectedCollege) {
+      console.log('🔴 [useContextClasses] College changed from', previousCollegeRef.current, 'to', selectedCollege, '- resetting class');
+      setSelectedClass(null);
+    }
+    previousCollegeRef.current = selectedCollege;
   }, [selectedCollege, setSelectedClass]);
 
   return query;
