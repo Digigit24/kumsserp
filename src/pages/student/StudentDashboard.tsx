@@ -81,83 +81,115 @@ export const StudentDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6 min-h-screen p-6"
+      style={{
+        backgroundColor: '#F0F0F0' // 60% - Seashell (main background)
+      }}
+    >
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Student Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-3xl font-bold" style={{ color: '#192D3C' }}>Student Dashboard</h1>
+        <p className="mt-2" style={{ color: '#96AAAA' }}>
           Welcome back! Here's your overview for today
         </p>
       </div>
 
       {/* Quick Actions - Prominent at Top */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-900">
+      <Card
+        className="border-none shadow-lg"
+        style={{ backgroundColor: '#96AAAA' }} // 30% - Cascade (secondary)
+      >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-blue-600" />
+          <CardTitle className="flex items-center gap-2" style={{ color: '#192D3C' }}>
+            <BarChart3 className="h-5 w-5" style={{ color: '#192D3C' }} />
             Quick Actions
           </CardTitle>
-          <CardDescription>Frequently used actions</CardDescription>
+          <CardDescription style={{ color: '#F0F0F0' }}>Frequently used actions</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/attendance/my-attendance')}
             >
               <div className="flex flex-col items-center gap-2">
-                <ClipboardList className="h-6 w-6 text-blue-600" />
+                <ClipboardList className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">My Attendance</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-green-50 dark:hover:bg-green-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/student/examinations/results')}
             >
               <div className="flex flex-col items-center gap-2">
-                <Trophy className="h-6 w-6 text-green-600" />
+                <Trophy className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">My Results</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/student/fees')}
             >
               <div className="flex flex-col items-center gap-2">
-                <CreditCard className="h-6 w-6 text-purple-600" />
+                <CreditCard className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">Pay Fees</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/student/academics/assignments')}
             >
               <div className="flex flex-col items-center gap-2">
-                <FileCheck className="h-6 w-6 text-orange-600" />
+                <FileCheck className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">Assignments</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-pink-50 dark:hover:bg-pink-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/student/certificates')}
             >
               <div className="flex flex-col items-center gap-2">
-                <FileText className="h-6 w-6 text-pink-600" />
+                <FileText className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">Certificates</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="h-24 bg-white dark:bg-gray-950 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition-all"
+              className="h-24 border-none shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: '#F0F0F0',
+                color: '#192D3C'
+              }}
               onClick={() => navigate('/student/profile')}
             >
               <div className="flex flex-col items-center gap-2">
-                <UserCircle className="h-6 w-6 text-cyan-600" />
+                <UserCircle className="h-6 w-6" style={{ color: '#192D3C' }} />
                 <span className="text-xs font-medium">My Profile</span>
               </div>
             </Button>
@@ -168,33 +200,47 @@ export const StudentDashboard: React.FC = () => {
       {/* Priority Cards - Top Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Today's Classes Card */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/student/academics/subjects')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer border-none"
+          style={{ backgroundColor: '#96AAAA' }}
+          onClick={() => navigate('/student/academics/subjects')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium" style={{ color: '#F0F0F0' }}>
               Today's Classes
             </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4" style={{ color: '#F0F0F0' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todaysClasses.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-2xl font-bold" style={{ color: '#192D3C' }}>{todaysClasses.length}</div>
+            <p className="text-xs mt-1" style={{ color: '#F0F0F0' }}>
               {todaysClasses.filter(c => c.status === 'upcoming').length} upcoming
             </p>
           </CardContent>
         </Card>
 
         {/* Attendance Status Card */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/attendance/my-attendance')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer border-none"
+          style={{ backgroundColor: '#96AAAA' }}
+          onClick={() => navigate('/attendance/my-attendance')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium" style={{ color: '#F0F0F0' }}>
               Attendance
             </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle2 className="h-4 w-4" style={{ color: '#F0F0F0' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{attendanceData.percentage}%</div>
+            <div className="text-2xl font-bold" style={{ color: '#192D3C' }}>{attendanceData.percentage}%</div>
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant={attendanceData.percentage >= 75 ? "success" : "destructive"}>
+              <Badge
+                variant={attendanceData.percentage >= 75 ? "default" : "destructive"}
+                style={{
+                  backgroundColor: attendanceData.percentage >= 75 ? '#192D3C' : '#dc2626',
+                  color: '#F0F0F0'
+                }}
+              >
                 {attendanceData.present}/{attendanceData.total}
               </Badge>
             </div>
@@ -202,32 +248,40 @@ export const StudentDashboard: React.FC = () => {
         </Card>
 
         {/* Pending Fees Card */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/student/fees')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer border-none"
+          style={{ backgroundColor: '#96AAAA' }}
+          onClick={() => navigate('/student/fees')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium" style={{ color: '#F0F0F0' }}>
               Pending Fees
             </CardTitle>
-            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertCircle className="h-4 w-4 text-destructive" style={{ color: '#dc2626' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{pendingFees.amount}</div>
-            <p className="text-xs text-destructive mt-1">
+            <div className="text-2xl font-bold" style={{ color: '#192D3C' }}>₹{pendingFees.amount}</div>
+            <p className="text-xs mt-1" style={{ color: '#dc2626' }}>
               Due: {new Date(pendingFees.dueDate).toLocaleDateString()}
             </p>
           </CardContent>
         </Card>
 
         {/* Pending Assignments Card */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/student/academics/assignments')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer border-none"
+          style={{ backgroundColor: '#96AAAA' }}
+          onClick={() => navigate('/student/academics/assignments')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium" style={{ color: '#F0F0F0' }}>
               Pending Assignments
             </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4" style={{ color: '#F0F0F0' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingAssignments.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-2xl font-bold" style={{ color: '#192D3C' }}>{pendingAssignments.length}</div>
+            <p className="text-xs mt-1" style={{ color: '#F0F0F0' }}>
               {pendingAssignments.filter(a => {
                 const daysUntilDue = Math.ceil((new Date(a.due_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                 return daysUntilDue <= 3; // Due within 3 days
@@ -241,61 +295,74 @@ export const StudentDashboard: React.FC = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Mini Attendance Calendar - Full Width on Small, 2 cols on Large */}
         <div className="lg:col-span-2">
-          <AttendanceCalendar
-            showStats={true}
-            showLegend={true}
-            compact={false}
-          />
+          <div style={{ backgroundColor: '#96AAAA', borderRadius: '8px', padding: '1rem' }}>
+            <AttendanceCalendar
+              showStats={true}
+              showLegend={true}
+              compact={false}
+            />
+          </div>
         </div>
 
         {/* Test Marks Widget */}
-        <Card>
+        <Card className="border-none" style={{ backgroundColor: '#96AAAA' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2" style={{ color: '#F0F0F0' }}>
+              <GraduationCap className="h-5 w-5" style={{ color: '#F0F0F0' }} />
               Recent Test Marks
             </CardTitle>
-            <CardDescription>Your latest test scores</CardDescription>
+            <CardDescription style={{ color: '#F0F0F0' }}>Your latest test scores</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentTestMarks.map((test) => (
-                <div key={test.id} className="p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                <div key={test.id} className="p-3 rounded-lg border-none shadow-sm transition-colors" style={{ backgroundColor: '#F0F0F0' }}>
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{test.subject}</p>
-                      <p className="text-xs text-muted-foreground">{test.test}</p>
+                      <p className="font-medium text-sm" style={{ color: '#192D3C' }}>{test.subject}</p>
+                      <p className="text-xs" style={{ color: '#96AAAA' }}>{test.test}</p>
                     </div>
-                    <Badge variant={getGradeColor(test.grade)}>
+                    <Badge
+                      variant={getGradeColor(test.grade)}
+                      style={{
+                        backgroundColor: '#192D3C',
+                        color: '#F0F0F0'
+                      }}
+                    >
                       {test.grade}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold">{test.marks}</span>
-                      <span className="text-sm text-muted-foreground">/ {test.totalMarks}</span>
+                      <span className="text-lg font-bold" style={{ color: '#192D3C' }}>{test.marks}</span>
+                      <span className="text-sm" style={{ color: '#96AAAA' }}>/ {test.totalMarks}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs" style={{ color: '#96AAAA' }}>
                       {new Date(test.date).toLocaleDateString()}
                     </span>
                   </div>
                   {/* Progress bar */}
-                  <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#96AAAA' }}>
                     <div
-                      className={`h-full transition-all ${
-                        test.marks / test.totalMarks >= 0.9 ? 'bg-green-500' :
-                        test.marks / test.totalMarks >= 0.75 ? 'bg-blue-500' :
-                        test.marks / test.totalMarks >= 0.6 ? 'bg-yellow-500' :
-                        'bg-red-500'
-                      }`}
-                      style={{ width: `${(test.marks / test.totalMarks) * 100}%` }}
+                      className="h-full transition-all"
+                      style={{
+                        backgroundColor: test.marks / test.totalMarks >= 0.9 ? '#22c55e' :
+                          test.marks / test.totalMarks >= 0.75 ? '#3b82f6' :
+                          test.marks / test.totalMarks >= 0.6 ? '#eab308' :
+                          '#ef4444',
+                        width: `${(test.marks / test.totalMarks) * 100}%`
+                      }}
                     />
                   </div>
                 </div>
               ))}
               <Button
                 variant="outline"
-                className="w-full mt-2"
+                className="w-full mt-2 border-none"
+                style={{
+                  backgroundColor: '#192D3C',
+                  color: '#F0F0F0'
+                }}
                 onClick={() => navigate('/student/examinations/results')}
               >
                 View All Results
@@ -305,32 +372,43 @@ export const StudentDashboard: React.FC = () => {
         </Card>
 
         {/* Today's Classes Detail */}
-        <Card>
+        <Card className="border-none" style={{ backgroundColor: '#96AAAA' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2" style={{ color: '#F0F0F0' }}>
+              <Calendar className="h-5 w-5" style={{ color: '#F0F0F0' }} />
               Today's Schedule
             </CardTitle>
-            <CardDescription>Your classes for today</CardDescription>
+            <CardDescription style={{ color: '#F0F0F0' }}>Your classes for today</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {todaysClasses.map((class_) => (
-                <div key={class_.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                <div key={class_.id} className="flex items-center justify-between p-3 rounded-lg border-none shadow-sm transition-colors" style={{ backgroundColor: '#F0F0F0' }}>
                   <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                      class_.status === 'completed' ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20'
-                    }`}>
+                    <div
+                      className="h-10 w-10 rounded-full flex items-center justify-center"
+                      style={{
+                        backgroundColor: class_.status === 'completed' ? '#22c55e' : '#192D3C',
+                        color: '#F0F0F0'
+                      }}
+                    >
                       <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{class_.subject}</p>
-                      <p className="text-xs text-muted-foreground">{class_.room}</p>
+                      <p className="font-medium text-sm" style={{ color: '#192D3C' }}>{class_.subject}</p>
+                      <p className="text-xs" style={{ color: '#96AAAA' }}>{class_.room}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-xs">{class_.time}</p>
-                    <Badge variant={class_.status === 'completed' ? 'success' : 'default'} className="mt-1">
+                    <p className="font-medium text-xs" style={{ color: '#192D3C' }}>{class_.time}</p>
+                    <Badge
+                      variant={class_.status === 'completed' ? 'default' : 'default'}
+                      className="mt-1"
+                      style={{
+                        backgroundColor: class_.status === 'completed' ? '#22c55e' : '#192D3C',
+                        color: '#F0F0F0'
+                      }}
+                    >
                       {class_.status === 'completed' ? 'Done' : 'Upcoming'}
                     </Badge>
                   </div>
@@ -341,25 +419,34 @@ export const StudentDashboard: React.FC = () => {
         </Card>
 
         {/* Exam Schedule */}
-        <Card>
+        <Card className="border-none" style={{ backgroundColor: '#96AAAA' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2" style={{ color: '#F0F0F0' }}>
+              <Trophy className="h-5 w-5" style={{ color: '#F0F0F0' }} />
               Upcoming Exams
             </CardTitle>
-            <CardDescription>Your exam schedule</CardDescription>
+            <CardDescription style={{ color: '#F0F0F0' }}>Your exam schedule</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {upcomingExams.map((exam) => (
-                <div key={exam.id} className="p-3 rounded-lg border">
+                <div key={exam.id} className="p-3 rounded-lg border-none shadow-sm" style={{ backgroundColor: '#F0F0F0' }}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{exam.subject}</p>
-                      <Badge variant="outline" className="mt-1">{exam.type}</Badge>
+                      <p className="font-medium" style={{ color: '#192D3C' }}>{exam.subject}</p>
+                      <Badge
+                        variant="outline"
+                        className="mt-1 border-none"
+                        style={{
+                          backgroundColor: '#192D3C',
+                          color: '#F0F0F0'
+                        }}
+                      >
+                        {exam.type}
+                      </Badge>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm" style={{ color: '#96AAAA' }}>
                         {new Date(exam.date).toLocaleDateString()}
                       </p>
                     </div>
@@ -368,7 +455,11 @@ export const StudentDashboard: React.FC = () => {
               ))}
               <Button
                 variant="outline"
-                className="w-full mt-2"
+                className="w-full mt-2 border-none"
+                style={{
+                  backgroundColor: '#192D3C',
+                  color: '#F0F0F0'
+                }}
                 onClick={() => navigate('/student/examinations/exam-form')}
               >
                 View All Exams
@@ -378,18 +469,18 @@ export const StudentDashboard: React.FC = () => {
         </Card>
 
         {/* Pending Assignments Detail */}
-        <Card>
+        <Card className="border-none" style={{ backgroundColor: '#96AAAA' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2" style={{ color: '#F0F0F0' }}>
+              <FileText className="h-5 w-5" style={{ color: '#F0F0F0' }} />
               Assignments
             </CardTitle>
-            <CardDescription>Due soon</CardDescription>
+            <CardDescription style={{ color: '#F0F0F0' }}>Due soon</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {pendingAssignments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
+                <p className="text-sm text-center py-4" style={{ color: '#F0F0F0' }}>
                   No pending assignments
                 </p>
               ) : (
@@ -398,15 +489,21 @@ export const StudentDashboard: React.FC = () => {
                   const isUrgent = daysUntilDue <= 3;
 
                   return (
-                    <div key={assignment.id} className="p-3 rounded-lg border">
+                    <div key={assignment.id} className="p-3 rounded-lg border-none shadow-sm" style={{ backgroundColor: '#F0F0F0' }}>
                       <div className="flex items-start justify-between mb-2">
-                        <p className="font-medium text-sm">{assignment.subject_name}</p>
-                        <Badge variant={isUrgent ? 'destructive' : 'default'}>
+                        <p className="font-medium text-sm" style={{ color: '#192D3C' }}>{assignment.subject_name}</p>
+                        <Badge
+                          variant={isUrgent ? 'destructive' : 'default'}
+                          style={{
+                            backgroundColor: isUrgent ? '#dc2626' : '#192D3C',
+                            color: '#F0F0F0'
+                          }}
+                        >
                           {daysUntilDue === 0 ? 'Today' : daysUntilDue === 1 ? 'Tomorrow' : `${daysUntilDue} days`}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{assignment.title}</p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <p className="text-sm mb-2" style={{ color: '#96AAAA' }}>{assignment.title}</p>
+                      <div className="flex items-center gap-1 text-xs" style={{ color: '#96AAAA' }}>
                         <Clock className="h-3 w-3" />
                         Due: {new Date(assignment.due_date).toLocaleDateString()}
                       </div>
@@ -416,7 +513,11 @@ export const StudentDashboard: React.FC = () => {
               )}
               <Button
                 variant="outline"
-                className="w-full mt-2"
+                className="w-full mt-2 border-none"
+                style={{
+                  backgroundColor: '#192D3C',
+                  color: '#F0F0F0'
+                }}
                 onClick={() => navigate('/student/academics/assignments')}
               >
                 View All Assignments
