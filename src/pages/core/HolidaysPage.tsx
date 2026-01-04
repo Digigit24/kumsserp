@@ -3,12 +3,16 @@
  */
 
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { HolidayForm } from './components/HolidayForm';
 import { holidayApi } from '../../services/core.service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDeleteHoliday } from '../../hooks/useCore';
 
 const HolidaysPage = () => {
   const queryClient = useQueryClient();
@@ -16,6 +20,7 @@ const HolidaysPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['holidays', filters],
@@ -27,6 +32,8 @@ const HolidaysPage = () => {
     queryFn: () => selectedId ? holidayApi.get(selectedId) : null,
     enabled: !!selectedId,
   });
+
+  const deleteMutation = useDeleteHoliday();
 
   const columns: Column<any>[] = [
     {
@@ -76,6 +83,19 @@ const HolidaysPage = () => {
       await holidayApi.create(formData);
     } else if (selected) {
       await holidayApi.update(selected.id, formData);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteMutation.mutate(deleteId);
+      toast.success('Holiday deleted successfully');
+      setDeleteId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete holiday');
     }
   };
 
@@ -130,6 +150,10 @@ const HolidaysPage = () => {
               <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                 Edit
               </button>
+              <button onClick={() => setDeleteId(selected.id)} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -176,6 +200,16 @@ const HolidaysPage = () => {
           </div>
         )}
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Holiday"
+        description="Are you sure you want to delete this holiday? This action cannot be undone."
+        variant="destructive"
+      />
     </div>
   );
 };

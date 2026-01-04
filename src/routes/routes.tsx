@@ -371,8 +371,6 @@ export default function AppRoutes() {
                     <Route path="profile/settings" element={<LazyRoute component={ProfileSettingsPage} />} />
 
                     {/* Communication Module */}
-                    <Route path="communication/student" element={<LazyRoute component={StudentCommunicationPage} />} />
-                    <Route path="communication/teacher" element={<LazyRoute component={TeacherCommunicationPage} />} />
                     <Route path="communication/bulk-messages" element={<LazyRoute component={BulkMessagesPage} />} />
                     <Route path="communication/chats" element={<LazyRoute component={ChatsPage} />} />
                     <Route path="communication/events" element={<LazyRoute component={EventsPage} />} />

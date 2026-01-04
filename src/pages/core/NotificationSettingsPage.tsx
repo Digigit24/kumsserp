@@ -6,14 +6,24 @@ import { useState } from 'react';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { notificationSettingApi } from '../../services/core.service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { NotificationSettingForm } from './components/NotificationSettingForm';
+import { useCreateNotificationSetting, useUpdateNotificationSetting } from '../../hooks/useCore';
+import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'sonner';
+import { Plus, Pencil } from 'lucide-react';
 
 const NotificationSettingsPage = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['notification-settings', filters],
@@ -25,6 +35,39 @@ const NotificationSettingsPage = () => {
     queryFn: () => selectedId ? notificationSettingApi.get(selectedId) : null,
     enabled: !!selectedId,
   });
+
+  const createMutation = useCreateNotificationSetting();
+  const updateMutation = useUpdateNotificationSetting();
+
+  const handleCreate = () => {
+    setEditMode('create');
+    setSelectedId(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (id: number) => {
+    setEditMode('edit');
+    setSelectedId(id);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSubmit = async (formData: any) => {
+    try {
+      if (editMode === 'create') {
+        await createMutation.mutate(formData);
+        toast.success('Notification setting created successfully');
+      } else if (selectedId) {
+        await updateMutation.mutate({ id: selectedId, data: formData });
+        toast.success('Notification setting updated successfully');
+      }
+      setIsFormOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save notification setting');
+      throw error;
+    }
+  };
 
   const columns: Column<any>[] = [
     {
@@ -60,6 +103,22 @@ const NotificationSettingsPage = () => {
         </Badge>
       ),
     },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (item) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(item.id);
+          }}
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -76,6 +135,12 @@ const NotificationSettingsPage = () => {
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search settings..."
+        actions={
+          <Button onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Setting
+          </Button>
+        }
       />
 
       <DetailSidebar
@@ -247,13 +312,35 @@ const NotificationSettingsPage = () => {
                 </pre>
               </details>
 
-              <p className="text-xs text-muted-foreground p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
-                Note: Notification settings editing interface coming soon. For now, settings can be modified via API.
-              </p>
             </div>
           </div>
         )}
       </DetailSidebar>
+
+      {/* Form Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editMode === 'create' ? 'New Notification Setting' : 'Edit Notification Setting'}
+            </DialogTitle>
+          </DialogHeader>
+          {editMode === 'create' || selected ? (
+            <NotificationSettingForm
+              mode={editMode}
+              notificationSetting={editMode === 'edit' ? selected : undefined}
+              collegeId={user?.college || 1}
+              onSuccess={() => setIsFormOpen(false)}
+              onCancel={() => setIsFormOpen(false)}
+              onSubmit={handleFormSubmit}
+            />
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              Loading...
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

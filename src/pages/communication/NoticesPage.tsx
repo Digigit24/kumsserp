@@ -106,7 +106,7 @@ export const NoticesPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Notices</h1>
-          <p className="text-gray-500 mt-1">Manage and publish notices</p>
+          <p className="text-muted-foreground mt-1">Manage and publish notices</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
@@ -115,7 +115,7 @@ export const NoticesPage = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <Input
           placeholder="Search by title or content..."
           value={searchQuery}
@@ -125,19 +125,19 @@ export const NoticesPage = () => {
       </div>
 
       {/* Notices List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-card rounded-lg shadow">
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Loading notices...</p>
+              <p className="text-muted-foreground">Loading notices...</p>
             </div>
           ) : !filteredNotices || filteredNotices.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {searchQuery ? 'No notices found' : 'No notices yet'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchQuery
                   ? 'Try adjusting your search query'
                   : 'Start by creating your first notice'}
@@ -154,7 +154,7 @@ export const NoticesPage = () => {
               {filteredNotices.map((notice) => (
                 <div
                   key={notice.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -189,21 +189,21 @@ export const NoticesPage = () => {
                       </div>
 
                       {/* Content Preview */}
-                      <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                      <p className="text-sm text-foreground mb-3 line-clamp-2">
                         {notice.content}
                       </p>
 
                       {/* Details Grid */}
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="text-xs text-gray-500">Publish Date</p>
+                          <p className="text-xs text-muted-foreground">Publish Date</p>
                           <p className="font-medium flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {format(new Date(notice.publish_date), 'PP')}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Expiry Date</p>
+                          <p className="text-xs text-muted-foreground">Expiry Date</p>
                           <p className="font-medium flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {format(new Date(notice.expiry_date), 'PP')}
@@ -211,7 +211,7 @@ export const NoticesPage = () => {
                         </div>
                         {notice.attachment && (
                           <div>
-                            <p className="text-xs text-gray-500">Attachment</p>
+                            <p className="text-xs text-muted-foreground">Attachment</p>
                             <a
                               href={notice.attachment}
                               target="_blank"
@@ -225,7 +225,7 @@ export const NoticesPage = () => {
                       </div>
 
                       {/* Timestamps */}
-                      <div className="mt-3 text-xs text-gray-500">
+                      <div className="mt-3 text-xs text-muted-foreground">
                         Created: {format(new Date(notice.created_at), 'PPp')}
                       </div>
                     </div>
@@ -255,8 +255,8 @@ export const NoticesPage = () => {
 
           {/* Pagination */}
           {data && data.results.length > 0 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t">
-              <p className="text-sm text-gray-600">
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+              <p className="text-sm text-muted-foreground">
                 Showing {((filters.page || 1) - 1) * (filters.page_size || 20) + 1} to{' '}
                 {Math.min((filters.page || 1) * (filters.page_size || 20), data.count)} of{' '}
                 {data.count} notices

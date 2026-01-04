@@ -609,6 +609,62 @@ export const useNotificationSettings = (filters?: NotificationSettingFilters): U
   return { data, isLoading, error, refetch: fetchData };
 };
 
+/**
+ * Hook to create a notification setting
+ */
+export const useCreateNotificationSetting = (): UseMutationResult<NotificationSetting, any> => {
+  const [data, setData] = useState<NotificationSetting | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: any): Promise<NotificationSetting | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await notificationSettingApi.create(input);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create notification setting';
+      setError(errorMessage);
+      console.error('Create notification setting error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
+/**
+ * Hook to update a notification setting
+ */
+export const useUpdateNotificationSetting = (): UseMutationResult<NotificationSetting, { id: number; data: any }> => {
+  const [data, setData] = useState<NotificationSetting | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (input: { id: number; data: any }): Promise<NotificationSetting | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await notificationSettingApi.patch(input.id, input.data);
+      setData(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to update notification setting';
+      setError(errorMessage);
+      console.error('Update notification setting error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { mutate, isLoading, error, data };
+};
+
 // ============================================================================
 // ACTIVITY LOG HOOKS
 // ============================================================================
@@ -640,4 +696,89 @@ export const useActivityLogs = (filters?: ActivityLogFilters): UseQueryResult<Pa
   }, [JSON.stringify(filters)]);
 
   return { data, isLoading, error, refetch: fetchData };
+};
+
+// ============================================================================
+// DELETE HOOKS
+// ============================================================================
+
+/**
+ * Hook to delete an academic session
+ */
+export const useDeleteAcademicSession = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await academicSessionApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete academic session';
+      setError(errorMessage);
+      console.error('Delete academic session error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { data, isLoading, error, mutate, mutateAsync: mutate };
+};
+
+/**
+ * Hook to delete a holiday
+ */
+export const useDeleteHoliday = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await holidayApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete holiday';
+      setError(errorMessage);
+      console.error('Delete holiday error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { data, isLoading, error, mutate, mutateAsync: mutate };
+};
+
+/**
+ * Hook to delete a weekend
+ */
+export const useDeleteWeekend = (): UseMutationResult<void, number> => {
+  const [data] = useState<void>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await weekendApi.delete(id);
+      return;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete weekend';
+      setError(errorMessage);
+      console.error('Delete weekend error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { data, isLoading, error, mutate, mutateAsync: mutate };
 };

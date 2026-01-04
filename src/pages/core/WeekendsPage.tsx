@@ -3,12 +3,16 @@
  */
 
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { WeekendForm } from './components/WeekendForm';
 import { weekendApi } from '../../services/core.service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDeleteWeekend } from '../../hooks/useCore';
 
 const WeekendsPage = () => {
   const queryClient = useQueryClient();
@@ -16,6 +20,7 @@ const WeekendsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['weekends', filters],
@@ -27,6 +32,8 @@ const WeekendsPage = () => {
     queryFn: () => selectedId ? weekendApi.get(selectedId) : null,
     enabled: !!selectedId,
   });
+
+  const deleteMutation = useDeleteWeekend();
 
   const columns: Column<any>[] = [
     {
@@ -47,6 +54,19 @@ const WeekendsPage = () => {
       await weekendApi.create(formData);
     } else if (selected) {
       await weekendApi.update(selected.id, formData);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteMutation.mutate(deleteId);
+      toast.success('Weekend deleted successfully');
+      setDeleteId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete weekend');
     }
   };
 
@@ -100,6 +120,10 @@ const WeekendsPage = () => {
               <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                 Edit
               </button>
+              <button onClick={() => setDeleteId(selected.id)} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -134,6 +158,16 @@ const WeekendsPage = () => {
           </div>
         )}
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Weekend"
+        description="Are you sure you want to delete this weekend configuration? This action cannot be undone."
+        variant="destructive"
+      />
     </div>
   );
 };

@@ -4,11 +4,15 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { academicYearApi, collegeApi } from '../../services/core.service';
 import { AcademicYearForm } from './components/AcademicYearForm';
+import { useDeleteAcademicYear } from '../../hooks/useCore';
 
 const AcademicYearsPage = () => {
   const queryClient = useQueryClient();
@@ -16,6 +20,7 @@ const AcademicYearsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['academic-years', filters],
@@ -33,6 +38,8 @@ const AcademicYearsPage = () => {
     queryFn: () => collegeApi.list({ page_size: 1000 }),
   });
   const colleges = collegesData?.results ?? [];
+
+  const deleteMutation = useDeleteAcademicYear();
 
 
   const columns: Column<any>[] = [
@@ -93,6 +100,19 @@ const AcademicYearsPage = () => {
       await academicYearApi.create(formData);
     } else if (selected) {
       await academicYearApi.update(selected.id, formData);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteMutation.mutate(deleteId);
+      toast.success('Academic year deleted successfully');
+      setDeleteId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete academic year');
     }
   };
 
@@ -168,6 +188,10 @@ const AcademicYearsPage = () => {
               <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                 Edit
               </button>
+              <button onClick={() => setDeleteId(selected.id)} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -220,6 +244,16 @@ const AcademicYearsPage = () => {
           </div>
         )}
       </DetailSidebar>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Academic Year"
+        description="Are you sure you want to delete this academic year? This action cannot be undone."
+        variant="destructive"
+      />
     </div>
   );
 };

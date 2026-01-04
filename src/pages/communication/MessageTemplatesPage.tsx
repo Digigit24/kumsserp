@@ -121,7 +121,7 @@ export const MessageTemplatesPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Message Templates</h1>
-          <p className="text-gray-500 mt-1">Manage reusable message templates</p>
+          <p className="text-muted-foreground mt-1">Manage reusable message templates</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
@@ -130,7 +130,7 @@ export const MessageTemplatesPage = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <Input
           placeholder="Search by name, code, or content..."
           value={searchQuery}
@@ -140,19 +140,19 @@ export const MessageTemplatesPage = () => {
       </div>
 
       {/* Templates List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-card rounded-lg shadow">
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Loading templates...</p>
+              <p className="text-muted-foreground">Loading templates...</p>
             </div>
           ) : !filteredTemplates || filteredTemplates.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {searchQuery ? 'No templates found' : 'No templates yet'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchQuery
                   ? 'Try adjusting your search query'
                   : 'Start by creating your first message template'}
@@ -169,7 +169,7 @@ export const MessageTemplatesPage = () => {
               {filteredTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -196,14 +196,14 @@ export const MessageTemplatesPage = () => {
                       </div>
 
                       {/* Content Preview */}
-                      <p className="text-sm text-gray-700 mb-3 line-clamp-2 bg-gray-50 p-2 rounded border">
+                      <p className="text-sm text-foreground mb-3 line-clamp-2 bg-muted/50 p-2 rounded border border-border">
                         {template.content}
                       </p>
 
                       {/* Variables */}
                       {template.variables && (
                         <div className="mb-2">
-                          <p className="text-xs text-gray-500 mb-1">Variables:</p>
+                          <p className="text-xs text-muted-foreground mb-1">Variables:</p>
                           <div className="flex flex-wrap gap-1">
                             {template.variables.split(',').map((variable, idx) => (
                               <Badge
@@ -219,7 +219,7 @@ export const MessageTemplatesPage = () => {
                       )}
 
                       {/* Timestamps */}
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         Created: {format(new Date(template.created_at), 'PPp')}
                       </div>
                     </div>
@@ -249,8 +249,8 @@ export const MessageTemplatesPage = () => {
 
           {/* Pagination */}
           {data && data.results.length > 0 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t">
-              <p className="text-sm text-gray-600">
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+              <p className="text-sm text-muted-foreground">
                 Showing {((filters.page || 1) - 1) * (filters.page_size || 20) + 1} to{' '}
                 {Math.min((filters.page || 1) * (filters.page_size || 20), data.count)} of{' '}
                 {data.count} templates

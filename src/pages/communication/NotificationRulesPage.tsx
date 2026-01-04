@@ -124,7 +124,7 @@ export const NotificationRulesPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Notification Rules</h1>
-          <p className="text-gray-500 mt-1">Manage automated notification rules</p>
+          <p className="text-muted-foreground mt-1">Manage automated notification rules</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
@@ -133,7 +133,7 @@ export const NotificationRulesPage = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <Input
           placeholder="Search by rule name or event type..."
           value={searchQuery}
@@ -143,19 +143,19 @@ export const NotificationRulesPage = () => {
       </div>
 
       {/* Rules List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-card rounded-lg shadow">
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Loading notification rules...</p>
+              <p className="text-muted-foreground">Loading notification rules...</p>
             </div>
           ) : !filteredRules || filteredRules.length === 0 ? (
             <div className="text-center py-12">
-              <Bell className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <Bell className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {searchQuery ? 'No rules found' : 'No notification rules yet'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchQuery
                   ? 'Try adjusting your search query'
                   : 'Start by creating your first notification rule'}
@@ -172,7 +172,7 @@ export const NotificationRulesPage = () => {
               {filteredRules.map((rule) => (
                 <div
                   key={rule.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -204,13 +204,13 @@ export const NotificationRulesPage = () => {
                       {/* Details Grid */}
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="text-xs text-gray-500">Event Type</p>
+                          <p className="text-xs text-muted-foreground">Event Type</p>
                           <p className="font-medium">
                             {rule.event_type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Channels</p>
+                          <p className="text-xs text-muted-foreground">Channels</p>
                           <div className="flex items-center gap-2 font-medium">
                             {getChannelIcons(rule.channels)}
                             <span className="text-xs">
@@ -219,13 +219,13 @@ export const NotificationRulesPage = () => {
                           </div>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Template ID</p>
+                          <p className="text-xs text-muted-foreground">Template ID</p>
                           <p className="font-medium">#{rule.template}</p>
                         </div>
                       </div>
 
                       {/* Timestamps */}
-                      <div className="mt-3 text-xs text-gray-500">
+                      <div className="mt-3 text-xs text-muted-foreground">
                         Created: {format(new Date(rule.created_at), 'PPp')}
                       </div>
                     </div>
@@ -255,8 +255,8 @@ export const NotificationRulesPage = () => {
 
           {/* Pagination */}
           {data && data.results.length > 0 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t">
-              <p className="text-sm text-gray-600">
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+              <p className="text-sm text-muted-foreground">
                 Showing {((filters.page || 1) - 1) * (filters.page_size || 20) + 1} to{' '}
                 {Math.min((filters.page || 1) * (filters.page_size || 20), data.count)} of{' '}
                 {data.count} rules
