@@ -44,6 +44,13 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
 
   // Auto-select college for users who can't choose college (teachers)
   React.useEffect(() => {
+    console.log('[ClassSelector] Debug:', {
+      canChooseCollege: permissions?.canChooseCollege,
+      userContextCollegeId: userContext?.college_id,
+      selectedCollege,
+      willAutoSelect: !permissions?.canChooseCollege && userContext?.college_id && !selectedCollege
+    });
+
     if (!permissions?.canChooseCollege && userContext?.college_id && !selectedCollege) {
       console.log('[ClassSelector] Auto-selecting college for teacher:', userContext.college_id);
       setSelectedCollege(userContext.college_id);
@@ -60,9 +67,20 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
 
   const handleChange = (value: string) => {
     const classId = value ? Number(value) : null;
+    console.log('[ClassSelector] Class changed:', { value, classId, currentSelectedClass: selectedClass });
     setSelectedClass(classId);
     onValueChange?.(classId);
   };
+
+  // Debug: Log classes and selected class
+  React.useEffect(() => {
+    console.log('[ClassSelector] State update:', {
+      selectedClass,
+      classesCount: classes.length,
+      classes: classes.map(c => ({ id: c.id, name: c.name })),
+      isLoadingClasses
+    });
+  }, [selectedClass, classes, isLoadingClasses]);
 
   const isDisabled =
     disabled ||
