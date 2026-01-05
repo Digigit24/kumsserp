@@ -151,3 +151,75 @@ export const useSubmitStoreIndent = () => {
     },
   });
 };
+
+// College Admin Approvals
+export const usePendingCollegeApprovals = (filters?: any) => {
+  return useQuery({
+    queryKey: [...storeIndentKeys.lists(), 'pending_college', filters],
+    queryFn: () => storeIndentsApi.pendingCollegeApprovals(filters),
+  });
+};
+
+export const useCollegeAdminApprove = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.collegeAdminApprove(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+    },
+  });
+};
+
+export const useCollegeAdminReject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.collegeAdminReject(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+    },
+  });
+};
+
+// Super Admin Approvals
+export const usePendingSuperAdminApprovals = (filters?: any) => {
+  return useQuery({
+    queryKey: [...storeIndentKeys.lists(), 'pending_super_admin', filters],
+    queryFn: () => storeIndentsApi.pendingSuperAdminApprovals(filters),
+  });
+};
+
+export const useSuperAdminApprove = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.superAdminApprove(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+    },
+  });
+};
+
+export const useSuperAdminReject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.superAdminReject(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+    },
+  });
+};
+
+// Material Issuance
+export const useIssueMaterials = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.issueMaterials(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+    },
+  });
+};

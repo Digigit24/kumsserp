@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
+import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 interface StoreIndentFormProps {
@@ -142,11 +143,13 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="partially_issued">Partially Issued</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending_college_approval">Pending College Approval</SelectItem>
+                  <SelectItem value="pending_super_admin">Pending Super Admin</SelectItem>
+                  <SelectItem value="super_admin_approved">Super Admin Approved</SelectItem>
+                  <SelectItem value="rejected_by_college">Rejected by College</SelectItem>
+                  <SelectItem value="rejected_by_super_admin">Rejected by Super Admin</SelectItem>
+                  <SelectItem value="partially_fulfilled">Partially Fulfilled</SelectItem>
+                  <SelectItem value="fulfilled">Fulfilled</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
@@ -214,50 +217,21 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="requesting_store_manager">Requesting Store Manager ID</Label>
-              <Input
-                id="requesting_store_manager"
-                {...register('requesting_store_manager')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="approved_by">Approved By ID</Label>
-              <Input
-                id="approved_by"
-                {...register('approved_by')}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="approved_date">Approved Date</Label>
-              <Input
-                id="approved_date"
-                type="datetime-local"
-                {...register('approved_date')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="approval_request">Approval Request ID</Label>
-              <Input
-                id="approval_request"
-                type="number"
-                {...register('approval_request', { valueAsNumber: true })}
-              />
-            </div>
-          </div>
-
           <div>
-            <Label htmlFor="rejection_reason">Rejection Reason</Label>
-            <Textarea
-              id="rejection_reason"
-              {...register('rejection_reason')}
-              rows={2}
+            <Controller
+              name="requesting_store_manager"
+              control={control}
+              render={({ field }) => (
+                <UserSearchableDropdown
+                  value={field.value}
+                  onChange={field.onChange}
+                  userType="store_manager"
+                  college={watch('college')}
+                  label="Requesting Store Manager"
+                  required={false}
+                  error={errors.requesting_store_manager?.message}
+                />
+              )}
             />
           </div>
 

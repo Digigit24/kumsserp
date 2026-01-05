@@ -663,6 +663,58 @@ export const storeIndentsApi = {
       body: JSON.stringify(data),
     });
   },
+
+  // College Admin Approvals
+  pendingCollegeApprovals: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/indents/pending_college_approvals/${queryString}`)
+    );
+  },
+
+  collegeAdminApprove: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/college_admin_approve/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  collegeAdminReject: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/college_admin_reject/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Super Admin Approvals
+  pendingSuperAdminApprovals: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`/api/v1/store/indents/pending_super_admin_approvals/${queryString}`)
+    );
+  },
+
+  superAdminApprove: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/super_admin_approve/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  superAdminReject: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/super_admin_reject/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Material Issuance
+  issueMaterials: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(`/api/v1/store/indents/${id}/issue_materials/`), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // ============================================================================

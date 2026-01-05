@@ -197,6 +197,9 @@ const CentralStoresPage = lazy(() => import("../pages/store/CentralStoresPage").
 const CentralInventoryPage = lazy(() => import("../pages/store/CentralInventoryPage").then(m => ({ default: m.CentralInventoryPage })));
 const MaterialIssuesPage = lazy(() => import("../pages/store/MaterialIssuesPage").then(m => ({ default: m.MaterialIssuesPage })));
 const StoreIndentsPage = lazy(() => import("../pages/store/StoreIndentsPage").then(m => ({ default: m.StoreIndentsPage })));
+const CollegeAdminApprovalsPage = lazy(() => import("../pages/store/CollegeAdminApprovalsPage").then(m => ({ default: m.CollegeAdminApprovalsPage })));
+const SuperAdminApprovalsPage = lazy(() => import("../pages/store/SuperAdminApprovalsPage").then(m => ({ default: m.SuperAdminApprovalsPage })));
+const MaterialIssuancePage = lazy(() => import("../pages/store/MaterialIssuancePage").then(m => ({ default: m.MaterialIssuancePage })));
 
 // Procurement Module
 const RequirementsPage = lazy(() => import("../pages/store/procurement/RequirementsPage").then(m => ({ default: m.RequirementsPage })));
@@ -386,6 +389,9 @@ export default function AppRoutes() {
                     <Route path="store/central-inventory" element={<LazyRoute component={CentralInventoryPage} />} />
                     <Route path="store/material-issues" element={<LazyRoute component={MaterialIssuesPage} />} />
                     <Route path="store/indents" element={<LazyRoute component={StoreIndentsPage} />} />
+                    <Route path="store/college-approvals" element={<LazyRoute component={CollegeAdminApprovalsPage} />} />
+                    <Route path="store/super-admin-approvals" element={<LazyRoute component={SuperAdminApprovalsPage} />} />
+                    <Route path="store/material-issuance" element={<LazyRoute component={MaterialIssuancePage} />} />
                     <Route path="store/items" element={<LazyRoute component={StoreItemsPage} />} />
                     <Route path="store/categories" element={<LazyRoute component={CategoriesPage} />} />
                     <Route path="store/credits" element={<LazyRoute component={CreditsPage} />} />
