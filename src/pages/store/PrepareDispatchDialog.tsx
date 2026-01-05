@@ -121,6 +121,7 @@ export const PrepareDispatchDialog = ({
         items: items
           .filter(item => item.issued_quantity > 0)
           .map(item => ({
+            indent_item: item.indent_item,
             item: item.central_store_item,
             issued_quantity: item.issued_quantity,
             unit: item.unit,

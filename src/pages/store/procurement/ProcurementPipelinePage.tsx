@@ -11,6 +11,7 @@ import { KanbanBoard, KanbanCard, KanbanColumn } from '../../../components/workf
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { useRequirements } from '../../../hooks/useProcurement';
+import { CreateRequirementDialog } from './CreateRequirementDialog';
 
 // Kanban columns for procurement workflow
 const PROCUREMENT_COLUMNS: KanbanColumn[] = [
@@ -56,8 +57,10 @@ export const ProcurementPipelinePage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedRequirement, setSelectedRequirement] = useState<any>(null);
 
-  const { data, isLoading } = useRequirements(filters);
+  const { data, isLoading, refetch } = useRequirements(filters);
 
   // Convert requirements to Kanban cards
   const kanbanCards: KanbanCard[] = (data?.results || [])
@@ -96,11 +99,12 @@ export const ProcurementPipelinePage = () => {
             color: 'text-muted-foreground',
           },
         ],
+        onCardClick: () => setSelectedRequirement(req),
         secondaryActions: [
           {
             label: 'View',
             icon: Eye,
-            onClick: () => console.log('View requirement', req),
+            onClick: () => setSelectedRequirement(req),
           },
         ],
       };
@@ -109,27 +113,27 @@ export const ProcurementPipelinePage = () => {
       if (req.status === 'draft') {
         card.primaryAction = {
           label: 'Submit',
-          onClick: () => navigate('/procurement/requirements'),
+          onClick: () => setSelectedRequirement(req),
         };
       } else if (req.status === 'submitted') {
         card.primaryAction = {
           label: 'Approve',
-          onClick: () => navigate('/procurement/requirements'),
+          onClick: () => setSelectedRequirement(req),
         };
       } else if (req.status === 'approved') {
         card.primaryAction = {
           label: 'Add Quotations',
-          onClick: () => navigate('/procurement/quotations'),
+          onClick: () => setSelectedRequirement(req),
         };
       } else if (req.status === 'quotations_received') {
         card.primaryAction = {
           label: 'Select & Create PO',
-          onClick: () => navigate('/procurement/purchase-orders'),
+          onClick: () => setSelectedRequirement(req),
         };
       } else if (req.status === 'po_created') {
         card.primaryAction = {
           label: 'Receive Goods',
-          onClick: () => navigate('/procurement/goods-receipts'),
+          onClick: () => setSelectedRequirement(req),
         };
       }
 
@@ -146,7 +150,7 @@ export const ProcurementPipelinePage = () => {
             Track requirements from submission to fulfillment
           </p>
         </div>
-        <Button onClick={() => navigate('/procurement/requirements')}>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           New Requirement
         </Button>
@@ -223,6 +227,30 @@ export const ProcurementPipelinePage = () => {
           <p className="text-xs text-muted-foreground">To be calculated</p>
         </div>
       </div>
+
+      {/* Create Requirement Dialog */}
+      <CreateRequirementDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSuccess={() => {
+          refetch();
+          setIsCreateDialogOpen(false);
+        }}
+      />
+
+      {/* Requirement Detail Dialog - TODO: Create this component */}
+      {selectedRequirement && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-background rounded-lg p-6 max-w-2xl">
+            <h3 className="text-lg font-semibold mb-2">Requirement Detail</h3>
+            <p className="text-muted-foreground mb-4">
+              {selectedRequirement.requirement_number} - Status: {selectedRequirement.status}
+            </p>
+            <p className="text-sm mb-4">This dialog will be replaced with RequirementDetailDialog component</p>
+            <Button onClick={() => setSelectedRequirement(null)}>Close</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
