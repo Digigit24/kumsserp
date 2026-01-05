@@ -201,12 +201,19 @@ const CollegeAdminApprovalsPage = lazy(() => import("../pages/store/CollegeAdmin
 const SuperAdminApprovalsPage = lazy(() => import("../pages/store/SuperAdminApprovalsPage").then(m => ({ default: m.SuperAdminApprovalsPage })));
 const MaterialIssuancePage = lazy(() => import("../pages/store/MaterialIssuancePage").then(m => ({ default: m.MaterialIssuancePage })));
 
+// New Workflow-First Store Pages
+const IndentsPipelinePage = lazy(() => import("../pages/store/IndentsPipelinePage").then(m => ({ default: m.IndentsPipelinePage })));
+const TransfersWorkflowPage = lazy(() => import("../pages/store/TransfersWorkflowPage").then(m => ({ default: m.TransfersWorkflowPage })));
+const UnifiedApprovalsPage = lazy(() => import("../pages/store/UnifiedApprovalsPage").then(m => ({ default: m.UnifiedApprovalsPage })));
+const InventoryPage = lazy(() => import("../pages/store/InventoryPage").then(m => ({ default: m.InventoryPage })));
+
 // Procurement Module
 const RequirementsPage = lazy(() => import("../pages/store/procurement/RequirementsPage").then(m => ({ default: m.RequirementsPage })));
 const QuotationsPage = lazy(() => import("../pages/store/procurement/QuotationsPage").then(m => ({ default: m.QuotationsPage })));
 const PurchaseOrdersPage = lazy(() => import("../pages/store/procurement/PurchaseOrdersPage").then(m => ({ default: m.PurchaseOrdersPage })));
 const GoodsReceiptsPage = lazy(() => import("../pages/store/procurement/GoodsReceiptsPage").then(m => ({ default: m.GoodsReceiptsPage })));
 const InspectionsPage = lazy(() => import("../pages/store/procurement/InspectionsPage").then(m => ({ default: m.InspectionsPage })));
+const ProcurementPipelinePage = lazy(() => import("../pages/store/procurement/ProcurementPipelinePage").then(m => ({ default: m.ProcurementPipelinePage })));
 
 // Library Student Module
 const StudentLibraryPage = lazy(() => import("../pages/library/StudentLibraryPage"));
@@ -384,7 +391,14 @@ export default function AppRoutes() {
                     <Route path="communication/message-templates" element={<LazyRoute component={MessageTemplatesPage} />} />
                     <Route path="communication/notice-visibility" element={<LazyRoute component={NoticeVisibilityPage} />} />
 
-                    {/* Store Module */}
+                    {/* Store Module - Workflow-First Pages */}
+                    <Route path="store/indents-pipeline" element={<LazyRoute component={IndentsPipelinePage} />} />
+                    <Route path="store/transfers-workflow" element={<LazyRoute component={TransfersWorkflowPage} />} />
+                    <Route path="store/approvals" element={<LazyRoute component={UnifiedApprovalsPage} />} />
+                    <Route path="store/inventory" element={<LazyRoute component={InventoryPage} />} />
+                    <Route path="store/procurement-pipeline" element={<LazyRoute component={ProcurementPipelinePage} />} />
+
+                    {/* Store Module - Legacy/Admin Pages */}
                     <Route path="store/central-stores" element={<LazyRoute component={CentralStoresPage} />} />
                     <Route path="store/central-inventory" element={<LazyRoute component={CentralInventoryPage} />} />
                     <Route path="store/material-issues" element={<LazyRoute component={MaterialIssuesPage} />} />
