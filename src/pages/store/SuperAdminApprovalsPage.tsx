@@ -148,20 +148,16 @@ export const SuperAdminApprovalsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Pending Super Admin Approvals</h1>
-          <p className="text-muted-foreground">
-            Final approval for store indents from all colleges
-          </p>
-        </div>
-      </div>
-
       <DataTable
+        title="Pending Super Admin Approvals"
+        description="Final approval for store indents from all colleges"
         columns={columns}
         data={data}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={null}
+        onRefresh={refetch}
+        onFiltersChange={setFilters}
+        filters={filters}
       />
 
       {/* View Details Dialog */}

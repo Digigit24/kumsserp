@@ -16,6 +16,7 @@ import {
   Trash2,
   Edit2,
   AlertCircle,
+  PackagePlus,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -25,10 +26,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
 import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
+import { SearchableSelect } from '../../../components/ui/searchable-select';
+import { useCreateStoreItem } from '../../../hooks/useStore';
+import { useQuery } from '@tanstack/react-query';
+import { categoriesApi } from '../../../services/store.service';
+import { toast } from 'sonner';
 
 interface StoreIndentPipelineProps {
   onSubmit: (data: any) => void;
@@ -56,6 +63,32 @@ const stepVariants = {
 export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreIndentPipelineProps) => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
   const [direction, setDirection] = useState(0);
+  const [isCreateItemDialogOpen, setIsCreateItemDialogOpen] = useState(false);
+  const [newItemForm, setNewItemForm] = useState({
+    code: '',
+    name: '',
+    category: 0,
+    description: '',
+    unit: 'Piece',
+    stock_quantity: 0,
+    min_stock_level: 10,
+    price: 0,
+    barcode: '',
+    image: '',
+  });
+
+  const createItemMutation = useCreateStoreItem();
+
+  // Fetch categories for the create item dialog
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories-for-select'],
+    queryFn: () => categoriesApi.list(),
+  });
+
+  const categoryOptions = categoriesData?.results?.map((category: any) => ({
+    value: category.id,
+    label: `${category.name} (${category.code})`,
+  })) || [];
 
   const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger } = useForm({
     defaultValues: {
@@ -150,6 +183,33 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
     onSubmit(data);
   });
 
+  const handleCreateNewItem = async () => {
+    try {
+      await createItemMutation.mutateAsync(newItemForm);
+      toast.success('Item created successfully! You can now select it from the dropdown.');
+      setIsCreateItemDialogOpen(false);
+      resetNewItemForm();
+    } catch (err: any) {
+      console.error('Create item error:', err);
+      toast.error(err?.message || 'Failed to create item');
+    }
+  };
+
+  const resetNewItemForm = () => {
+    setNewItemForm({
+      code: '',
+      name: '',
+      category: 0,
+      description: '',
+      unit: 'Piece',
+      stock_quantity: 0,
+      min_stock_level: 10,
+      price: 0,
+      barcode: '',
+      image: '',
+    });
+  };
+
   // Step indicators
   const steps = [
     { number: 1, title: 'Request Details', icon: FileText },
@@ -199,7 +259,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
       </div>
 
       {/* Step Content */}
-      <div className="relative overflow-hidden min-h-[500px]">
+      <div className="relative overflow-y-auto max-h-[calc(100vh-400px)]">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={currentStep}
@@ -212,7 +272,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
               x: { type: 'spring', stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
-            className="absolute w-full"
+            className="w-full"
           >
             {/* Step 1: Request Details */}
             {currentStep === 1 && (
@@ -377,22 +437,33 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                       Select items from the central store inventory
                     </CardDescription>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() =>
-                      append({
-                        central_store_item: '',
-                        requested_quantity: 1,
-                        unit: '',
-                        justification: '',
-                        is_active: true,
-                      })
-                    }
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Item
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsCreateItemDialogOpen(true)}
+                    >
+                      <PackagePlus className="h-4 w-4 mr-1" />
+                      Create New Item
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        append({
+                          central_store_item: '',
+                          requested_quantity: 1,
+                          unit: '',
+                          justification: '',
+                          is_active: true,
+                        })
+                      }
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Item
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {fields.length === 0 && (
@@ -623,6 +694,134 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
           )}
         </div>
       </div>
+
+      {/* Create New Item Dialog */}
+      <Dialog open={isCreateItemDialogOpen} onOpenChange={setIsCreateItemDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Inventory Item</DialogTitle>
+            <DialogDescription>
+              Add a new item to the store inventory that you can then select for this indent
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Item Code *</Label>
+                <Input
+                  placeholder="e.g., ST-001"
+                  value={newItemForm.code}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, code: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <SearchableSelect
+                  options={categoryOptions}
+                  value={newItemForm.category}
+                  onChange={(value) => setNewItemForm({ ...newItemForm, category: value })}
+                  placeholder="Select category"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Item Name *</Label>
+              <Input
+                placeholder="e.g., A4 Printing Paper (Ream)"
+                value={newItemForm.name}
+                onChange={(e) => setNewItemForm({ ...newItemForm, name: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                placeholder="Item description..."
+                rows={2}
+                value={newItemForm.description}
+                onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Unit</Label>
+                <Select
+                  value={newItemForm.unit}
+                  onValueChange={(value) => setNewItemForm({ ...newItemForm, unit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Piece">Piece</SelectItem>
+                    <SelectItem value="Box">Box</SelectItem>
+                    <SelectItem value="Ream">Ream</SelectItem>
+                    <SelectItem value="Set">Set</SelectItem>
+                    <SelectItem value="Bottle">Bottle</SelectItem>
+                    <SelectItem value="Packet">Packet</SelectItem>
+                    <SelectItem value="Kg">Kg</SelectItem>
+                    <SelectItem value="Liter">Liter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Price (₹) *</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newItemForm.price}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, price: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Stock Quantity</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={newItemForm.stock_quantity}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, stock_quantity: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Min Stock Level</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={newItemForm.min_stock_level}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, min_stock_level: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                After creating the item, you'll be able to select it from the item dropdown in the form above.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => { setIsCreateItemDialogOpen(false); resetNewItemForm(); }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateNewItem}
+                disabled={!newItemForm.code || !newItemForm.name || newItemForm.price === 0 || createItemMutation.isPending}
+              >
+                <Package className="h-4 w-4 mr-2" />
+                {createItemMutation.isPending ? 'Creating...' : 'Create Item'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

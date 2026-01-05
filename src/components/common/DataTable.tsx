@@ -220,7 +220,7 @@ export function DataTable<T extends Record<string, any>>({
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && data && data.results.length === 0 && (
+        {!isLoading && !error && data && data.results && data.results.length === 0 && (
           <div className="p-12 text-center text-muted-foreground">
             <p className="text-lg">No data found</p>
             <p className="text-sm mt-1">Try adjusting your search or filters</p>
@@ -228,7 +228,7 @@ export function DataTable<T extends Record<string, any>>({
         )}
 
         {/* Data Table */}
-        {!isLoading && !error && data && data.results.length > 0 && (
+        {!isLoading && !error && data && data.results && data.results.length > 0 && (
           <>
             <Table>
               <TableHeader>

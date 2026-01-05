@@ -143,20 +143,16 @@ export const CollegeAdminApprovalsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Pending Approvals</h1>
-          <p className="text-muted-foreground">
-            Review and approve store indents from your college
-          </p>
-        </div>
-      </div>
-
       <DataTable
+        title="Pending Approvals"
+        description="Review and approve store indents from your college"
         columns={columns}
         data={data}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={null}
+        onRefresh={refetch}
+        onFiltersChange={setFilters}
+        filters={filters}
       />
 
       {/* View Details Dialog */}
