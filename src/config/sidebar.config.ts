@@ -890,7 +890,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Communication",
     icon: MessageSquare,
-    roles: ["super_admin", "college_admin", "teacher", "student", "parent"],
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager"],
     items: [
       // {
       //   name: "Communication Center",
@@ -914,7 +914,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Notices",
         href: "/communication/notices",
         icon: Bell,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent"], // All can view
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager"], // All can view
       },
       {
         name: "Bulk Messages",
@@ -926,13 +926,13 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Chats",
         href: "/communication/chats",
         icon: Mail,
-        roles: ["super_admin", "college_admin", "teacher", "student"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager"],
       },
       {
         name: "Events",
         href: "/communication/events",
         icon: Calendar,
-        roles: ["super_admin", "college_admin", "teacher", "student"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager"],
       },
       {
         name: "Event Registrations",
