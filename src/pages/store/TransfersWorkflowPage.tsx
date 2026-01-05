@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Truck, Package, CheckCircle, FileText, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
@@ -45,10 +46,11 @@ const MIN_COLUMNS: KanbanColumn[] = [
 ];
 
 export const TransfersWorkflowPage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data, isLoading, refetch } = useMaterialIssues(filters);
+  const { data, isLoading, refetch} = useMaterialIssues(filters);
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
 
@@ -150,7 +152,7 @@ export const TransfersWorkflowPage = () => {
             Track material issue notes from central stores to colleges
           </p>
         </div>
-        <Button onClick={() => toast.info('Create MIN from approved indent')}>
+        <Button onClick={() => navigate('/store/material-issues')}>
           <Package className="h-4 w-4 mr-2" />
           Prepare MIN
         </Button>

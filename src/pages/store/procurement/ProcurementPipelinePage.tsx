@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Plus, FileText, DollarSign, ShoppingCart, Package, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../../components/workflow/KanbanBoard';
 import { Button } from '../../../components/ui/button';
@@ -52,6 +53,7 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
 ];
 
 export const ProcurementPipelinePage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -107,27 +109,27 @@ export const ProcurementPipelinePage = () => {
       if (req.status === 'draft') {
         card.primaryAction = {
           label: 'Submit',
-          onClick: () => toast.info('Submit requirement'),
+          onClick: () => navigate('/procurement/requirements'),
         };
       } else if (req.status === 'submitted') {
         card.primaryAction = {
           label: 'Approve',
-          onClick: () => toast.info('Approve requirement'),
+          onClick: () => navigate('/procurement/requirements'),
         };
       } else if (req.status === 'approved') {
         card.primaryAction = {
           label: 'Add Quotations',
-          onClick: () => toast.info('Add quotations for this requirement'),
+          onClick: () => navigate('/procurement/quotations'),
         };
       } else if (req.status === 'quotations_received') {
         card.primaryAction = {
           label: 'Select & Create PO',
-          onClick: () => toast.info('Select best quotation and create PO'),
+          onClick: () => navigate('/procurement/purchase-orders'),
         };
       } else if (req.status === 'po_created') {
         card.primaryAction = {
           label: 'Receive Goods',
-          onClick: () => toast.info('Create GRN for received goods'),
+          onClick: () => navigate('/procurement/goods-receipts'),
         };
       }
 
@@ -144,7 +146,7 @@ export const ProcurementPipelinePage = () => {
             Track requirements from submission to fulfillment
           </p>
         </div>
-        <Button onClick={() => toast.info('Create new requirement')}>
+        <Button onClick={() => navigate('/procurement/requirements')}>
           <Plus className="h-4 w-4 mr-2" />
           New Requirement
         </Button>

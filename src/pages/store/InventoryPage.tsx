@@ -10,12 +10,16 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Label } from '../../components/ui/label';
 import { useCentralInventory } from '../../hooks/useCentralInventory';
 
 export const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 50 });
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [showLedger, setShowLedger] = useState(false);
 
   const { data, isLoading } = useCentralInventory(filters);
 
@@ -195,11 +199,25 @@ export const InventoryPage = () => {
 
                         {/* Quick Actions */}
                         <div className="col-span-2 flex justify-end gap-2">
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setShowLedger(false);
+                            }}
+                          >
                             <Eye className="h-3 w-3 mr-1" />
                             View
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setShowLedger(true);
+                            }}
+                          >
                             <History className="h-3 w-3 mr-1" />
                             Ledger
                           </Button>
@@ -213,6 +231,78 @@ export const InventoryPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Item Detail Dialog */}
+      {selectedItem && (
+        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {showLedger ? 'Stock Ledger' : 'Item Details'}: {selectedItem.store_item_name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {!showLedger ? (
+                // Item Details View
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-muted-foreground">Item Code</Label>
+                      <p className="font-semibold">{selectedItem.store_item_code}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Barcode</Label>
+                      <p className="font-semibold">{selectedItem.store_item_barcode || '-'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Central Store</Label>
+                      <p>
+                        {selectedItem.central_store_name || `Store #${selectedItem.central_store}`}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Current Stock</Label>
+                      <p className="text-2xl font-bold">{selectedItem.quantity_in_stock}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Min Stock Level</Label>
+                      <p>{selectedItem.min_stock_level}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Reorder Point</Label>
+                      <p>{selectedItem.reorder_point || '-'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Stock Status</Label>
+                    <div className="mt-2">
+                      <Badge variant={getStockStatus(selectedItem).variant}>
+                        {getStockStatus(selectedItem).label}
+                      </Badge>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // Ledger View
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Transaction history for this item
+                  </p>
+                  <Card className="bg-muted/30">
+                    <CardContent className="py-8 text-center text-muted-foreground">
+                      <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Stock ledger/transactions view to be implemented</p>
+                      <p className="text-xs mt-2">
+                        Will show: Date, Type (IN/OUT), Quantity, Reference, Balance
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

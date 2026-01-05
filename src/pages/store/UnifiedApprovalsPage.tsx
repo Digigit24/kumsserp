@@ -3,14 +3,14 @@
  * Shows pending approvals across different modules (Indents, Requirements, GRN, etc.)
  */
 
-import { useState } from 'react';
-import { CheckCircle, XCircle, Eye, Clock, AlertCircle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { CheckCircle, XCircle, Eye, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Dialog, DialogContent } from '../../components/ui/dialog';
 import { Checkbox } from '../../components/ui/checkbox';
 import {
   usePendingCollegeApprovals,
@@ -21,6 +21,7 @@ import {
   useSuperAdminReject,
 } from '../../hooks/useStoreIndents';
 import { IndentDetailView } from './IndentDetailView';
+import { getUserType } from '../../utils/permissions';
 
 export const UnifiedApprovalsPage = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -28,37 +29,57 @@ export const UnifiedApprovalsPage = () => {
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 50 });
 
-  // College Admin hooks
+  // Get current user's role to determine which approvals to fetch
+  const userType = useMemo(() => getUserType(), []);
+  const isCollegeAdmin = userType === 'college_admin';
+  const isSuperAdmin = userType === 'super_admin';
+
+  // College Admin hooks - conditionally enabled
+  const collegeQuery = usePendingCollegeApprovals(filters);
   const {
     data: collegePendingData,
     isLoading: collegeLoading,
     refetch: refetchCollege,
-  } = usePendingCollegeApprovals(filters);
+  } = isCollegeAdmin ? collegeQuery : { data: null, isLoading: false, refetch: () => {} };
   const collegeApproveMutation = useCollegeAdminApprove();
   const collegeRejectMutation = useCollegeAdminReject();
 
-  // Super Admin hooks
+  // Super Admin hooks - conditionally enabled
+  const superAdminQuery = usePendingSuperAdminApprovals(filters);
   const {
     data: superAdminPendingData,
     isLoading: superAdminLoading,
     refetch: refetchSuperAdmin,
-  } = usePendingSuperAdminApprovals(filters);
+  } = isSuperAdmin ? superAdminQuery : { data: null, isLoading: false, refetch: () => {} };
   const superAdminApproveMutation = useSuperAdminApprove();
   const superAdminRejectMutation = useSuperAdminReject();
 
-  // Combine pending approvals from both roles (you'd typically show only the relevant one based on user role)
-  const pendingApprovals = [
-    ...(collegePendingData?.results || []).map((item: any) => ({
-      ...item,
-      approvalType: 'college',
-    })),
-    ...(superAdminPendingData?.results || []).map((item: any) => ({
-      ...item,
-      approvalType: 'super_admin',
-    })),
-  ];
+  // Show only the relevant approvals based on user role
+  const pendingApprovals = useMemo(() => {
+    const approvals: any[] = [];
 
-  const isLoading = collegeLoading || superAdminLoading;
+    if (isCollegeAdmin && collegePendingData?.results) {
+      approvals.push(
+        ...collegePendingData.results.map((item: any) => ({
+          ...item,
+          approvalType: 'college',
+        }))
+      );
+    }
+
+    if (isSuperAdmin && superAdminPendingData?.results) {
+      approvals.push(
+        ...superAdminPendingData.results.map((item: any) => ({
+          ...item,
+          approvalType: 'super_admin',
+        }))
+      );
+    }
+
+    return approvals;
+  }, [isCollegeAdmin, isSuperAdmin, collegePendingData, superAdminPendingData]);
+
+  const isLoading = (isCollegeAdmin && collegeLoading) || (isSuperAdmin && superAdminLoading);
 
   const handleApprove = async (item: any, isBatch = false) => {
     try {

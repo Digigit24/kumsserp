@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Plus, Eye, CheckCircle, XCircle, AlertCircle, Package } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
@@ -63,6 +64,7 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
 ];
 
 export const IndentsPipelinePage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
@@ -227,7 +229,8 @@ export const IndentsPipelinePage = () => {
         card.primaryAction = {
           label: 'Prepare MIN',
           onClick: () => {
-            toast.info('MIN preparation flow to be implemented');
+            // Navigate to material issues page to create MIN for this indent
+            navigate('/store/material-issues', { state: { indentId: indent.id } });
           },
         };
       }
