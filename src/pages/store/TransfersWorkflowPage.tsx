@@ -10,12 +10,15 @@ import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import {
   useMaterialIssues,
   useDispatchMaterialIssue,
   useConfirmReceipt,
 } from '../../hooks/useMaterialIssues';
+import { useStoreIndents } from '../../hooks/useStoreIndents';
 import { Badge } from '../../components/ui/badge';
+import { PrepareDispatchDialog } from './PrepareDispatchDialog';
 
 // Kanban columns for MIN statuses
 const MIN_COLUMNS: KanbanColumn[] = [
@@ -49,8 +52,12 @@ export const TransfersWorkflowPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [dispatchIndent, setDispatchIndent] = useState<any>(null);
 
   const { data, isLoading, refetch} = useMaterialIssues(filters);
+  const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
+    status: 'super_admin_approved'
+  });
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
 
@@ -152,10 +159,6 @@ export const TransfersWorkflowPage = () => {
             Track material issue notes from central stores to colleges
           </p>
         </div>
-        <Button onClick={() => navigate('/store/material-issues')}>
-          <Package className="h-4 w-4 mr-2" />
-          Prepare MIN
-        </Button>
       </div>
 
       {/* Filters */}
@@ -192,15 +195,107 @@ export const TransfersWorkflowPage = () => {
         <p className="text-muted-foreground mb-4">
           Approved indents ready to be fulfilled and dispatched
         </p>
-        <div className="bg-muted/30 rounded-lg p-8 text-center">
-          <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            Fulfillment queue to be implemented
-            <br />
-            Will show approved indents that need MIN creation
-          </p>
-        </div>
+        {approvedIndentsData?.results && approvedIndentsData.results.length > 0 ? (
+          <div className="space-y-3">
+            {approvedIndentsData.results.map((indent: any) => (
+              <Card key={indent.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    {/* Indent Info */}
+                    <div className="col-span-3">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 rounded">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{indent.indent_number}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {indent.college_name || `College #${indent.college}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Priority */}
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">Priority</p>
+                      <Badge
+                        variant={
+                          indent.priority === 'urgent'
+                            ? 'destructive'
+                            : indent.priority === 'high'
+                            ? 'outline'
+                            : 'secondary'
+                        }
+                        className="capitalize"
+                      >
+                        {indent.priority}
+                      </Badge>
+                    </div>
+
+                    {/* Items Count */}
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">Items</p>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-blue-500" />
+                        <span className="font-semibold">{indent.items?.length || 0}</span>
+                      </div>
+                    </div>
+
+                    {/* Required By */}
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">Required By</p>
+                      <p className="text-sm">
+                        {new Date(indent.required_by_date).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-3 flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => console.log('View indent', indent)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setDispatchIndent(indent)}
+                      >
+                        <Truck className="h-3 w-3 mr-1" />
+                        Prepare Dispatch
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-muted/30 rounded-lg p-8 text-center">
+            <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+            <p className="text-muted-foreground">
+              No approved indents pending fulfillment
+              <br />
+              All indents have been processed
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Prepare Dispatch Dialog */}
+      <PrepareDispatchDialog
+        open={!!dispatchIndent}
+        onOpenChange={(open) => !open && setDispatchIndent(null)}
+        indent={dispatchIndent}
+        onSuccess={() => {
+          refetchIndents();
+          refetch();
+          setDispatchIndent(null);
+        }}
+      />
     </div>
   );
 };

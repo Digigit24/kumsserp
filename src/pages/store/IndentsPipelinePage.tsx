@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { Plus, Eye, CheckCircle, XCircle, AlertCircle, Package } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
@@ -22,6 +21,7 @@ import {
   useSuperAdminReject,
 } from '../../hooks/useStoreIndents';
 import { StoreIndentPipeline } from './forms/StoreIndentPipeline';
+import { PrepareDispatchDialog } from './PrepareDispatchDialog';
 
 // Kanban columns matching indent statuses
 const KANBAN_COLUMNS: KanbanColumn[] = [
@@ -64,10 +64,10 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
 ];
 
 export const IndentsPipelinePage = () => {
-  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
+  const [dispatchIndent, setDispatchIndent] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
@@ -229,8 +229,8 @@ export const IndentsPipelinePage = () => {
         card.primaryAction = {
           label: 'Prepare MIN',
           onClick: () => {
-            // Navigate to material issues page to create MIN for this indent
-            navigate('/store/material-issues', { state: { indentId: indent.id } });
+            // Open the prepare dispatch dialog
+            setDispatchIndent(indent);
           },
         };
       }
@@ -308,6 +308,19 @@ export const IndentsPipelinePage = () => {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Prepare Dispatch Dialog */}
+      {dispatchIndent && (
+        <PrepareDispatchDialog
+          open={!!dispatchIndent}
+          onOpenChange={(open) => !open && setDispatchIndent(null)}
+          indent={dispatchIndent}
+          onSuccess={() => {
+            setDispatchIndent(null);
+            refetch();
+          }}
+        />
       )}
     </div>
   );
