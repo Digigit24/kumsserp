@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Package, Truck, FileText, AlertCircle } from 'lucide-react';
+import { Package, Truck, FileText, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
@@ -14,18 +14,19 @@ import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { SmartActionBar } from '../../components/workflow/SmartActionBar';
 import { useCreateMaterialIssue, useDispatchMaterialIssue } from '../../hooks/useMaterialIssues';
+import { useStoreIndent } from '../../hooks/useStoreIndents';
 
 interface PrepareDispatchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  indent: any;
+  indentId: number | null;
   onSuccess?: () => void;
 }
 
 export const PrepareDispatchDialog = ({
   open,
   onOpenChange,
-  indent,
+  indentId,
   onSuccess,
 }: PrepareDispatchDialogProps) => {
   const [minNumber, setMinNumber] = useState('');
@@ -34,12 +35,15 @@ export const PrepareDispatchDialog = ({
   const [minId, setMinId] = useState<number | null>(null);
   const [step, setStep] = useState<'prepare' | 'dispatch'>('prepare');
 
+  // Fetch full indent details with items
+  const { data: indent, isLoading: isLoadingIndent } = useStoreIndent(indentId || 0);
+
   const createMutation = useCreateMaterialIssue();
   const dispatchMutation = useDispatchMaterialIssue();
 
   // Initialize items from indent when dialog opens
   useEffect(() => {
-    if (open && indent) {
+    if (open && indent && !isLoadingIndent) {
       // Auto-generate MIN number
       const autoMinNumber = `MIN-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
       setMinNumber(autoMinNumber);
@@ -48,13 +52,13 @@ export const PrepareDispatchDialog = ({
       const minItems = indent.items?.map((item: any) => ({
         indent_item: item.id,
         central_store_item: item.central_store_item,
-        item_name: item.central_store_item_name || `Item #${item.central_store_item}`,
+        item_name: item.central_store_item_name || item.store_item_name || `Item #${item.central_store_item}`,
         requested_quantity: item.requested_quantity,
         approved_quantity: item.approved_quantity || item.requested_quantity,
-        available_quantity: item.available_quantity || item.requested_quantity, // This should come from backend
+        available_quantity: item.available_quantity || item.approved_quantity || item.requested_quantity, // This should come from backend
         issued_quantity: Math.min(
           item.approved_quantity || item.requested_quantity,
-          item.available_quantity || item.requested_quantity
+          item.available_quantity || item.approved_quantity || item.requested_quantity
         ),
         unit: item.unit,
         has_shortage: false,
@@ -65,7 +69,7 @@ export const PrepareDispatchDialog = ({
       setStep('prepare');
       setMinId(null);
     }
-  }, [open, indent]);
+  }, [open, indent, isLoadingIndent]);
 
   const handleQuantityChange = (index: number, quantity: number) => {
     setItems(prev => {
@@ -166,7 +170,15 @@ export const PrepareDispatchDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-20">
+        {isLoadingIndent ? (
+          <div className="flex-1 flex items-center justify-center py-12">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+              <p className="text-muted-foreground">Loading indent details...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-6 pb-20">
           {/* Status Chips */}
           <div className="flex items-center gap-2 mb-6">
             <Badge variant={step === 'prepare' ? 'default' : 'outline'}>
@@ -363,9 +375,11 @@ export const PrepareDispatchDialog = ({
               </div>
             </>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Smart Action Bar */}
+        {!isLoadingIndent && (
         <SmartActionBar
           primaryAction={
             step === 'prepare'
@@ -396,6 +410,7 @@ export const PrepareDispatchDialog = ({
           }
           onClose={() => onOpenChange(false)}
         />
+        )}
       </DialogContent>
     </Dialog>
   );

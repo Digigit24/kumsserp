@@ -52,7 +52,7 @@ export const TransfersWorkflowPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
-  const [dispatchIndent, setDispatchIndent] = useState<any>(null);
+  const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
 
   const { data, isLoading, refetch} = useMaterialIssues(filters);
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
@@ -262,7 +262,7 @@ export const TransfersWorkflowPage = () => {
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => setDispatchIndent(indent)}
+                        onClick={() => setDispatchIndentId(indent.id)}
                       >
                         <Truck className="h-3 w-3 mr-1" />
                         Prepare Dispatch
@@ -287,13 +287,13 @@ export const TransfersWorkflowPage = () => {
 
       {/* Prepare Dispatch Dialog */}
       <PrepareDispatchDialog
-        open={!!dispatchIndent}
-        onOpenChange={(open) => !open && setDispatchIndent(null)}
-        indent={dispatchIndent}
+        open={!!dispatchIndentId}
+        onOpenChange={(open) => !open && setDispatchIndentId(null)}
+        indentId={dispatchIndentId}
         onSuccess={() => {
           refetchIndents();
           refetch();
-          setDispatchIndent(null);
+          setDispatchIndentId(null);
         }}
       />
     </div>

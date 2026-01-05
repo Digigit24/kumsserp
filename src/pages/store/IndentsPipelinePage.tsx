@@ -67,7 +67,7 @@ export const IndentsPipelinePage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
-  const [dispatchIndent, setDispatchIndent] = useState<any>(null);
+  const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
@@ -230,7 +230,7 @@ export const IndentsPipelinePage = () => {
           label: 'Prepare MIN',
           onClick: () => {
             // Open the prepare dispatch dialog
-            setDispatchIndent(indent);
+            setDispatchIndentId(indent.id);
           },
         };
       }
@@ -311,17 +311,15 @@ export const IndentsPipelinePage = () => {
       )}
 
       {/* Prepare Dispatch Dialog */}
-      {dispatchIndent && (
-        <PrepareDispatchDialog
-          open={!!dispatchIndent}
-          onOpenChange={(open) => !open && setDispatchIndent(null)}
-          indent={dispatchIndent}
-          onSuccess={() => {
-            setDispatchIndent(null);
-            refetch();
-          }}
-        />
-      )}
+      <PrepareDispatchDialog
+        open={!!dispatchIndentId}
+        onOpenChange={(open) => !open && setDispatchIndentId(null)}
+        indentId={dispatchIndentId}
+        onSuccess={() => {
+          setDispatchIndentId(null);
+          refetch();
+        }}
+      />
     </div>
   );
 };
