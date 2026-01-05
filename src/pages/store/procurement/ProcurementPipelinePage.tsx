@@ -12,6 +12,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { useRequirements } from '../../../hooks/useProcurement';
 import { CreateRequirementDialog } from './CreateRequirementDialog';
+import { RequirementDetailDialog } from './RequirementDetailDialog';
 
 // Kanban columns for procurement workflow
 const PROCUREMENT_COLUMNS: KanbanColumn[] = [
@@ -58,7 +59,7 @@ export const ProcurementPipelinePage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedRequirement, setSelectedRequirement] = useState<any>(null);
+  const [selectedRequirementId, setSelectedRequirementId] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useRequirements(filters);
 
@@ -99,12 +100,12 @@ export const ProcurementPipelinePage = () => {
             color: 'text-muted-foreground',
           },
         ],
-        onCardClick: () => setSelectedRequirement(req),
+        onCardClick: () => setSelectedRequirementId(req.id),
         secondaryActions: [
           {
             label: 'View',
             icon: Eye,
-            onClick: () => setSelectedRequirement(req),
+            onClick: () => setSelectedRequirementId(req.id),
           },
         ],
       };
@@ -113,27 +114,27 @@ export const ProcurementPipelinePage = () => {
       if (req.status === 'draft') {
         card.primaryAction = {
           label: 'Submit',
-          onClick: () => setSelectedRequirement(req),
+          onClick: () => setSelectedRequirementId(req.id),
         };
       } else if (req.status === 'submitted') {
         card.primaryAction = {
           label: 'Approve',
-          onClick: () => setSelectedRequirement(req),
+          onClick: () => setSelectedRequirementId(req.id),
         };
       } else if (req.status === 'approved') {
         card.primaryAction = {
           label: 'Add Quotations',
-          onClick: () => setSelectedRequirement(req),
+          onClick: () => setSelectedRequirementId(req.id),
         };
       } else if (req.status === 'quotations_received') {
         card.primaryAction = {
           label: 'Select & Create PO',
-          onClick: () => setSelectedRequirement(req),
+          onClick: () => setSelectedRequirementId(req.id),
         };
       } else if (req.status === 'po_created') {
         card.primaryAction = {
           label: 'Receive Goods',
-          onClick: () => setSelectedRequirement(req),
+          onClick: () => setSelectedRequirementId(req.id),
         };
       }
 
@@ -238,19 +239,16 @@ export const ProcurementPipelinePage = () => {
         }}
       />
 
-      {/* Requirement Detail Dialog - TODO: Create this component */}
-      {selectedRequirement && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-background rounded-lg p-6 max-w-2xl">
-            <h3 className="text-lg font-semibold mb-2">Requirement Detail</h3>
-            <p className="text-muted-foreground mb-4">
-              {selectedRequirement.requirement_number} - Status: {selectedRequirement.status}
-            </p>
-            <p className="text-sm mb-4">This dialog will be replaced with RequirementDetailDialog component</p>
-            <Button onClick={() => setSelectedRequirement(null)}>Close</Button>
-          </div>
-        </div>
-      )}
+      {/* Requirement Detail Dialog */}
+      <RequirementDetailDialog
+        open={!!selectedRequirementId}
+        onOpenChange={(open) => !open && setSelectedRequirementId(null)}
+        requirementId={selectedRequirementId}
+        onSuccess={() => {
+          refetch();
+          setSelectedRequirementId(null);
+        }}
+      />
     </div>
   );
 };

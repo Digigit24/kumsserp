@@ -95,10 +95,32 @@ export const useSelectQuotation = () => {
   });
 };
 
-export const useSubmitRequirementForApproval = () => {
+export const useSubmitRequirement = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => procurementRequirementsApi.submitForApproval(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.detail(variables.id) });
+    },
+  });
+};
+
+export const useApproveRequirement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => procurementRequirementsApi.approve(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.detail(variables.id) });
+    },
+  });
+};
+
+export const useRejectRequirement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => procurementRequirementsApi.reject(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
       queryClient.invalidateQueries({ queryKey: requirementKeys.detail(variables.id) });
