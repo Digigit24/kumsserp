@@ -82,7 +82,11 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Please select a Central Store first before adding items.
+            <strong>Important:</strong> Please select a Central Store first before adding items.
+            <br />
+            <span className="text-xs mt-1 block">
+              If no items appear, ensure Central Store Inventory has been set up by the Super Admin.
+            </span>
           </AlertDescription>
         </Alert>
       )}

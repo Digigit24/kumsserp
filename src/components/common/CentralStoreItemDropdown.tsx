@@ -117,7 +117,13 @@ export function CentralStoreItemDropdown({
             )}
 
             {/* Helper text */}
-            {centralStoreId && (
+            {items.length === 0 && !isLoading && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    No central store items available. Please ask Super Admin to add items to Central Inventory first.
+                </p>
+            )}
+            {centralStoreId && items.length > 0 && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Package className="h-3 w-3" />
                     Showing items from selected store
