@@ -37,6 +37,19 @@ export const useCreateStoreIndent = () => {
       if (cleanedData.items && Array.isArray(cleanedData.items)) {
         cleanedData.items = cleanedData.items.map((item: any) => {
           const { indent, ...itemWithoutIndent } = item;
+
+          // Ensure central_store_item is a number
+          if (itemWithoutIndent.central_store_item) {
+            itemWithoutIndent.central_store_item = parseInt(itemWithoutIndent.central_store_item);
+          }
+
+          // Clean empty strings from item fields
+          Object.keys(itemWithoutIndent).forEach(key => {
+            if (itemWithoutIndent[key] === '') {
+              delete itemWithoutIndent[key];
+            }
+          });
+
           return itemWithoutIndent;
         });
       }
@@ -79,6 +92,19 @@ export const useUpdateStoreIndent = () => {
       if (cleanedData.items && Array.isArray(cleanedData.items)) {
         cleanedData.items = cleanedData.items.map((item: any) => {
           const { indent, ...itemWithoutIndent } = item;
+
+          // Ensure central_store_item is a number
+          if (itemWithoutIndent.central_store_item) {
+            itemWithoutIndent.central_store_item = parseInt(itemWithoutIndent.central_store_item);
+          }
+
+          // Clean empty strings from item fields
+          Object.keys(itemWithoutIndent).forEach(key => {
+            if (itemWithoutIndent[key] === '') {
+              delete itemWithoutIndent[key];
+            }
+          });
+
           return itemWithoutIndent;
         });
       }
