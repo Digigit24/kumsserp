@@ -1,18 +1,119 @@
 import { useState } from 'react';
-import { Truck, FileText, Package } from 'lucide-react';
+import { Truck, FileText, Package, Plus, Edit, Trash2 } from 'lucide-react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useMaterialIssues, useDispatchMaterialIssue, useConfirmReceipt, useGeneratePdf } from '../../hooks/useMaterialIssues';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import {
+  useMaterialIssues,
+  useCreateMaterialIssue,
+  useUpdateMaterialIssue,
+  useDeleteMaterialIssue,
+  useDispatchMaterialIssue,
+  useConfirmReceipt,
+  useGeneratePdf,
+} from '../../hooks/useMaterialIssues';
+import { MaterialIssueForm } from './forms/MaterialIssueForm';
 import { toast } from 'sonner';
 
 export const MaterialIssuesPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [issueToDelete, setIssueToDelete] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useMaterialIssues(filters);
+  const createMutation = useCreateMaterialIssue();
+  const updateMutation = useUpdateMaterialIssue();
+  const deleteMutation = useDeleteMaterialIssue();
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
   const generatePdfMutation = useGeneratePdf();
+
+  const handleCreate = () => {
+    setSelectedIssue(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (issue: any) => {
+    setSelectedIssue(issue);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setIssueToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!issueToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(issueToDelete);
+      toast.success('Material issue deleted successfully');
+      refetch();
+      setDeleteDialogOpen(false);
+      setIssueToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete material issue');
+    }
+  };
+
+  const handleSubmit = async (data: any) => {
+    try {
+      // Clean data - convert empty strings to null/undefined
+      const cleanedData = { ...data };
+
+      // Clean items
+      if (cleanedData.items && Array.isArray(cleanedData.items)) {
+        cleanedData.items = cleanedData.items.map((item: any) => {
+          const cleanedItem = { ...item };
+          Object.keys(cleanedItem).forEach(key => {
+            if (cleanedItem[key] === '') {
+              delete cleanedItem[key];
+            }
+          });
+          return cleanedItem;
+        });
+      }
+
+      // Clean main object
+      const optionalFields = [
+        'dispatch_date',
+        'receipt_date',
+        'min_document',
+        'internal_notes',
+        'receipt_confirmation_notes',
+        'issued_by',
+        'received_by',
+        'transport_mode',
+        'vehicle_number',
+        'driver_name',
+        'driver_contact',
+      ];
+
+      optionalFields.forEach(field => {
+        if (cleanedData[field] === '' || cleanedData[field] === null) {
+          delete cleanedData[field];
+        }
+      });
+
+      if (selectedIssue) {
+        await updateMutation.mutateAsync({ id: selectedIssue.id, data: cleanedData });
+        toast.success('Material issue updated successfully');
+      } else {
+        await createMutation.mutateAsync(cleanedData);
+        toast.success('Material issue created successfully');
+      }
+      setIsFormOpen(false);
+      refetch();
+    } catch (error: any) {
+      console.error('Material Issue Error:', error);
+      toast.error(error.message || 'Failed to save material issue');
+    }
+  };
 
   const handleDispatch = async (issue: any) => {
     try {
@@ -98,6 +199,12 @@ export const MaterialIssuesPage = () => {
             <FileText className="h-4 w-4 mr-1" />
             PDF
           </Button>
+          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },
@@ -105,9 +212,15 @@ export const MaterialIssuesPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Material Issues</h1>
-        <p className="text-muted-foreground">Track material transfers from central stores</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Material Issues</h1>
+          <p className="text-muted-foreground">Track material transfers from central stores</p>
+        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-1" />
+          Create Material Issue
+        </Button>
       </div>
 
       <DataTable
@@ -115,6 +228,27 @@ export const MaterialIssuesPage = () => {
         data={data}
         isLoading={isLoading}
         onPageChange={(page) => setFilters({ ...filters, page })}
+      />
+
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedIssue ? 'Edit Material Issue' : 'Create New Material Issue'}</DialogTitle>
+          </DialogHeader>
+          <MaterialIssueForm
+            materialIssue={selectedIssue}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Material Issue"
+        description="Are you sure you want to delete this material issue? This action cannot be undone."
       />
     </div>
   );
