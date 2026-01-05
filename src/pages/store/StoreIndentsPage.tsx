@@ -15,6 +15,7 @@ import {
   useUpdateStoreIndent,
 } from '../../hooks/useStoreIndents';
 import { StoreIndentForm } from './forms/StoreIndentForm';
+import { StoreIndentPipeline } from './forms/StoreIndentPipeline';
 
 export const StoreIndentsPage = () => {
   const navigate = useNavigate();
@@ -248,15 +249,23 @@ export const StoreIndentsPage = () => {
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className={`${selectedIndent ? 'max-w-4xl' : 'max-w-5xl'} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>{selectedIndent ? 'Edit Indent' : 'Create New Indent'}</DialogTitle>
           </DialogHeader>
-          <StoreIndentForm
-            indent={selectedIndent}
-            onSubmit={handleSubmit}
-            onCancel={() => setIsFormOpen(false)}
-          />
+          {selectedIndent ? (
+            <StoreIndentForm
+              indent={selectedIndent}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsFormOpen(false)}
+            />
+          ) : (
+            <StoreIndentPipeline
+              onSubmit={handleSubmit}
+              onCancel={() => setIsFormOpen(false)}
+              isSubmitting={createMutation.isPending}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
