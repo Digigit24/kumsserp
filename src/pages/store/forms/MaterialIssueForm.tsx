@@ -2,22 +2,21 @@
  * Material Issue Form - Create/Edit material issues
  */
 
-import { useEffect } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
-import { Textarea } from '../../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { StoreIndentDropdown } from '../../../components/common/StoreIndentDropdown';
+import { Plus, Trash2 } from 'lucide-react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
-import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
+import { StoreIndentDropdown } from '../../../components/common/StoreIndentDropdown';
 import { StoreItemDropdown } from '../../../components/common/StoreItemDropdown';
-import { Alert, AlertDescription } from '../../../components/ui/alert';
+import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface MaterialIssueFormProps {
   materialIssue?: any;
@@ -29,6 +28,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
   const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
     defaultValues: materialIssue || {
       min_number: '',
+      college: '',
       issue_date: new Date().toISOString().split('T')[0],
       transport_mode: '',
       vehicle_number: '',
@@ -66,6 +66,8 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
   });
 
   const indentId = watch('indent');
+  const { user } = useAuth();
+  const isSuperAdmin = (user as any)?.is_superuser || (user as any)?.user_type === 'super_admin';
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -75,6 +77,24 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
           <CardTitle>Material Issue Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isSuperAdmin && (
+            <div>
+              <Label htmlFor="college">College (Super Admin Only)</Label>
+              <Controller
+                name="college"
+                control={control}
+                rules={{ required: 'College is required for Super Admin' }}
+                render={({ field }) => (
+                  <CollegeDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    error={errors.college ? String(errors.college.message) : undefined}
+                  />
+                )}
+              />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="min_number" required>MIN Number</Label>

@@ -86,6 +86,8 @@ export interface Chat {
   updated_by: string;
   sender: string;
   receiver: string;
+  sender_name?: string;
+  receiver_name?: string;
 }
 
 export interface ChatCreateInput {

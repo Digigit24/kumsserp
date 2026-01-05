@@ -3,39 +3,39 @@
  * Steps: 1. Request Details → 2. Add Items → 3. Review & Submit
  */
 
-import { useState } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronRight,
+  AlertCircle,
+  CheckCircle,
   ChevronLeft,
+  ChevronRight,
+  Edit2,
   FileText,
   Package,
-  CheckCircle,
+  PackagePlus,
   Plus,
   Trash2,
-  Edit2,
-  AlertCircle,
-  PackagePlus,
 } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
-import { Alert, AlertDescription } from '../../../components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
-import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
+import { useEffect, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
+import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
 import { SearchableSelect } from '../../../components/ui/searchable-select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Textarea } from '../../../components/ui/textarea';
 import { useCreateStoreItem } from '../../../hooks/useStore';
-import { useQuery } from '@tanstack/react-query';
 import { categoriesApi } from '../../../services/store.service';
-import { toast } from 'sonner';
 
 interface StoreIndentPipelineProps {
   onSubmit: (data: any) => void;
@@ -61,8 +61,13 @@ const stepVariants = {
 };
 
 export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreIndentPipelineProps) => {
-  const [currentStep, setCurrentStep] = useState<StepType>(1);
+  const [currentStep, setCurrentStep] = useState<StepType>(() => {
+    const savedStep = localStorage.getItem('STORE_INDENT_STEP');
+    return savedStep ? (parseInt(savedStep) as StepType) : 1;
+  });
   const [direction, setDirection] = useState(0);
+
+
   const [isCreateItemDialogOpen, setIsCreateItemDialogOpen] = useState(false);
   const [newItemForm, setNewItemForm] = useState({
     code: '',
@@ -90,7 +95,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
     label: `${category.name} (${category.code})`,
   })) || [];
 
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger } = useForm({
+  const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger, reset } = useForm({
     defaultValues: {
       indent_number: '',
       required_by_date: '',
@@ -120,6 +125,42 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
     control,
     name: 'items',
   });
+
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('STORE_INDENT_DRAFT');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed) {
+          // Restore form data
+          reset(parsed);
+
+          // Restore step logic if needed? 
+          // Often users want to jump back to where they were.
+          // But for now, starting at step 1 with data filled is fine.
+          // Actually, let's also restore the current step if we saved it?
+          // Form data doesn't include 'currentStep' state. 
+          // We'll stick to form data.
+        }
+      } catch (error) {
+        console.error('Failed to load draft:', error);
+      }
+    }
+  }, [reset]);
+
+  // Save draft on change
+  useEffect(() => {
+    const subscription = watch((value) => {
+      localStorage.setItem('STORE_INDENT_DRAFT', JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // Save current step on change
+  useEffect(() => {
+    localStorage.setItem('STORE_INDENT_STEP', currentStep.toString());
+  }, [currentStep]);
 
   const centralStoreId = watch('central_store');
   const collegeId = watch('college');
@@ -180,6 +221,8 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
   };
 
   const handleFinalSubmit = handleSubmit((data) => {
+    localStorage.removeItem('STORE_INDENT_DRAFT');
+    localStorage.removeItem('STORE_INDENT_STEP');
     onSubmit(data);
   });
 
@@ -225,13 +268,12 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
           <div key={step.number} className="flex items-center flex-1">
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
-                  currentStep > step.number
-                    ? 'bg-primary border-primary text-primary-foreground'
-                    : currentStep === step.number
+                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${currentStep > step.number
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : currentStep === step.number
                     ? 'border-primary text-primary'
                     : 'border-muted text-muted-foreground'
-                }`}
+                  }`}
               >
                 {currentStep > step.number ? (
                   <CheckCircle className="h-5 w-5" />
@@ -240,18 +282,16 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                 )}
               </div>
               <span
-                className={`text-xs mt-1 font-medium ${
-                  currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'
-                }`}
+                className={`text-xs mt-1 font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'
+                  }`}
               >
                 {step.title}
               </span>
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`h-0.5 flex-1 mx-2 transition-all ${
-                  currentStep > step.number ? 'bg-primary' : 'bg-muted'
-                }`}
+                className={`h-0.5 flex-1 mx-2 transition-all ${currentStep > step.number ? 'bg-primary' : 'bg-muted'
+                  }`}
               />
             )}
           </div>

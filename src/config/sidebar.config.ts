@@ -1,30 +1,30 @@
 import {
-  BarChart,
-  Bell,
-  BookOpen,
-  Briefcase,
-  Bug,
-  Building2,
-  Calendar,
-  CheckSquare,
-  ClipboardList,
-  Coins,
-  CreditCard,
-  FileText,
-  Folder,
-  GraduationCap,
-  Home,
-  Library,
-  Mail,
-  MessageSquare,
-  PenTool,
-  School,
-  Send,
-  Settings,
-  Shield,
-  ShoppingCart,
-  Store,
-  Users,
+    BarChart,
+    Bell,
+    BookOpen,
+    Briefcase,
+    Bug,
+    Building2,
+    Calendar,
+    CheckSquare,
+    ClipboardList,
+    Coins,
+    CreditCard,
+    FileText,
+    Folder,
+    GraduationCap,
+    Home,
+    Library,
+    Mail,
+    MessageSquare,
+    PenTool,
+    School,
+    Send,
+    Settings,
+    Shield,
+    ShoppingCart,
+    Store,
+    Users,
 } from "lucide-react";
 
 export interface SidebarItem {
@@ -896,7 +896,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Communication",
     icon: MessageSquare,
-    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager"],
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff"],
     items: [
       // {
       //   name: "Communication Center",
@@ -904,35 +904,35 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
       //   icon: MessageSquare,
       //   roles: ["super_admin", "college_admin"], // Admin communication center
       // },
-      {
-        name: "Teacher Messages",
-        href: "/communication/teacher",
-        icon: MessageSquare,
-        roles: ["teacher"], // Teacher communication
-      },
-      {
-        name: "Messages",
-        href: "/communication/student",
-        icon: MessageSquare,
-        roles: ["student"], // Student communication
-      },
+      // {
+      //   name: "Teacher Messages",
+      //   href: "/communication/teacher",
+      //   icon: MessageSquare,
+      //   roles: ["teacher"], // Teacher communication
+      // },
+      // {
+      //   name: "Messages",
+      //   href: "/communication/student",
+      //   icon: MessageSquare,
+      //   roles: ["student"], // Student communication
+      // },
       {
         name: "Notices",
         href: "/communication/notices",
         icon: Bell,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager"], // All can view
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff"], // All can view
       },
       {
         name: "Bulk Messages",
         href: "/communication/bulk-messages",
         icon: Send,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "staff"],
       },
       {
         name: "Chats",
         href: "/communication/chats",
         icon: Mail,
-        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager", "staff"],
       },
       {
         name: "Events",

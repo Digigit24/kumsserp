@@ -9,14 +9,14 @@
 
 import apiClient from '@/api/apiClient';
 import type {
-  PermissionsResponse,
-  ContextOptionsResponse,
-  CollegeOption,
-  ClassOption,
-  SectionOption,
-  UserPermissionsJSON,
-  NormalizedPermissions,
-  UserContext,
+    ClassOption,
+    CollegeOption,
+    ContextOptionsResponse,
+    NormalizedPermissions,
+    PermissionsResponse,
+    SectionOption,
+    UserContext,
+    UserPermissionsJSON,
 } from '@/types/permissions.types';
 
 // ============================================================================

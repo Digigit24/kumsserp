@@ -5,6 +5,8 @@
 import type { User } from "../types/auth.types";
 // Base API URL - Development
 export const API_BASE_URL = "http://127.0.0.1:8000";
+export const WS_CHAT_URL = "ws://127.0.0.1:8000/ws/chat/";
+export const WS_NOTIFICATIONS_URL = "ws://127.0.0.1:8000/ws/notifications/";
 
 /**
  * API Endpoints
@@ -743,15 +745,7 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/fees/online-payments/${id}/`,
   },
 
-  // Library Module - Book Categories
-  bookCategories: {
-    list: "/api/v1/library/categories/",
-    create: "/api/v1/library/categories/",
-    detail: (id: number) => `/api/v1/library/categories/${id}/`,
-    update: (id: number) => `/api/v1/library/categories/${id}/`,
-    patch: (id: number) => `/api/v1/library/categories/${id}/`,
-    delete: (id: number) => `/api/v1/library/categories/${id}/`,
-  },
+
 
   // Library Module - Books
   books: {
@@ -786,15 +780,7 @@ export const API_ENDPOINTS = {
     renew: (id: number) => `/api/v1/library/issues/${id}/renew/`,
   },
 
-  // Library Module - Book Categories
-  bookCategories: {
-    list: "/api/v1/library/categories/",
-    create: "/api/v1/library/categories/",
-    detail: (id: number) => `/api/v1/library/categories/${id}/`,
-    update: (id: number) => `/api/v1/library/categories/${id}/`,
-    patch: (id: number) => `/api/v1/library/categories/${id}/`,
-    delete: (id: number) => `/api/v1/library/categories/${id}/`,
-  },
+
 
   // Library Module - Library Cards
   libraryCards: {

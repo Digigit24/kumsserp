@@ -1,24 +1,25 @@
 // Bulk Messages Page
-import { useState } from 'react';
 import { format } from 'date-fns';
-import { Mail, Plus, Pencil, Trash2, Send, Calendar, Users } from 'lucide-react';
+import { Calendar, Mail, Pencil, Plus, Send, Trash2, Users } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { BulkMessageForm } from './forms/BulkMessageForm';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useAuth } from '../../hooks/useAuth';
 import {
   useBulkMessages,
   useCreateBulkMessage,
-  useUpdateBulkMessage,
   useDeleteBulkMessage,
+  useUpdateBulkMessage,
 } from '../../hooks/useCommunication';
 import type { BulkMessage, BulkMessageFilters } from '../../types/communication.types';
+import { BulkMessageForm } from './forms/BulkMessageForm';
 
 export const BulkMessagesPage = () => {
   const { user } = useAuth();
+  const authUser = user as any;
   const [filters, setFilters] = useState<BulkMessageFilters>({
     page: 1,
     page_size: 10,
@@ -52,7 +53,7 @@ export const BulkMessagesPage = () => {
         scheduled_at: formData.scheduled_at || null,
         sent_at: formData.sent_at || null,
         // Add college field from current user if not present
-        college: formData.college || user?.college || null,
+        college: formData.college || authUser?.college || null,
       };
 
       if (selectedMessage) {
@@ -130,10 +131,12 @@ export const BulkMessagesPage = () => {
           <h1 className="text-3xl font-bold">Bulk Messages</h1>
           <p className="text-gray-500 mt-1">Send messages to multiple recipients</p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Bulk Message
-        </Button>
+        {authUser?.user_type !== 'student' && (
+          <Button onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Bulk Message
+          </Button>
+        )}
       </div>
 
       {/* Messages List */}
@@ -152,10 +155,12 @@ export const BulkMessagesPage = () => {
               <p className="text-gray-500 mb-6">
                 Get started by creating your first bulk message
               </p>
-              <Button onClick={handleCreate}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Bulk Message
-              </Button>
+              {authUser?.user_type !== 'student' && (
+                <Button onClick={handleCreate}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Bulk Message
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -215,22 +220,24 @@ export const BulkMessagesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(message)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(message.id)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
+                    {authUser?.user_type !== 'student' && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(message)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(message.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -292,7 +299,7 @@ export const BulkMessagesPage = () => {
       {/* Delete Confirmation */}
       <ConfirmDialog
         open={deleteId !== null}
-        onClose={() => setDeleteId(null)}
+        onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         title="Delete Bulk Message"
         description="Are you sure you want to delete this bulk message? This action cannot be undone."

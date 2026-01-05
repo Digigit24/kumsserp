@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { getFilteredSidebarGroups } from "@/config/sidebar.config"
-import { ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/useAuth"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getFilteredSidebarGroups } from "@/config/sidebar.config"
+import { useAuth } from "@/hooks/useAuth"
+import { cn } from "@/lib/utils"
+import { ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Link, useLocation } from "react-router-dom"
 
 const GLASS_STYLES = {
   container: cn(
@@ -49,14 +49,32 @@ const GLASS_STYLES = {
   )
 }
 
+import { WS_NOTIFICATIONS_URL } from "@/config/api.config"
+import { useChatSocket } from "@/hooks/useChatSocket"
+import { useEffect } from "react"
+import { toast } from "sonner"
+
 export const Sidebar = () => {
   const location = useLocation()
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [openPopover, setOpenPopover] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { user, token } = useAuth()
 
-  // Get user type from auth store or localStorage
+  // Notification Socket
+  const { lastMessage: notificationMsg } = useChatSocket(WS_NOTIFICATIONS_URL, token);
+
+  useEffect(() => {
+    if (notificationMsg) {
+      // Assuming payload structure: { title: "New Notice", message: "..." }
+      // or just a string. For now, we display mostly raw or simple format.
+      const title = notificationMsg.title || "New Notification";
+      const desc = notificationMsg.message || "You have a new update.";
+      toast.info(title, { description: desc });
+    }
+  }, [notificationMsg]);
+
+
   const userType = useMemo(() => {
     if (user?.user_type) return user.user_type
 

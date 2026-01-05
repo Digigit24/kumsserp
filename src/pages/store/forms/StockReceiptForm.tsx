@@ -2,15 +2,17 @@
  * Stock Receipt Form - Create/Edit stock receipts
  */
 
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { useVendors, useStoreItems } from '../../../hooks/useStore';
-import { useEffect } from 'react';
+import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
+import { useAuth } from '../../../hooks/useAuth';
+import { useStoreItems, useVendors } from '../../../hooks/useStore';
 
 interface StockReceiptFormProps {
   receipt?: any;
@@ -40,6 +42,9 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
   const quantity = watch('quantity');
   const unitPrice = watch('unit_price');
 
+  const { user } = useAuth();
+  const isSuperAdmin = (user as any)?.is_superuser || (user as any)?.user_type === 'super_admin';
+
   // Auto-calculate total amount
   useEffect(() => {
     if (quantity && unitPrice) {
@@ -50,6 +55,25 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {isSuperAdmin && (
+        <div>
+          <Label htmlFor="college">College (Super Admin Only)</Label>
+          <Controller
+            name="college"
+            control={control}
+            rules={{ required: 'College is required for Super Admin' }}
+            render={({ field }) => (
+              <CollegeDropdown
+                value={field.value}
+                onChange={field.onChange}
+                required
+                error={errors.college?.message as string}
+              />
+            )}
+          />
+        </div>
+      )}
+
       <div>
         <Label htmlFor="vendor">Vendor *</Label>
         <Controller
@@ -71,7 +95,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
             </Select>
           )}
         />
-        {errors.vendor && <p className="text-sm text-red-500">{errors.vendor.message}</p>}
+        {errors.vendor && <p className="text-sm text-red-500">{errors.vendor.message as string}</p>}
       </div>
 
       <div>
@@ -95,7 +119,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
             </Select>
           )}
         />
-        {errors.item && <p className="text-sm text-red-500">{errors.item.message}</p>}
+        {errors.item && <p className="text-sm text-red-500">{errors.item.message as string}</p>}
       </div>
 
       <div>
@@ -104,7 +128,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
           id="invoice_number"
           {...register('invoice_number', { required: 'Invoice number is required' })}
         />
-        {errors.invoice_number && <p className="text-sm text-red-500">{errors.invoice_number.message}</p>}
+        {errors.invoice_number && <p className="text-sm text-red-500">{errors.invoice_number.message as string}</p>}
       </div>
 
       <div>
@@ -114,7 +138,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
           type="number"
           {...register('quantity', { required: 'Quantity is required', min: 1 })}
         />
-        {errors.quantity && <p className="text-sm text-red-500">{errors.quantity.message}</p>}
+        {errors.quantity && <p className="text-sm text-red-500">{errors.quantity.message as string}</p>}
       </div>
 
       <div>
@@ -125,7 +149,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
           step="0.01"
           {...register('unit_price', { required: 'Unit price is required', min: 0 })}
         />
-        {errors.unit_price && <p className="text-sm text-red-500">{errors.unit_price.message}</p>}
+        {errors.unit_price && <p className="text-sm text-red-500">{errors.unit_price.message as string}</p>}
       </div>
 
       <div>
@@ -147,7 +171,7 @@ export const StockReceiptForm = ({ receipt, onSubmit, onCancel }: StockReceiptFo
           type="date"
           {...register('receive_date', { required: 'Receive date is required' })}
         />
-        {errors.receive_date && <p className="text-sm text-red-500">{errors.receive_date.message}</p>}
+        {errors.receive_date && <p className="text-sm text-red-500">{errors.receive_date.message as string}</p>}
       </div>
 
       <div>

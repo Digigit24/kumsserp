@@ -1,4 +1,4 @@
-import { Edit, ExternalLink, Plus, Send, Trash2 } from 'lucide-react';
+import { Edit, Plus, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -175,36 +175,12 @@ export const StoreIndentsPage = () => {
     {
       key: 'college',
       label: 'College',
-      render: (row) => `College #${row.college}`,
+      render: (row) => row.college_name || `College #${row.college}`,
     },
     {
       key: 'central_store',
       label: 'Central Store',
-      render: (row) => `Store #${row.central_store}`,
-    },
-    {
-      key: 'approval_status',
-      label: 'Approval',
-      render: (row) => {
-        if (row.approval_request) {
-          return (
-            <div className="flex items-center gap-2">
-              <Badge variant={getStatusVariant(row.approval_request.status)} className="capitalize">
-                {row.approval_request.status}
-              </Badge>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate(`/approvals/${row.approval_request.id}`)}
-                title="View approval details"
-              >
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            </div>
-          );
-        }
-        return <span className="text-muted-foreground text-sm">-</span>;
-      },
+      render: (row) => row.central_store_name || `Store #${row.central_store}`,
     },
     {
       key: 'actions',
