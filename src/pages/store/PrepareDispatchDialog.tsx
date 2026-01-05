@@ -113,7 +113,7 @@ export const PrepareDispatchDialog = ({
     try {
       const minData = {
         min_number: minNumber,
-        store_indent: indent.id,
+        indent: indent.id,
         central_store: indent.central_store,
         receiving_college: indent.college,
         issue_date: issueDate,
@@ -121,7 +121,7 @@ export const PrepareDispatchDialog = ({
         items: items
           .filter(item => item.issued_quantity > 0)
           .map(item => ({
-            indent_item: item.indent_item,
+            item: item.central_store_item,
             issued_quantity: item.issued_quantity,
             unit: item.unit,
             has_shortage: item.has_shortage,
@@ -162,8 +162,8 @@ export const PrepareDispatchDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col">
-        <DialogHeader className="p-6 pb-4">
+      <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="p-6 pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
             {step === 'prepare' ? 'Prepare Dispatch' : 'Dispatch Material'}
@@ -178,7 +178,7 @@ export const PrepareDispatchDialog = ({
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 pb-20">
+          <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
           {/* Status Chips */}
           <div className="flex items-center gap-2 mb-6">
             <Badge variant={step === 'prepare' ? 'default' : 'outline'}>
@@ -380,36 +380,40 @@ export const PrepareDispatchDialog = ({
 
         {/* Smart Action Bar */}
         {!isLoadingIndent && (
-        <SmartActionBar
-          primaryAction={
-            step === 'prepare'
-              ? {
-                  label: 'Prepare MIN',
-                  icon: Package,
-                  onClick: handlePrepareMIN,
-                  loading: createMutation.isPending,
-                  disabled: totalIssued === 0,
-                }
-              : {
-                  label: 'Dispatch Now',
-                  icon: Truck,
-                  onClick: handleDispatch,
-                  loading: dispatchMutation.isPending,
-                }
-          }
-          secondaryActions={
-            step === 'dispatch'
-              ? [
-                  {
-                    label: 'Print MIN',
-                    icon: FileText,
-                    onClick: () => window.print(),
-                  },
-                ]
-              : []
-          }
-          onClose={() => onOpenChange(false)}
-        />
+        <div className="shrink-0 border-t bg-background">
+          <div className="p-4 flex items-center justify-between gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+            <div className="flex items-center gap-2">
+              {step === 'dispatch' && (
+                <Button variant="outline" onClick={() => window.print()}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Print MIN
+                </Button>
+              )}
+              {step === 'prepare' ? (
+                <Button
+                  onClick={handlePrepareMIN}
+                  disabled={totalIssued === 0 || createMutation.isPending}
+                >
+                  {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Package className="h-4 w-4 mr-2" />
+                  Prepare MIN
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleDispatch}
+                  disabled={dispatchMutation.isPending}
+                >
+                  {dispatchMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Truck className="h-4 w-4 mr-2" />
+                  Dispatch Now
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
         )}
       </DialogContent>
     </Dialog>

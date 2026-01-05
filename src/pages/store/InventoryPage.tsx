@@ -3,7 +3,7 @@
  * No CRUD focus - just search, view, and quick actions
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Package, TrendingDown, AlertCircle, Edit, Eye, History } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -12,14 +12,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { useCentralInventory } from '../../hooks/useCentralInventory';
+import { useCentralStores } from '../../hooks/useCentralStores';
 
 export const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedStoreId, setSelectedStoreId] = useState<string>('');
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 50 });
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showLedger, setShowLedger] = useState(false);
+
+  const { data: storesData } = useCentralStores();
+  const stores = storesData?.results || [];
+
+  // Set default store when stores are loaded
+  useEffect(() => {
+    if (stores.length > 0 && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id.toString());
+    }
+  }, [stores, selectedStoreId]);
+
+  // Update filters when store changes
+  useEffect(() => {
+    if (selectedStoreId) {
+      setFilters({ ...filters, central_store: selectedStoreId });
+    }
+  }, [selectedStoreId]);
 
   const { data, isLoading } = useCentralInventory(filters);
 
@@ -63,11 +83,28 @@ export const InventoryPage = () => {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Inventory</h1>
-        <p className="text-muted-foreground">
-          Search and manage central store inventory
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Inventory</h1>
+          <p className="text-muted-foreground">
+            Search and manage central store inventory
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Label className="text-sm font-medium">Store:</Label>
+          <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Select store..." />
+            </SelectTrigger>
+            <SelectContent>
+              {stores.map((store: any) => (
+                <SelectItem key={store.id} value={store.id.toString()}>
+                  {store.store_name || `Store #${store.id}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Search Bar */}
