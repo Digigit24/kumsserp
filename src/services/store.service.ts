@@ -667,9 +667,22 @@ export const storeIndentsApi = {
   // College Admin Approvals
   pendingCollegeApprovals: async (filters?: any): Promise<PaginatedResponse<any>> => {
     const queryString = buildQueryString(filters || {});
-    return fetchApi<PaginatedResponse<any>>(
+    const response = await fetchApi<any>(
       buildApiUrl(`/api/v1/store/indents/pending_college_approvals/${queryString}`)
     );
+
+    // If the response is an array, transform it to paginated format
+    if (Array.isArray(response)) {
+      return {
+        count: response.length,
+        next: null,
+        previous: null,
+        results: response,
+      };
+    }
+
+    // If it's already paginated, return as is
+    return response;
   },
 
   collegeAdminApprove: async (id: number, data: any): Promise<any> => {
@@ -689,9 +702,22 @@ export const storeIndentsApi = {
   // Super Admin Approvals
   pendingSuperAdminApprovals: async (filters?: any): Promise<PaginatedResponse<any>> => {
     const queryString = buildQueryString(filters || {});
-    return fetchApi<PaginatedResponse<any>>(
+    const response = await fetchApi<any>(
       buildApiUrl(`/api/v1/store/indents/pending_super_admin_approvals/${queryString}`)
     );
+
+    // If the response is an array, transform it to paginated format
+    if (Array.isArray(response)) {
+      return {
+        count: response.length,
+        next: null,
+        previous: null,
+        results: response,
+      };
+    }
+
+    // If it's already paginated, return as is
+    return response;
   },
 
   superAdminApprove: async (id: number, data: any): Promise<any> => {

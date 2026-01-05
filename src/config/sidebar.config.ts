@@ -797,18 +797,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin", "staff", "store_manager"],
       },
       {
-        name: "College Approvals",
-        href: "/store/college-approvals",
-        icon: CheckSquare,
-        roles: ["college_admin"],
-      },
-      {
-        name: "Super Admin Approvals",
-        href: "/store/super-admin-approvals",
-        icon: CheckSquare,
-        roles: ["super_admin"],
-      },
-      {
         name: "Material Issuance",
         href: "/store/material-issuance",
         icon: Send,
@@ -1039,6 +1027,18 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     icon: CheckSquare,
     roles: ["super_admin", "college_admin"],
     items: [
+      {
+        name: "College Admin Approvals",
+        href: "/store/college-approvals",
+        icon: CheckSquare,
+        roles: ["college_admin"],
+      },
+      {
+        name: "Super Admin Approvals",
+        href: "/store/super-admin-approvals",
+        icon: CheckSquare,
+        roles: ["super_admin"],
+      },
       {
         name: "Pending Approvals",
         href: "/approvals/pending",
