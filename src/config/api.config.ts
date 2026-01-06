@@ -1083,7 +1083,7 @@ export const API_ENDPOINTS = {
     markDispatched: (id: number) =>
       `/api/v1/store/material-issues/${id}/mark_dispatched/`,
     markReceived: (id: number) =>
-      `/api/v1/store/material-issues/${id}/mark_received/`,
+      `/api/v1/store/material-issues/${id}/mark_dispatched/`,
     generateGatePass: (id: number) =>
       `/api/v1/store/material-issues/${id}/generate_gate_pass/`,
   },

@@ -423,6 +423,9 @@ export default function AppRoutes() {
                     <Route path="store/print-requests" element={<LazyRoute component={PrintRequestsPage} />} />
                     <Route path="store/vendors" element={<LazyRoute component={VendorsPage} />} />
                     <Route path="store/stock-receipts" element={<LazyRoute component={StockReceiptsPage} />} />
+
+                    {/* Demo Routes */}
+                    <Route path="demo/tetris" element={<LazyRoute component={lazy(() => import("../pages/demo/TetrisDemoPage"))} />} />
                 </Route>
             </Route>
 
