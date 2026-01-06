@@ -54,9 +54,9 @@ interface KanbanBoardProps {
 export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No items to display' }: KanbanBoardProps) => {
   const getCardsForColumn = (columnStatus: string | string[]) => {
     if (Array.isArray(columnStatus)) {
-      return cards.filter(card => columnStatus.includes(card.status));
+      return cards.filter(card => columnStatus.includes(card.status.toLowerCase()));
     }
-    return cards.filter(card => card.status === columnStatus);
+    return cards.filter(card => card.status.toLowerCase() === columnStatus.toLowerCase());
   };
 
   if (isLoading) {

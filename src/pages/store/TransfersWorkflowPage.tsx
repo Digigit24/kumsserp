@@ -57,16 +57,12 @@ export const TransfersWorkflowPage = () => {
   // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
   const { data, isLoading, refetch } = useMaterialIssues({ 
     ordering: '-created_at',
-    page_size: 100
+    page_size: 1000
   });
-
-  console.log('TransfersWorkflowPage - Material Issues Data:', data);
 
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
     status: 'super_admin_approved'
   });
-
-  console.log('TransfersWorkflowPage - Approved Indents Data:', approvedIndentsData);
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
 

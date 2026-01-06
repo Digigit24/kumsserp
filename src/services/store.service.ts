@@ -63,6 +63,11 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
     headers.set("Authorization", `Token ${token}`);
   }
 
+  // If body is FormData, remove Content-Type header to let browser set it with boundary
+  if (options?.body instanceof FormData && headers.has("Content-Type")) {
+    headers.delete("Content-Type");
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,
@@ -599,16 +604,20 @@ export const materialIssuesApi = {
   },
 
   create: async (data: any): Promise<any> => {
+    const isFormData = data instanceof FormData;
     return fetchApi<any>(buildApiUrl(API_ENDPOINTS.materialIssues.create), {
       method: "POST",
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      headers: isFormData ? {} : { "Content-Type": "application/json" },
     });
   },
 
   update: async (id: number, data: any): Promise<any> => {
+    const isFormData = data instanceof FormData;
     return fetchApi<any>(buildApiUrl(API_ENDPOINTS.materialIssues.update(id)), {
       method: "PUT",
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      headers: isFormData ? {} : { "Content-Type": "application/json" },
     });
   },
 
