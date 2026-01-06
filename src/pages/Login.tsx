@@ -74,6 +74,14 @@ const LoginPage = () => {
             )}
           </div>
 
+          {loginMutation.isError && (
+             <div className="p-3 text-sm text-red-500 bg-red-100 rounded-md dark:bg-red-900/30">
+              {loginMutation.error instanceof Error 
+                ? loginMutation.error.message 
+                : "Invalid username or password"}
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? "Logging in..." : "Login"}
           </Button>

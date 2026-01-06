@@ -3,7 +3,7 @@
  * Shows fulfillment queue and dispatch tracking
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Truck, Package, CheckCircle, FileText, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -55,10 +55,18 @@ export const TransfersWorkflowPage = () => {
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
 
   // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
-  const { data, isLoading, refetch } = useMaterialIssues({}); // No filters by default
+  const { data, isLoading, refetch } = useMaterialIssues({ 
+    ordering: '-created_at',
+    page_size: 100
+  });
+
+  console.log('TransfersWorkflowPage - Material Issues Data:', data);
+
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
     status: 'super_admin_approved'
   });
+
+  console.log('TransfersWorkflowPage - Approved Indents Data:', approvedIndentsData);
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
 

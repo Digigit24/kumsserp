@@ -14,7 +14,7 @@ import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { SmartActionBar } from '../../components/workflow/SmartActionBar';
 import { useCreateMaterialIssue, useDispatchMaterialIssue } from '../../hooks/useMaterialIssues';
-import { useStoreIndent } from '../../hooks/useStoreIndents';
+import { useStoreIndent, usePatchStoreIndent } from '../../hooks/useStoreIndents';
 
 interface PrepareDispatchDialogProps {
   open: boolean;
@@ -114,15 +114,16 @@ export const PrepareDispatchDialog = ({
       const minData = {
         min_number: minNumber,
         indent: indent.id,
-        central_store: indent.central_store,
-        receiving_college: indent.college,
+        central_store: typeof indent.central_store === 'object' ? indent.central_store.id : indent.central_store,
+        receiving_college: typeof indent.college === 'object' ? indent.college.id : indent.college,
         issue_date: issueDate,
         status: 'prepared',
         items: items
           .filter(item => item.issued_quantity > 0)
           .map(item => ({
             indent_item: item.indent_item,
-            item: item.central_store_item,
+            // Ensure we send the ID, not the object
+            item: typeof item.central_store_item === 'object' ? item.central_store_item.id : item.central_store_item,
             issued_quantity: item.issued_quantity,
             unit: item.unit,
             has_shortage: item.has_shortage,
@@ -130,15 +131,20 @@ export const PrepareDispatchDialog = ({
           })),
       };
 
+      console.log('Sending MIN Data:', JSON.stringify(minData, null, 2));
+
       const result = await createMutation.mutateAsync(minData);
       setMinId(result.id);
       setStep('dispatch');
       toast.success('MIN prepared successfully! Ready to dispatch.');
     } catch (error: any) {
       console.error('Prepare MIN error:', error);
+      console.error('Prepare MIN error details:', JSON.stringify(error, null, 2));
       toast.error(error.message || 'Failed to prepare MIN');
     }
   };
+
+  const patchIndentMutation = usePatchStoreIndent();
 
   const handleDispatch = async () => {
     if (!minId) return;
@@ -150,10 +156,33 @@ export const PrepareDispatchDialog = ({
           dispatch_date: new Date().toISOString().split('T')[0],
         },
       });
+
+      // Update Indent Status
+      if (indentId) {
+        const allFulfilled = items.every(item => item.issued_quantity >= item.approved_quantity);
+        console.log('Checking Fulfillment:', { allFulfilled, items });
+        
+        const newStatus = allFulfilled ? 'fulfilled' : 'partially_fulfilled';
+        console.log(`Patching Indent ${indentId} to status: ${newStatus}`);
+        
+        try {
+          await patchIndentMutation.mutateAsync({
+            id: indentId,
+            data: { status: newStatus }
+          });
+          console.log('Indent status patched successfully');
+        } catch (patchError) {
+          console.error('Failed to patch indent status:', patchError);
+          // Don't block success just because patch failed, but warn user
+           toast.error('Material dispatched, but failed to update indent status.');
+        }
+      }
+
       toast.success('Material dispatched successfully!');
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
+      console.error('Dispatch error:', error);
       toast.error(error.message || 'Failed to dispatch');
     }
   };

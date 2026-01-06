@@ -1,11 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { storeIndentsApi } from '../services/store.service';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { storeIndentsApi } from "../services/store.service";
 
 export const storeIndentKeys = {
-  all: ['storeIndents'] as const,
-  lists: () => [...storeIndentKeys.all, 'list'] as const,
+  all: ["storeIndents"] as const,
+  lists: () => [...storeIndentKeys.all, "list"] as const,
   list: (filters?: any) => [...storeIndentKeys.lists(), filters] as const,
-  details: () => [...storeIndentKeys.all, 'detail'] as const,
+  details: () => [...storeIndentKeys.all, "detail"] as const,
   detail: (id: number) => [...storeIndentKeys.details(), id] as const,
 };
 
@@ -28,11 +28,14 @@ export const useCreateStoreIndent = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-      console.log('=== STORE INDENT CREATE - ORIGINAL DATA ===', JSON.stringify(data, null, 2));
-      
+      console.log(
+        "=== STORE INDENT CREATE - ORIGINAL DATA ===",
+        JSON.stringify(data, null, 2)
+      );
+
       // Deep copy to avoid mutating original data
       const cleanedData = JSON.parse(JSON.stringify(data));
-      
+
       // Remove indent field from items (backend no longer requires it)
       if (cleanedData.items && Array.isArray(cleanedData.items)) {
         cleanedData.items = cleanedData.items.map((item: any) => {
@@ -40,12 +43,14 @@ export const useCreateStoreIndent = () => {
 
           // Ensure central_store_item is a number
           if (itemWithoutIndent.central_store_item) {
-            itemWithoutIndent.central_store_item = parseInt(itemWithoutIndent.central_store_item);
+            itemWithoutIndent.central_store_item = parseInt(
+              itemWithoutIndent.central_store_item
+            );
           }
 
           // Clean empty strings from item fields
-          Object.keys(itemWithoutIndent).forEach(key => {
-            if (itemWithoutIndent[key] === '') {
+          Object.keys(itemWithoutIndent).forEach((key) => {
+            if (itemWithoutIndent[key] === "") {
               delete itemWithoutIndent[key];
             }
           });
@@ -53,24 +58,27 @@ export const useCreateStoreIndent = () => {
           return itemWithoutIndent;
         });
       }
-      
+
       // Convert empty strings to null for optional fields
       const optionalFields = [
-        'approved_date',
-        'approved_by',
-        'attachments',
-        'requesting_store_manager',
-        'approval_request',
+        "approved_date",
+        "approved_by",
+        "attachments",
+        "requesting_store_manager",
+        "approval_request",
       ];
-      
-      optionalFields.forEach(field => {
-        if (cleanedData[field] === '' || cleanedData[field] === null) {
+
+      optionalFields.forEach((field) => {
+        if (cleanedData[field] === "" || cleanedData[field] === null) {
           delete cleanedData[field];
         }
       });
-      
-      console.log('=== STORE INDENT CREATE - CLEANED DATA ===', JSON.stringify(cleanedData, null, 2));
-      
+
+      console.log(
+        "=== STORE INDENT CREATE - CLEANED DATA ===",
+        JSON.stringify(cleanedData, null, 2)
+      );
+
       return storeIndentsApi.create(cleanedData);
     },
     onSuccess: () => {
@@ -83,11 +91,11 @@ export const useUpdateStoreIndent = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => {
-      console.log('=== STORE INDENT UPDATE - BEFORE CLEANING ===', data);
-      
+      console.log("=== STORE INDENT UPDATE - BEFORE CLEANING ===", data);
+
       // Clean up data before sending
       const cleanedData = { ...data };
-      
+
       // Remove indent field from items (should already be set)
       if (cleanedData.items && Array.isArray(cleanedData.items)) {
         cleanedData.items = cleanedData.items.map((item: any) => {
@@ -95,12 +103,14 @@ export const useUpdateStoreIndent = () => {
 
           // Ensure central_store_item is a number
           if (itemWithoutIndent.central_store_item) {
-            itemWithoutIndent.central_store_item = parseInt(itemWithoutIndent.central_store_item);
+            itemWithoutIndent.central_store_item = parseInt(
+              itemWithoutIndent.central_store_item
+            );
           }
 
           // Clean empty strings from item fields
-          Object.keys(itemWithoutIndent).forEach(key => {
-            if (itemWithoutIndent[key] === '') {
+          Object.keys(itemWithoutIndent).forEach((key) => {
+            if (itemWithoutIndent[key] === "") {
               delete itemWithoutIndent[key];
             }
           });
@@ -108,29 +118,45 @@ export const useUpdateStoreIndent = () => {
           return itemWithoutIndent;
         });
       }
-      
+
       // Convert empty strings to null for optional fields
       const optionalFields = [
-        'approved_date',
-        'approved_by',
-        'attachments',
-        'requesting_store_manager',
-        'approval_request',
+        "approved_date",
+        "approved_by",
+        "attachments",
+        "requesting_store_manager",
+        "approval_request",
       ];
-      
-      optionalFields.forEach(field => {
-        if (cleanedData[field] === '' || cleanedData[field] === null) {
+
+      optionalFields.forEach((field) => {
+        if (cleanedData[field] === "" || cleanedData[field] === null) {
           delete cleanedData[field];
         }
       });
-      
-      console.log('=== STORE INDENT UPDATE - AFTER CLEANING ===', cleanedData);
-      
+
+      console.log("=== STORE INDENT UPDATE - AFTER CLEANING ===", cleanedData);
+
       return storeIndentsApi.update(id, cleanedData);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
+    },
+  });
+};
+
+export const usePatchStoreIndent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.patch(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -148,10 +174,13 @@ export const useDeleteStoreIndent = () => {
 export const useApproveStoreIndent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.approve(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.approve(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -159,10 +188,13 @@ export const useApproveStoreIndent = () => {
 export const useRejectStoreIndent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.reject(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.reject(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -170,10 +202,13 @@ export const useRejectStoreIndent = () => {
 export const useSubmitStoreIndent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.submit(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.submit(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -181,7 +216,7 @@ export const useSubmitStoreIndent = () => {
 // College Admin Approvals
 export const usePendingCollegeApprovals = (filters?: any) => {
   return useQuery({
-    queryKey: [...storeIndentKeys.lists(), 'pending_college', filters],
+    queryKey: [...storeIndentKeys.lists(), "pending_college", filters],
     queryFn: () => storeIndentsApi.pendingCollegeApprovals(filters),
   });
 };
@@ -189,10 +224,13 @@ export const usePendingCollegeApprovals = (filters?: any) => {
 export const useCollegeAdminApprove = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.collegeAdminApprove(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.collegeAdminApprove(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -200,10 +238,13 @@ export const useCollegeAdminApprove = () => {
 export const useCollegeAdminReject = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.collegeAdminReject(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.collegeAdminReject(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -211,7 +252,7 @@ export const useCollegeAdminReject = () => {
 // Super Admin Approvals
 export const usePendingSuperAdminApprovals = (filters?: any) => {
   return useQuery({
-    queryKey: [...storeIndentKeys.lists(), 'pending_super_admin', filters],
+    queryKey: [...storeIndentKeys.lists(), "pending_super_admin", filters],
     queryFn: () => storeIndentsApi.pendingSuperAdminApprovals(filters),
   });
 };
@@ -219,10 +260,13 @@ export const usePendingSuperAdminApprovals = (filters?: any) => {
 export const useSuperAdminApprove = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.superAdminApprove(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.superAdminApprove(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -230,10 +274,13 @@ export const useSuperAdminApprove = () => {
 export const useSuperAdminReject = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.superAdminReject(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.superAdminReject(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -242,10 +289,13 @@ export const useSuperAdminReject = () => {
 export const useIssueMaterials = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => storeIndentsApi.issueMaterials(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      storeIndentsApi.issueMaterials(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: storeIndentKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: storeIndentKeys.detail(variables.id),
+      });
     },
   });
 };
