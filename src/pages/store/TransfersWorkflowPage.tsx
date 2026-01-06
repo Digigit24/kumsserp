@@ -88,6 +88,8 @@ export const TransfersWorkflowPage = () => {
         data: {
           receipt_date: new Date().toISOString().split('T')[0],
           receipt_confirmation_notes: 'Confirmed by college store',
+          status: 'received',
+          completed_date: new Date().toISOString().split('T')[0],
         },
       });
       toast.success('Receipt confirmed successfully');
