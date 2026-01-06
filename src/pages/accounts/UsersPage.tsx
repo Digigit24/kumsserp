@@ -3,14 +3,14 @@
  * Complete CRUD interface for user management
  */
 
-import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { useState } from 'react';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { UserForm } from './components/UserForm';
 import { userApi } from '../../services/accounts.service';
-import type { UserListItem, UserFilters, User } from '../../types/accounts.types';
+import type { UserFilters, UserListItem } from '../../types/accounts.types';
+import { UserForm } from './components/UserForm';
 
 const UsersPage = () => {
   const queryClient = useQueryClient();
@@ -122,6 +122,7 @@ const UsersPage = () => {
         { value: 'student', label: 'Student' },
         { value: 'parent', label: 'Parent' },
         { value: 'staff', label: 'Staff' },
+        { value: 'central_manager', label: 'Central Store Manager' },
       ],
     },
   ];
@@ -190,8 +191,8 @@ const UsersPage = () => {
           sidebarMode === 'create'
             ? 'Add New User'
             : sidebarMode === 'edit'
-            ? 'Edit User'
-            : selectedUser?.full_name || 'User Details'
+              ? 'Edit User'
+              : selectedUser?.full_name || 'User Details'
         }
         mode={sidebarMode}
         width="xl"

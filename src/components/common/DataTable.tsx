@@ -28,7 +28,7 @@ export interface Column<T> {
 export interface FilterConfig {
   name: string;
   label: string;
-  type: 'select' | 'text' | 'checkbox';
+  type: 'select' | 'text' | 'checkbox' | 'date';
   options?: { value: string; label: string }[];
 }
 
@@ -190,9 +190,10 @@ export function DataTable<T extends Record<string, any>>({
                   </div>
                 ) : (
                   <Input
+                    type={filter.type}
                     value={filters[filter.name] || ''}
                     onChange={(e) => handleFilterChange(filter.name, e.target.value)}
-                    placeholder={`Filter by ${filter.label.toLowerCase()}...`}
+                    placeholder={filter.type === 'date' ? undefined : `Filter by ${filter.label.toLowerCase()}...`}
                   />
                 )}
               </div>

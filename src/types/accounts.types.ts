@@ -3,7 +3,6 @@
  * All types matching Django backend models
  */
 
-import { PaginatedResponse } from './core.types';
 
 // ============================================================================
 // ENUMS AND CONSTANTS
@@ -18,6 +17,7 @@ export type UserType =
   | 'staff'
   | 'hr'
   | 'store_manager'
+  | 'central_manager'
   | 'library_manager';
 
 export type GenderChoices = 'male' | 'female' | 'other';

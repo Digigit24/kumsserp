@@ -1,11 +1,11 @@
 // Notice Form Component
 import { useForm } from 'react-hook-form';
+import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Checkbox } from '../../../components/ui/checkbox';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
-import { Checkbox } from '../../../components/ui/checkbox';
 import type { Notice, NoticeCreateInput } from '../../../types/communication.types';
 
 interface NoticeFormProps {
@@ -124,8 +124,87 @@ export const NoticeForm = ({
             />
           </div>
 
+          {/* Visibility Settings */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base font-semibold">Visibility Settings</Label>
+            <p className="text-sm text-muted-foreground">Choose who can see this notice</p>
+
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                <input
+                  type="radio"
+                  id="visibility-all"
+                  name="visibility"
+                  value="all"
+                  defaultChecked
+                  className="w-4 h-4"
+                />
+                <label htmlFor="visibility-all" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Everyone</div>
+                  <div className="text-sm text-muted-foreground">All users can see this notice</div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                <input
+                  type="radio"
+                  id="visibility-students"
+                  name="visibility"
+                  value="students"
+                  className="w-4 h-4"
+                />
+                <label htmlFor="visibility-students" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Students Only</div>
+                  <div className="text-sm text-muted-foreground">Only students can see this notice</div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                <input
+                  type="radio"
+                  id="visibility-teachers"
+                  name="visibility"
+                  value="teachers"
+                  className="w-4 h-4"
+                />
+                <label htmlFor="visibility-teachers" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Teachers Only</div>
+                  <div className="text-sm text-muted-foreground">Only teachers can see this notice</div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                <input
+                  type="radio"
+                  id="visibility-staff"
+                  name="visibility"
+                  value="staff"
+                  className="w-4 h-4"
+                />
+                <label htmlFor="visibility-staff" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Staff Only</div>
+                  <div className="text-sm text-muted-foreground">Only staff members can see this notice</div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                <input
+                  type="radio"
+                  id="visibility-specific"
+                  name="visibility"
+                  value="specific"
+                  className="w-4 h-4"
+                />
+                <label htmlFor="visibility-specific" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Specific Classes/Sections</div>
+                  <div className="text-sm text-muted-foreground">Select specific classes or sections</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
           {/* Checkboxes */}
-          <div className="space-y-3">
+          <div className="space-y-3 border-t pt-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="is_urgent"
@@ -176,8 +255,8 @@ export const NoticeForm = ({
           {isLoading
             ? 'Saving...'
             : notice
-            ? 'Update Notice'
-            : 'Create Notice'}
+              ? 'Update Notice'
+              : 'Create Notice'}
         </Button>
       </div>
     </form>

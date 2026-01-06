@@ -950,6 +950,7 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/store/central-stores/${id}/`,
     inventory: (id: number) => `/api/v1/store/central-stores/${id}/inventory/`,
     stockSummary: (id: number) => `/api/v1/store/central-stores/${id}/stock_summary/`,
+    hierarchy: "/api/v1/store/central-stores/list/",
   },
 
   // Store Module - Central Inventory

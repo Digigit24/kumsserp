@@ -8,10 +8,8 @@ import {
     Calendar,
     CheckSquare,
     ClipboardList,
-    Coins,
     CreditCard,
     FileText,
-    Folder,
     GraduationCap,
     Home,
     Library,
@@ -25,7 +23,7 @@ import {
     Shield,
     ShoppingCart,
     Store,
-    Users,
+    Users
 } from "lucide-react";
 
 export interface SidebarItem {
@@ -531,7 +529,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Fees",
     icon: CreditCard,
-    roles: ["super_admin", "college_admin", "student", "parent"],
+    roles: ["super_admin", "college_admin", "student", "parent", "central_manager"],
     items: [
       {
         name: "Fee Types",
@@ -744,25 +742,25 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Reports",
     icon: BarChart,
-    roles: ["super_admin", "college_admin", "teacher"],
+    roles: ["super_admin", "college_admin", "teacher", "central_manager"],
     items: [
       {
         name: "Generated Reports",
         href: "/reports/generated",
         icon: BarChart,
-        roles: ["super_admin", "college_admin", "teacher"],
+        roles: ["super_admin", "college_admin", "teacher", "central_manager"],
       },
       {
         name: "Report Templates",
         href: "/reports/templates",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
+        roles: ["super_admin", "college_admin", "central_manager"],
       },
       {
         name: "Saved Reports",
         href: "/reports/saved",
         icon: FileText,
-        roles: ["super_admin", "college_admin", "teacher"],
+        roles: ["super_admin", "college_admin", "teacher", "central_manager"],
       },
     ],
   },
@@ -771,37 +769,85 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Store",
     icon: Store,
-    roles: ["super_admin", "college_admin", "staff", "store_manager"],
+    roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
     items: [
       {
         name: "Indents",
         href: "/store/indents-pipeline",
         icon: ClipboardList,
-        roles: ["super_admin", "college_admin", "staff", "store_manager"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
       },
       {
         name: "Transfers",
         href: "/store/transfers-workflow",
         icon: Send,
-        roles: ["super_admin", "college_admin", "staff", "store_manager"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
       },
       {
         name: "Procurement",
         href: "/store/procurement-pipeline",
         icon: ShoppingCart,
-        roles: ["super_admin", "college_admin", "staff", "store_manager"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
       },
       {
         name: "Inventory",
         href: "/store/inventory",
         icon: Package,
-        roles: ["super_admin", "college_admin", "staff", "store_manager"],
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
+      },
+      {
+        name: "Store Hierarchy",
+        href: "/store/hierarchy",
+        icon: Building2,
+        roles: ["super_admin"],
+      },
+      {
+        name: "Store Items",
+        href: "/store/items",
+        icon: Package,
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
+      },
+      {
+        name: "Categories",
+        href: "/store/categories",
+        icon: FileText,
+        roles: ["super_admin", "college_admin", "staff", "store_manager", "central_manager"],
+      },
+      {
+        name: "Central Stores",
+        href: "/store/central-stores",
+        icon: Building2,
+        roles: ["super_admin", "central_manager"],
+      },
+      {
+        name: "Central Inventory",
+        href: "/store/central-inventory",
+        icon: Package,
+        roles: ["super_admin", "central_manager"],
+      },
+      {
+        name: "Material Issues",
+        href: "/store/material-issues",
+        icon: Send,
+        roles: ["super_admin", "central_manager"],
+      },
+      {
+        name: "Vendors",
+        href: "/store/vendors",
+        icon: Users,
+        roles: ["super_admin", "college_admin", "store_manager", "central_manager"],
+      },
+      {
+        name: "Stock Receipts",
+        href: "/store/stock-receipts",
+        icon: ClipboardList,
+        roles: ["super_admin", "college_admin", "store_manager", "central_manager"],
       },
       {
         name: "Approvals",
         href: "/store/approvals",
         icon: CheckSquare,
-        roles: ["super_admin", "college_admin", "store_manager"],
+        roles: ["super_admin", "college_admin", "store_manager", "central_manager"],
       },
     ],
   },
@@ -810,7 +856,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     group: "Communication",
     icon: MessageSquare,
-    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff"],
+    roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff", "central_manager"],
     items: [
       // {
       //   name: "Communication Center",
@@ -834,25 +880,25 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Notices",
         href: "/communication/notices",
         icon: Bell,
-        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff"], // All can view
+        roles: ["super_admin", "college_admin", "teacher", "student", "parent", "store_manager", "staff", "central_manager"], // All can view
       },
       {
         name: "Bulk Messages",
         href: "/communication/bulk-messages",
         icon: Send,
-        roles: ["super_admin", "college_admin", "teacher", "student", "staff"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "staff", "central_manager"],
       },
       {
         name: "Chats",
         href: "/communication/chats",
         icon: Mail,
-        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager", "staff"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager", "staff", "central_manager"],
       },
       {
         name: "Events",
         href: "/communication/events",
         icon: Calendar,
-        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager"],
+        roles: ["super_admin", "college_admin", "teacher", "student", "store_manager", "central_manager"],
       },
       {
         name: "Event Registrations",
@@ -876,12 +922,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         name: "Message Templates",
         href: "/communication/message-templates",
         icon: FileText,
-        roles: ["super_admin", "college_admin"],
-      },
-      {
-        name: "Notice Visibility",
-        href: "/communication/notice-visibility",
-        icon: Bell,
         roles: ["super_admin", "college_admin"],
       },
     ],

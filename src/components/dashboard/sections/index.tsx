@@ -11,34 +11,39 @@
  */
 
 // Admin Sections
-export { AdminQuickActions } from './AdminQuickActions';
-export { AdminKeyMetrics } from './AdminKeyMetrics';
-export { AdminPendingTasks } from './AdminPendingTasks';
-export { AdminSystemAlerts } from './AdminSystemAlerts';
-export { AdminRecentActivities } from './AdminRecentActivities';
-export { AdminUpcomingEvents } from './AdminUpcomingEvents';
 export { AdminInstitutionOverview } from './AdminInstitutionOverview';
+export { AdminKeyMetrics } from './AdminKeyMetrics';
 export { AdminManagementLinks } from './AdminManagementLinks';
+export { AdminPendingTasks } from './AdminPendingTasks';
+export { AdminQuickActions } from './AdminQuickActions';
+export { AdminRecentActivities } from './AdminRecentActivities';
+export { AdminSystemAlerts } from './AdminSystemAlerts';
+export { AdminUpcomingEvents } from './AdminUpcomingEvents';
 
 // Teacher Sections
+export { TeacherAnnouncements } from './TeacherAnnouncements';
+export { TeacherAssignments } from './TeacherAssignments';
+export { TeacherPendingActions } from './TeacherPendingActions';
 export { TeacherQuickStats } from './TeacherQuickStats';
 export { TeacherTodaysClasses } from './TeacherTodaysClasses';
-export { TeacherPendingActions } from './TeacherPendingActions';
-export { TeacherAssignments } from './TeacherAssignments';
-export { TeacherAnnouncements } from './TeacherAnnouncements';
 
 // Student Sections
-export { StudentQuickActions } from './StudentQuickActions';
-export { StudentPriorityCards } from './StudentPriorityCards';
+export { StudentAssignments } from './StudentAssignments';
 export { StudentAttendanceCalendar } from './StudentAttendanceCalendar';
+export { StudentPriorityCards } from './StudentPriorityCards';
+export { StudentQuickActions } from './StudentQuickActions';
 export { StudentTestMarks } from './StudentTestMarks';
 export { StudentTodaysSchedule } from './StudentTodaysSchedule';
 export { StudentUpcomingExams } from './StudentUpcomingExams';
-export { StudentAssignments } from './StudentAssignments';
 
 // Staff Sections
-export { StaffQuickActions } from './StaffQuickActions';
 export { StaffModuleStats } from './StaffModuleStats';
+export { StaffQuickActions } from './StaffQuickActions';
+
+// Central Store Sections
+export { CentralStoreCommunication } from './CentralStoreCommunication';
+export { CentralStoreQuickActions } from './CentralStoreQuickActions';
+export { CentralStoreStats } from './CentralStoreStats';
 
 /**
  * Section Component Map
@@ -46,28 +51,31 @@ export { StaffModuleStats } from './StaffModuleStats';
  * Maps section component names to actual components.
  * This is used by the Dashboard to dynamically render sections.
  */
-import { AdminQuickActions } from './AdminQuickActions';
-import { AdminKeyMetrics } from './AdminKeyMetrics';
-import { AdminPendingTasks } from './AdminPendingTasks';
-import { AdminSystemAlerts } from './AdminSystemAlerts';
-import { AdminRecentActivities } from './AdminRecentActivities';
-import { AdminUpcomingEvents } from './AdminUpcomingEvents';
 import { AdminInstitutionOverview } from './AdminInstitutionOverview';
+import { AdminKeyMetrics } from './AdminKeyMetrics';
 import { AdminManagementLinks } from './AdminManagementLinks';
-import { TeacherQuickStats } from './TeacherQuickStats';
-import { TeacherTodaysClasses } from './TeacherTodaysClasses';
-import { TeacherPendingActions } from './TeacherPendingActions';
-import { TeacherAssignments } from './TeacherAssignments';
-import { TeacherAnnouncements } from './TeacherAnnouncements';
-import { StudentQuickActions } from './StudentQuickActions';
-import { StudentPriorityCards } from './StudentPriorityCards';
+import { AdminPendingTasks } from './AdminPendingTasks';
+import { AdminQuickActions } from './AdminQuickActions';
+import { AdminRecentActivities } from './AdminRecentActivities';
+import { AdminSystemAlerts } from './AdminSystemAlerts';
+import { AdminUpcomingEvents } from './AdminUpcomingEvents';
+import { CentralStoreCommunication } from './CentralStoreCommunication';
+import { CentralStoreQuickActions } from './CentralStoreQuickActions';
+import { CentralStoreStats } from './CentralStoreStats';
+import { StaffModuleStats } from './StaffModuleStats';
+import { StaffQuickActions } from './StaffQuickActions';
+import { StudentAssignments } from './StudentAssignments';
 import { StudentAttendanceCalendar } from './StudentAttendanceCalendar';
+import { StudentPriorityCards } from './StudentPriorityCards';
+import { StudentQuickActions } from './StudentQuickActions';
 import { StudentTestMarks } from './StudentTestMarks';
 import { StudentTodaysSchedule } from './StudentTodaysSchedule';
 import { StudentUpcomingExams } from './StudentUpcomingExams';
-import { StudentAssignments } from './StudentAssignments';
-import { StaffQuickActions } from './StaffQuickActions';
-import { StaffModuleStats } from './StaffModuleStats';
+import { TeacherAnnouncements } from './TeacherAnnouncements';
+import { TeacherAssignments } from './TeacherAssignments';
+import { TeacherPendingActions } from './TeacherPendingActions';
+import { TeacherQuickStats } from './TeacherQuickStats';
+import { TeacherTodaysClasses } from './TeacherTodaysClasses';
 
 export const SECTION_COMPONENTS: Record<string, React.ComponentType<any>> = {
   // Admin
@@ -96,4 +104,8 @@ export const SECTION_COMPONENTS: Record<string, React.ComponentType<any>> = {
   // Staff
   StaffQuickActions,
   StaffModuleStats,
+  // Central Store
+  CentralStoreStats,
+  CentralStoreQuickActions,
+  CentralStoreCommunication,
 };

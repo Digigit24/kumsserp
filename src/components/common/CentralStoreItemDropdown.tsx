@@ -3,10 +3,10 @@
  * Reusable dropdown for selecting central store items in forms
  */
 
+import { AlertCircle, Package } from 'lucide-react';
 import { useCentralInventory } from '../../hooks/useCentralInventory';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Package, AlertCircle } from 'lucide-react';
 
 interface CentralStoreItemDropdownProps {
     value?: number | string | null;
@@ -77,7 +77,7 @@ export function CentralStoreItemDropdown({
                         {selectedItem ? (
                             <div className="flex items-center gap-2">
                                 <Package className="h-4 w-4" />
-                                <span>{selectedItem.item_name || `Item #${selectedItem.id}`}</span>
+                                <span>{selectedItem.item_display || selectedItem.item_name || `Item #${selectedItem.id}`}</span>
                             </div>
                         ) : null}
                     </SelectValue>
@@ -95,7 +95,7 @@ export function CentralStoreItemDropdown({
                                     <Package className="h-4 w-4" />
                                     <div>
                                         <div className="font-medium">
-                                            {item.item_name || `Item #${item.id}`}
+                                            {item.item_display || item.item_name || `Item #${item.id}`}
                                         </div>
                                         <div className="text-xs text-muted-foreground">
                                             Available: {item.quantity_available || 0} {item.unit || 'units'}

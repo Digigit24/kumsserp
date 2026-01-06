@@ -3,12 +3,12 @@
  * Used for creating and editing users
  */
 
-import { useState, useEffect } from 'react';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Checkbox } from '../../../components/ui/checkbox';
+import { useEffect, useState } from 'react';
 import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
-import type { User, UserCreateInput, UserUpdateInput, UserType, GenderChoices } from '../../../types/accounts.types';
+import { Button } from '../../../components/ui/button';
+import { Checkbox } from '../../../components/ui/checkbox';
+import { Input } from '../../../components/ui/input';
+import type { GenderChoices, User, UserCreateInput, UserType, UserUpdateInput } from '../../../types/accounts.types';
 
 interface UserFormData {
   username: string;
@@ -94,8 +94,8 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
       else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
       if (!formData.password_confirm) newErrors.password_confirm = 'Please confirm password';
       else if (formData.password !== formData.password_confirm) newErrors.password_confirm = 'Passwords do not match';
-      // College is required only if super admin and no college selected
-      if (isSuperAdmin && !formData.college) newErrors.college = 'College is required';
+      // College is required only if super admin and no college selected, AND not a central store manager
+      if (isSuperAdmin && !formData.college && formData.user_type !== 'central_manager') newErrors.college = 'College is required';
     }
 
     if (!formData.email.trim()) newErrors.email = 'Email is required';
@@ -245,8 +245,8 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
                   </div>
                 </div>
 
-                {/* Only show college dropdown for super admin */}
-                {isSuperAdmin && (
+                {/* Only show college dropdown for super admin, and hide if creating central_manager */}
+                {isSuperAdmin && formData.user_type !== 'central_manager' && (
                   <CollegeDropdown
                     value={formData.college ? Number(formData.college) : null}
                     onChange={(collegeId) => handleChange('college', collegeId || '')}
@@ -275,6 +275,7 @@ export const UserForm = ({ mode, user, onSuccess, onCancel, onSubmit }: UserForm
                     <option value="parent">Parent</option>
                     <option value="hr">HR</option>
                     <option value="store_manager">Store Manager</option>
+                    <option value="central_manager">Central Store Manager</option>
                     <option value="library_manager">Library Manager</option>
                     <option value="college_admin">College Admin</option>
                     <option value="super_admin">Super Admin</option>

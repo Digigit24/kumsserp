@@ -3,18 +3,19 @@
  * No CRUD focus - just search, view, and quick actions
  */
 
-import { useState, useEffect } from 'react';
-import { Search, Package, TrendingDown, AlertCircle, Edit, Eye, History } from 'lucide-react';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
+import { AlertCircle, Eye, History, Package, Search, TrendingDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useCentralInventory } from '../../hooks/useCentralInventory';
 import { useCentralStores } from '../../hooks/useCentralStores';
+import { useStoreItems } from '../../hooks/useStoreItems';
 
 export const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,43 +43,59 @@ export const InventoryPage = () => {
   }, [selectedStoreId]);
 
   const { data, isLoading } = useCentralInventory(filters);
+  const { data: storeItemsData } = useStoreItems();
 
   const inventoryItems = data?.results || [];
+  const storeItems = storeItemsData?.results || [];
+
+  // Helper function to get store name by ID
+  const getStoreName = (storeId: number) => {
+    const store = stores.find((s: any) => s.id === storeId);
+    return store?.name || `Store #${storeId}`;
+  };
+
+  // Helper function to get store item details by ID
+  const getStoreItemDetails = (itemId: number) => {
+    const item = storeItems.find((i: any) => i.id === itemId);
+    return item || null;
+  };
 
   // Filter items based on search and tab
   const filteredItems = inventoryItems.filter((item: any) => {
     // Search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
-      const matchesCode = item.store_item_code?.toLowerCase().includes(search);
-      const matchesName = item.store_item_name?.toLowerCase().includes(search);
-      const matchesBarcode = item.store_item_barcode?.toLowerCase().includes(search);
-      if (!matchesCode && !matchesName && !matchesBarcode) return false;
+      const storeItem = getStoreItemDetails(item.item);
+      const matchesName = storeItem?.name?.toLowerCase().includes(search);
+      const matchesCode = storeItem?.item_code?.toLowerCase().includes(search);
+      const matchesBarcode = storeItem?.barcode?.toLowerCase().includes(search);
+      const matchesDisplay = item.item_display?.toLowerCase().includes(search);
+      if (!matchesName && !matchesCode && !matchesBarcode && !matchesDisplay) return false;
     }
 
     // Tab filter
     if (activeTab === 'low_stock') {
-      return item.quantity_in_stock <= item.min_stock_level;
+      return item.quantity_on_hand <= item.min_stock_level && item.quantity_on_hand > 0;
     } else if (activeTab === 'out_of_stock') {
-      return item.quantity_in_stock === 0;
+      return item.quantity_on_hand === 0;
     }
 
     return true;
   });
 
   const getStockStatus = (item: any) => {
-    if (item.quantity_in_stock === 0) {
+    if (item.quantity_on_hand === 0) {
       return { label: 'Out of Stock', variant: 'destructive' as const, color: 'text-red-500' };
-    } else if (item.quantity_in_stock <= item.min_stock_level) {
+    } else if (item.quantity_on_hand <= item.min_stock_level) {
       return { label: 'Low Stock', variant: 'outline' as const, color: 'text-yellow-500' };
     }
     return { label: 'In Stock', variant: 'secondary' as const, color: 'text-green-500' };
   };
 
   const lowStockCount = inventoryItems.filter(
-    (item: any) => item.quantity_in_stock <= item.min_stock_level && item.quantity_in_stock > 0
+    (item: any) => item.quantity_on_hand <= item.min_stock_level && item.quantity_on_hand > 0
   ).length;
-  const outOfStockCount = inventoryItems.filter((item: any) => item.quantity_in_stock === 0).length;
+  const outOfStockCount = inventoryItems.filter((item: any) => item.quantity_on_hand === 0).length;
 
   return (
     <div className="space-y-6 p-6">
@@ -99,7 +116,7 @@ export const InventoryPage = () => {
             <SelectContent>
               {stores.map((store: any) => (
                 <SelectItem key={store.id} value={store.id.toString()}>
-                  {store.store_name || `Store #${store.id}`}
+                  {store.name || `Store #${store.id}`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -199,10 +216,12 @@ export const InventoryPage = () => {
                               <Package className="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div>
-                              <p className="font-semibold">{item.store_item_name}</p>
+                              <p className="font-semibold">
+                                {getStoreItemDetails(item.item)?.name || item.item_display || 'Unnamed Item'}
+                              </p>
                               <p className="text-sm text-muted-foreground">
-                                {item.store_item_code}
-                                {item.store_item_barcode && ` • ${item.store_item_barcode}`}
+                                {getStoreItemDetails(item.item)?.item_code || `Item #${item.item}`}
+                                {getStoreItemDetails(item.item)?.barcode && ` • ${getStoreItemDetails(item.item)?.barcode}`}
                               </p>
                             </div>
                           </div>
@@ -212,7 +231,7 @@ export const InventoryPage = () => {
                         <div className="col-span-2">
                           <p className="text-xs text-muted-foreground">Central Store</p>
                           <p className="text-sm font-medium">
-                            {item.central_store_name || `Store #${item.central_store}`}
+                            {getStoreName(item.central_store)}
                           </p>
                         </div>
 
@@ -221,7 +240,7 @@ export const InventoryPage = () => {
                           <p className="text-xs text-muted-foreground">Stock Level</p>
                           <div className="flex items-center gap-2">
                             <p className={`text-lg font-bold ${status.color}`}>
-                              {item.quantity_in_stock}
+                              {item.quantity_on_hand}
                             </p>
                             <span className="text-xs text-muted-foreground">
                               / {item.min_stock_level} min
@@ -275,7 +294,7 @@ export const InventoryPage = () => {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {showLedger ? 'Stock Ledger' : 'Item Details'}: {selectedItem.store_item_name}
+                {showLedger ? 'Stock Ledger' : 'Item Details'}: {getStoreItemDetails(selectedItem.item)?.name || selectedItem.item_display || 'Unnamed Item'}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
@@ -284,22 +303,32 @@ export const InventoryPage = () => {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <Label className="text-muted-foreground">Item Name</Label>
+                      <p className="font-semibold">
+                        {getStoreItemDetails(selectedItem.item)?.name || selectedItem.item_display || 'Unnamed Item'}
+                      </p>
+                    </div>
+                    <div>
                       <Label className="text-muted-foreground">Item Code</Label>
-                      <p className="font-semibold">{selectedItem.store_item_code}</p>
+                      <p className="font-semibold">
+                        {getStoreItemDetails(selectedItem.item)?.item_code || `Item #${selectedItem.item}`}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">Barcode</Label>
-                      <p className="font-semibold">{selectedItem.store_item_barcode || '-'}</p>
+                      <p className="font-semibold">
+                        {getStoreItemDetails(selectedItem.item)?.barcode || '-'}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">Central Store</Label>
                       <p>
-                        {selectedItem.central_store_name || `Store #${selectedItem.central_store}`}
+                        {getStoreName(selectedItem.central_store)}
                       </p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">Current Stock</Label>
-                      <p className="text-2xl font-bold">{selectedItem.quantity_in_stock}</p>
+                      <p className="text-2xl font-bold">{selectedItem.quantity_on_hand}</p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">Min Stock Level</Label>

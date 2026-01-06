@@ -84,7 +84,7 @@ export interface User {
   last_login_ip?: string | null;
   created_at?: string;
   updated_at?: string;
-  userType?: string; // super_admin, college_admin, teacher, student, etc.
+  userType?: string; // super_admin, college_admin, teacher, student, central_manager, etc.
   user_type?: string;
   user_type_display?: string;
   college?: number | null; // College ID for non-super_admin users

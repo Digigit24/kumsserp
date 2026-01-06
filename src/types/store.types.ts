@@ -2,7 +2,6 @@
  * Store Module Types
  */
 
-import type { PaginatedResponse } from './core.types';
 
 // ============================================================================
 // VENDOR TYPES
@@ -202,6 +201,7 @@ export interface CentralInventory {
   central_store_name?: string;
   item: number;
   item_name?: string;
+  item_display?: string;
   quantity_on_hand: number;
   quantity_allocated: number;
   quantity_available: number;

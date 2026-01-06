@@ -1,30 +1,32 @@
 // Notices Page
-import { useState } from 'react';
 import { format } from 'date-fns';
 import {
-  FileText,
-  Plus,
-  Pencil,
-  Trash2,
   AlertTriangle,
-  CheckCircle,
   Calendar,
+  CheckCircle,
+  Eye,
+  FileText,
+  Pencil,
+  Plus,
+  Trash2,
+  Users,
 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Input } from '../../components/ui/input';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { NoticeForm } from './forms/NoticeForm';
-import {
-  useNotices,
-  useCreateNotice,
-  useUpdateNotice,
-  useDeleteNotice,
-} from '../../hooks/useCommunication';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  useCreateNotice,
+  useDeleteNotice,
+  useNotices,
+  useUpdateNotice
+} from '../../hooks/useCommunication';
 import type { Notice, NoticeFilters } from '../../types/communication.types';
+import { NoticeForm } from './forms/NoticeForm';
 
 export const NoticesPage = () => {
   const { user } = useAuth();
@@ -36,6 +38,8 @@ export const NoticesPage = () => {
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibilityNoticeId, setVisibilityNoticeId] = useState<number | null>(null);
+  const [isVisibilityDialogOpen, setIsVisibilityDialogOpen] = useState(false);
 
   // Queries and mutations
   const { data, isLoading, refetch } = useNotices(filters);
@@ -235,6 +239,17 @@ export const NoticesPage = () => {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => {
+                          setVisibilityNoticeId(notice.id);
+                          setIsVisibilityDialogOpen(true);
+                        }}
+                        title="Manage Visibility"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleEdit(notice)}
                       >
                         <Pencil className="w-4 h-4" />
@@ -314,6 +329,80 @@ export const NoticesPage = () => {
         description="Are you sure you want to delete this notice? This action cannot be undone."
         variant="destructive"
       />
+
+      {/* Visibility Management Dialog */}
+      <Dialog open={isVisibilityDialogOpen} onOpenChange={setIsVisibilityDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Manage Notice Visibility
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Control who can see this notice. You can make it visible to everyone or specific groups.
+            </p>
+
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Visibility Options
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-background rounded border">
+                  <input type="radio" name="visibility" id="all" className="w-4 h-4" defaultChecked />
+                  <label htmlFor="all" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Everyone</div>
+                    <div className="text-sm text-muted-foreground">All users can see this notice</div>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-background rounded border">
+                  <input type="radio" name="visibility" id="students" className="w-4 h-4" />
+                  <label htmlFor="students" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Students Only</div>
+                    <div className="text-sm text-muted-foreground">Only students can see this notice</div>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-background rounded border">
+                  <input type="radio" name="visibility" id="teachers" className="w-4 h-4" />
+                  <label htmlFor="teachers" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Teachers Only</div>
+                    <div className="text-sm text-muted-foreground">Only teachers can see this notice</div>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-background rounded border">
+                  <input type="radio" name="visibility" id="specific" className="w-4 h-4" />
+                  <label htmlFor="specific" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Specific Classes/Sections</div>
+                    <div className="text-sm text-muted-foreground">Select specific classes or sections</div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setIsVisibilityDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  toast.success('Visibility settings saved');
+                  setIsVisibilityDialogOpen(false);
+                }}
+              >
+                Save Visibility
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

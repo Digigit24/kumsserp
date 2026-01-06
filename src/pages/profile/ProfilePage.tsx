@@ -1,134 +1,87 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  GraduationCap,
-  BookOpen,
-  Award,
-  TrendingUp,
-  Settings,
-  Edit,
-  Download,
-  FileText,
-  Users,
-  Building,
-} from 'lucide-react';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
-
-interface AcademicInfo {
-  enrollmentNumber: string;
-  program: string;
-  branch: string;
-  semester: number;
-  batch: string;
-  section: string;
-  admissionDate: string;
-  rollNumber: string;
-}
-
-interface PersonalInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  alternatePhone?: string;
-  dateOfBirth: string;
-  gender: string;
-  bloodGroup: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
-
-interface GuardianInfo {
-  fatherName: string;
-  fatherOccupation: string;
-  fatherPhone: string;
-  motherName: string;
-  motherOccupation: string;
-  motherPhone: string;
-  guardianEmail: string;
-}
-
-interface AcademicPerformance {
-  cgpa: number;
-  sgpa: number;
-  totalCredits: number;
-  earnedCredits: number;
-  attendance: number;
-  rank?: number;
-}
+import {
+  Award,
+  BookOpen,
+  Calendar,
+  Download,
+  Edit,
+  FileText,
+  GraduationCap,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Settings,
+  TrendingUp,
+  User,
+  Users
+} from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  // Mock data - in real app, fetch from API
-  const [personalInfo] = useState<PersonalInfo>({
-    firstName: 'Rahul',
-    lastName: 'Sharma',
-    email: 'rahul.sharma@student.college.edu',
-    phone: '+91 98765 43210',
-    alternatePhone: '+91 98765 43211',
-    dateOfBirth: '2003-05-15',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    address: '123, Green Park Society, MG Road',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    pincode: '560001',
-  });
-
-  const [academicInfo] = useState<AcademicInfo>({
-    enrollmentNumber: 'BTech/CSE/2021/001',
-    program: 'Bachelor of Technology',
-    branch: 'Computer Science Engineering',
-    semester: 5,
-    batch: '2021-2025',
-    section: 'A',
-    admissionDate: '2021-08-01',
-    rollNumber: '21CSE001',
-  });
-
-  const [guardianInfo] = useState<GuardianInfo>({
-    fatherName: 'Rajesh Kumar Sharma',
-    fatherOccupation: 'Business',
-    fatherPhone: '+91 98765 12345',
-    motherName: 'Sunita Sharma',
-    motherOccupation: 'Teacher',
-    motherPhone: '+91 98765 12346',
-    guardianEmail: 'rajesh.sharma@email.com',
-  });
-
-  const [performance] = useState<AcademicPerformance>({
-    cgpa: 8.5,
-    sgpa: 8.7,
-    totalCredits: 120,
-    earnedCredits: 80,
-    attendance: 87,
-    rank: 12,
-  });
+  const { data: profileData, isLoading, error } = useUserProfile();
 
   const getInitials = () => {
-    return `${personalInfo.firstName[0]}${personalInfo.lastName[0]}`.toUpperCase();
+    if (!profileData?.user_name) return 'U';
+    const names = profileData.user_name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return profileData.user_name.substring(0, 2).toUpperCase();
   };
 
+  // Safe split for name
+  const getUserNameParts = () => {
+    if (!profileData?.user_name) return { first: '', last: '' };
+    const parts = profileData.user_name.split(' ');
+    return {
+      first: parts[0],
+      last: parts.slice(1).join(' ')
+    };
+  };
+
+  const nameParts = getUserNameParts();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profileData) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-red-500 mb-4">Failed to load profile data</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Placeholder stats for now as they are not in the profile API
   const stats = [
-    { label: 'CGPA', value: performance.cgpa.toFixed(2), icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
-    { label: 'Attendance', value: `${performance.attendance}%`, icon: Calendar, color: 'text-green-600 dark:text-green-400' },
-    { label: 'Credits', value: `${performance.earnedCredits}/${performance.totalCredits}`, icon: BookOpen, color: 'text-purple-600 dark:text-purple-400' },
-    { label: 'Rank', value: performance.rank ? `#${performance.rank}` : 'N/A', icon: Award, color: 'text-orange-600 dark:text-orange-400' },
+    { label: 'CGPA', value: 'N/A', icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
+    { label: 'Attendance', value: 'N/A', icon: Calendar, color: 'text-green-600 dark:text-green-400' },
+    { label: 'Credits', value: 'N/A', icon: BookOpen, color: 'text-purple-600 dark:text-purple-400' },
+    { label: 'Rank', value: 'N/A', icon: Award, color: 'text-orange-600 dark:text-orange-400' },
   ];
 
   return (
@@ -163,37 +116,39 @@ const ProfilePage: React.FC = () => {
 
             <div className="flex-1 space-y-3">
               <div>
-                <h2 className="text-2xl font-bold">{personalInfo.firstName} {personalInfo.lastName}</h2>
-                <p className="text-muted-foreground">{academicInfo.enrollmentNumber}</p>
+                <h2 className="text-2xl font-bold">{profileData.user_name}</h2>
+                <p className="text-muted-foreground">{profileData.college_name}</p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Badge variant="default" className="gap-1">
                   <GraduationCap className="h-3 w-3" />
-                  {academicInfo.branch}
+                  {profileData.department_name || 'Department N/A'}
                 </Badge>
                 <Badge variant="secondary" className="gap-1">
                   <BookOpen className="h-3 w-3" />
-                  Semester {academicInfo.semester}
+                  Semester N/A
                 </Badge>
                 <Badge variant="outline" className="gap-1">
                   <Users className="h-3 w-3" />
-                  Section {academicInfo.section}
+                  Section N/A
                 </Badge>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{personalInfo.email}</span>
+                  <span className="truncate">{user?.email || 'No Email'}</span>
                 </div>
+                {profileData.emergency_contact_phone && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-4 w-4 flex-shrink-0" />
+                    <span>{profileData.emergency_contact_phone}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4 flex-shrink-0" />
-                  <span>{personalInfo.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="h-4 w-4 flex-shrink-0" />
-                  <span>Batch {academicInfo.batch}</span>
+                  <Building className="h-4 w-4 flex-shrink-0" />
+                  <span>{profileData.city || 'City N/A'}, {profileData.state}</span>
                 </div>
               </div>
             </div>
@@ -201,7 +156,7 @@ const ProfilePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Performance Stats */}
+      {/* Performance Stats - Keeping placeholders for layout consistency */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <Card key={index}>
@@ -230,62 +185,45 @@ const ProfilePage: React.FC = () => {
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
+                <p className="text-muted-foreground">College</p>
+                <p className="font-medium">{profileData.college_name}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Department</p>
+                <p className="font-medium">{profileData.department_name}</p>
+              </div>
+              {/* Fields not present in API are commented out or shown as N/A */}
+              <div>
                 <p className="text-muted-foreground">Enrollment No.</p>
-                <p className="font-medium">{academicInfo.enrollmentNumber}</p>
+                <p className="font-medium">N/A</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Roll Number</p>
-                <p className="font-medium">{academicInfo.rollNumber}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Program</p>
-                <p className="font-medium">{academicInfo.program}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Branch</p>
-                <p className="font-medium">{academicInfo.branch}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Current Semester</p>
-                <p className="font-medium">Semester {academicInfo.semester}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Section</p>
-                <p className="font-medium">Section {academicInfo.section}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Batch</p>
-                <p className="font-medium">{academicInfo.batch}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Admission Date</p>
-                <p className="font-medium">{new Date(academicInfo.admissionDate).toLocaleDateString()}</p>
+                <p className="font-medium">N/A</p>
               </div>
             </div>
 
             <Separator />
 
-            <div className="space-y-2">
-              <h4 className="font-medium">Academic Performance</h4>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground">CGPA</p>
-                  <p className="font-bold text-lg text-blue-600 dark:text-blue-400">{performance.cgpa.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Current SGPA</p>
-                  <p className="font-bold text-lg text-blue-600 dark:text-blue-400">{performance.sgpa.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Credits Earned</p>
-                  <p className="font-medium">{performance.earnedCredits} / {performance.totalCredits}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Class Rank</p>
-                  <p className="font-medium">{performance.rank ? `#${performance.rank}` : 'N/A'}</p>
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Bio</h4>
+              <p className="text-sm text-muted-foreground">{profileData.bio || 'No bio available.'}</p>
+            </div>
+
+            {profileData.linkedin_url || profileData.website_url ? (
+              <div className="mt-4 space-y-2">
+                <h4 className="font-medium">Links</h4>
+                <div className="flex gap-4 text-sm">
+                  {profileData.linkedin_url && (
+                    <a href={profileData.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">LinkedIn</a>
+                  )}
+                  {profileData.website_url && (
+                    <a href={profileData.website_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Website</a>
+                  )}
                 </div>
               </div>
-            </div>
+            ) : null}
+
           </CardContent>
         </Card>
 
@@ -301,38 +239,32 @@ const ProfilePage: React.FC = () => {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-muted-foreground">First Name</p>
-                <p className="font-medium">{personalInfo.firstName}</p>
+                <p className="font-medium">{nameParts.first}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Last Name</p>
-                <p className="font-medium">{personalInfo.lastName}</p>
+                <p className="font-medium">{nameParts.last}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Date of Birth</p>
-                <p className="font-medium">{new Date(personalInfo.dateOfBirth).toLocaleDateString()}</p>
+                <p className="text-muted-foreground">Nationality</p>
+                <p className="font-medium">{profileData.nationality || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Gender</p>
-                <p className="font-medium">{personalInfo.gender}</p>
+                <p className="text-muted-foreground">Religion</p>
+                <p className="font-medium">{profileData.religion || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Caste</p>
+                <p className="font-medium">{profileData.caste || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Blood Group</p>
-                <p className="font-medium">{personalInfo.bloodGroup}</p>
+                <p className="font-medium">{profileData.blood_group || 'N/A'}</p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Email</p>
-                <p className="font-medium truncate">{personalInfo.email}</p>
+              <div className="col-span-2">
+                <p className="text-muted-foreground">Additional Info</p>
+                <p className="font-medium break-all">{profileData.profile_data || 'N/A'}</p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Phone</p>
-                <p className="font-medium">{personalInfo.phone}</p>
-              </div>
-              {personalInfo.alternatePhone && (
-                <div>
-                  <p className="text-muted-foreground">Alternate Phone</p>
-                  <p className="font-medium">{personalInfo.alternatePhone}</p>
-                </div>
-              )}
             </div>
 
             <Separator />
@@ -343,63 +275,40 @@ const ProfilePage: React.FC = () => {
                 Address
               </h4>
               <div className="text-sm space-y-1">
-                <p>{personalInfo.address}</p>
-                <p>{personalInfo.city}, {personalInfo.state} - {personalInfo.pincode}</p>
+                <p>{profileData.address_line1}</p>
+                {profileData.address_line2 && <p>{profileData.address_line2}</p>}
+                <p>{profileData.city}, {profileData.state} - {profileData.pincode}</p>
+                <p>{profileData.country}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Guardian Information */}
+        {/* Emergency Contact / Guardian Information */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Guardian Information
+              Emergency Contact
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Father's Details</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">Contact Details</h4>
                 <div className="space-y-2 text-sm">
                   <div>
                     <p className="text-muted-foreground">Name</p>
-                    <p className="font-medium">{guardianInfo.fatherName}</p>
+                    <p className="font-medium">{profileData.emergency_contact_name || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Occupation</p>
-                    <p className="font-medium">{guardianInfo.fatherOccupation}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{guardianInfo.fatherPhone}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Mother's Details</h4>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Name</p>
-                    <p className="font-medium">{guardianInfo.motherName}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Occupation</p>
-                    <p className="font-medium">{guardianInfo.motherOccupation}</p>
+                    <p className="text-muted-foreground">Relationship</p>
+                    <p className="font-medium">{profileData.emergency_contact_relation || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{guardianInfo.motherPhone}</p>
+                    <p className="font-medium">{profileData.emergency_contact_phone || 'N/A'}</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <div className="text-sm">
-                  <p className="text-muted-foreground">Guardian Email</p>
-                  <p className="font-medium">{guardianInfo.guardianEmail}</p>
                 </div>
               </div>
             </div>

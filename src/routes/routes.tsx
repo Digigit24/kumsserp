@@ -206,6 +206,7 @@ const IndentsPipelinePage = lazy(() => import("../pages/store/IndentsPipelinePag
 const TransfersWorkflowPage = lazy(() => import("../pages/store/TransfersWorkflowPage").then(m => ({ default: m.TransfersWorkflowPage })));
 const UnifiedApprovalsPage = lazy(() => import("../pages/store/UnifiedApprovalsPage").then(m => ({ default: m.UnifiedApprovalsPage })));
 const InventoryPage = lazy(() => import("../pages/store/InventoryPage").then(m => ({ default: m.InventoryPage })));
+const StoreHierarchyPage = lazy(() => import("../pages/store/StoreHierarchyPage").then(m => ({ default: m.StoreHierarchyPage })));
 
 // Procurement Module
 const RequirementsPage = lazy(() => import("../pages/store/procurement/RequirementsPage").then(m => ({ default: m.RequirementsPage })));
@@ -399,6 +400,7 @@ export default function AppRoutes() {
                     <Route path="store/procurement-pipeline" element={<LazyRoute component={ProcurementPipelinePage} />} />
 
                     {/* Store Module - Legacy/Admin Pages */}
+                    <Route path="store/hierarchy" element={<LazyRoute component={StoreHierarchyPage} />} />
                     <Route path="store/central-stores" element={<LazyRoute component={CentralStoresPage} />} />
                     <Route path="store/central-inventory" element={<LazyRoute component={CentralInventoryPage} />} />
                     <Route path="store/material-issues" element={<LazyRoute component={MaterialIssuesPage} />} />

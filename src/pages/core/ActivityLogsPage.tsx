@@ -3,12 +3,12 @@
  * View system activity logs and audit trail
  */
 
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { activityLogApi } from '../../services/core.service';
-import { useQuery } from '@tanstack/react-query';
 
 const ActivityLogsPage = () => {
   const [filters, setFilters] = useState<any>({ page: 1, page_size: 20, ordering: '-timestamp' });
@@ -40,10 +40,10 @@ const ActivityLogsPage = () => {
         const actionColors: Record<string, string> = {
           create: 'success',
           read: 'outline',
-          update: 'default',
+          update: 'warning',
           delete: 'destructive',
           login: 'default',
-          logout: 'outline',
+          logout: 'secondary',
         };
         return <Badge variant={actionColors[item.action] as any}>{item.action_display}</Badge>;
       },
@@ -82,6 +82,21 @@ const ActivityLogsPage = () => {
         { value: 'logout', label: 'Logout' },
       ],
     },
+    {
+      name: 'model_name',
+      label: 'Model',
+      type: 'text',
+    },
+    {
+      name: 'user_name',
+      label: 'User',
+      type: 'text',
+    },
+    {
+      name: 'timestamp',
+      label: 'Date',
+      type: 'date',
+    },
   ];
 
   return (
@@ -89,10 +104,10 @@ const ActivityLogsPage = () => {
       <DataTable
         title="Activity Logs"
         description="View system activity logs and audit trail (read-only)"
-        data={data}
+        data={data || null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error ? (error as Error).message : null}
         onRefresh={refetch}
         onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
         filters={filters}

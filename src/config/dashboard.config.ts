@@ -164,6 +164,26 @@ export const DASHBOARD_SECTIONS: DashboardSection[] = [
     allowedRoles: ['staff', 'hr', 'store_manager', 'library_manager'],
     order: 2,
   },
+
+  // ============== CENTRAL STORE MANAGER SECTIONS ==============
+  {
+    id: 'central-store-stats',
+    component: 'CentralStoreStats',
+    allowedRoles: ['central_manager', 'super_admin'],
+    order: 1,
+  },
+  {
+    id: 'central-store-quick-actions',
+    component: 'CentralStoreQuickActions',
+    allowedRoles: ['central_manager', 'super_admin'],
+    order: 2,
+  },
+  {
+    id: 'central-store-communication',
+    component: 'CentralStoreCommunication',
+    allowedRoles: ['central_manager', 'super_admin'],
+    order: 3,
+  },
 ];
 
 /**
