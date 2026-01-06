@@ -15,15 +15,17 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { GoodsReceiptForm } from './forms/GoodsReceiptForm';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
+import { GoodsReceiptNote, GoodsReceiptNoteCreateInput } from '../../../types/store.types';
+import { PaginatedResponse } from '../../../types/core.types';
 
 export const GoodsReceiptsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedGRN, setSelectedGRN] = useState<any>(null);
+  const [selectedGRN, setSelectedGRN] = useState<GoodsReceiptNote | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [grnToDelete, setGrnToDelete] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = useGoodsReceipts(filters);
+  const { data, isLoading, refetch, error } = useGoodsReceipts(filters);
   const createMutation = useCreateGoodsReceipt();
   const updateMutation = useUpdateGoodsReceipt();
   const deleteMutation = useDeleteGoodsReceipt();
@@ -35,7 +37,7 @@ export const GoodsReceiptsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleEdit = (grn: any) => {
+  const handleEdit = (grn: GoodsReceiptNote) => {
     setSelectedGRN(grn);
     setIsFormOpen(true);
   };
@@ -59,13 +61,13 @@ export const GoodsReceiptsPage = () => {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (formData: GoodsReceiptNoteCreateInput) => {
     try {
       if (selectedGRN) {
-        await updateMutation.mutateAsync({ id: selectedGRN.id, data });
+        await updateMutation.mutateAsync({ id: selectedGRN.id, data: formData });
         toast.success('Goods receipt updated successfully');
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(formData);
         toast.success('Goods receipt created successfully');
       }
       setIsFormOpen(false);
@@ -75,7 +77,7 @@ export const GoodsReceiptsPage = () => {
     }
   };
 
-  const handleSubmitForInspection = async (grn: any) => {
+  const handleSubmitForInspection = async (grn: GoodsReceiptNote) => {
     try {
       await inspectionMutation.mutateAsync({ id: grn.id, data: grn });
       toast.success('GRN submitted for inspection');
@@ -85,7 +87,7 @@ export const GoodsReceiptsPage = () => {
     }
   };
 
-  const handlePostToInventory = async (grn: any) => {
+  const handlePostToInventory = async (grn: GoodsReceiptNote) => {
     try {
       await inventoryMutation.mutateAsync({ id: grn.id, data: grn });
       toast.success('GRN posted to inventory successfully');
@@ -98,7 +100,7 @@ export const GoodsReceiptsPage = () => {
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'outline' | 'destructive' => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       received: 'secondary',
-      inspection_pending: 'default',
+      pending_inspection: 'default',
       inspected: 'default',
       approved: 'outline',
       posted_to_inventory: 'outline',
@@ -107,7 +109,7 @@ export const GoodsReceiptsPage = () => {
     return variants[status] || 'default';
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<GoodsReceiptNote>[] = [
     {
       key: 'grn_number',
       label: 'GRN Number',
@@ -126,9 +128,9 @@ export const GoodsReceiptsPage = () => {
       render: (row) => row.invoice_number || '-',
     },
     {
-      key: 'supplier_name',
+      key: 'supplier',
       label: 'Supplier',
-      render: (row) => row.supplier_name || `Supplier #${row.supplier}`,
+      render: (row) => `Supplier #${row.supplier}`, // Need supplier details if available
     },
     {
       key: 'status',
@@ -145,7 +147,7 @@ export const GoodsReceiptsPage = () => {
       render: (row) => row.invoice_amount ? `₹${parseFloat(row.invoice_amount).toLocaleString()}` : '-',
     },
     {
-      key: 'actions',
+      key: 'id',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
@@ -186,10 +188,14 @@ export const GoodsReceiptsPage = () => {
       </div>
 
       <DataTable
+        title="Goods Receipt Notes"
         columns={columns}
-        data={data}
+        data={data as PaginatedResponse<GoodsReceiptNote> | null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={error ? (error as any).message || 'Error loading data' : null}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

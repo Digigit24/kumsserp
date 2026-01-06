@@ -10,30 +10,31 @@ import {
   useCreateRequirement,
   useDeleteRequirement,
   useRequirements,
-  useSubmitRequirementForApproval,
+  useSubmitRequirement,
   useUpdateRequirement,
 } from '../../../hooks/useProcurement';
+import { ProcurementRequirement } from '../../../types/store.types';
 import { RequirementForm } from './forms/RequirementForm';
 
 export const RequirementsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedRequirement, setSelectedRequirement] = useState<any>(null);
+  const [selectedRequirement, setSelectedRequirement] = useState<ProcurementRequirement | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [requirementToDelete, setRequirementToDelete] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = useRequirements(filters);
+  const { data, isLoading, refetch, error } = useRequirements(filters);
   const createMutation = useCreateRequirement();
   const updateMutation = useUpdateRequirement();
   const deleteMutation = useDeleteRequirement();
-  const submitMutation = useSubmitRequirementForApproval();
+  const submitMutation = useSubmitRequirement();
 
   const handleCreate = () => {
     setSelectedRequirement(null);
     setIsFormOpen(true);
   };
 
-  const handleEdit = (requirement: any) => {
+  const handleEdit = (requirement: ProcurementRequirement) => {
     setSelectedRequirement(requirement);
     setIsFormOpen(true);
   };
@@ -73,7 +74,7 @@ export const RequirementsPage = () => {
     }
   };
 
-  const handleSubmitForApproval = async (requirement: any) => {
+  const handleSubmitForApproval = async (requirement: ProcurementRequirement) => {
     try {
       await submitMutation.mutateAsync({ id: requirement.id, data: requirement });
       toast.success('Requirement submitted for approval');
@@ -87,11 +88,12 @@ export const RequirementsPage = () => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       draft: 'secondary',
       submitted: 'default',
+      pending_approval: 'default',
       approved: 'outline',
       rejected: 'destructive',
       quotation_received: 'default',
       po_created: 'outline',
-      completed: 'outline',
+      fulfilled: 'outline',
       cancelled: 'destructive',
     };
     return variants[status] || 'default';
@@ -107,7 +109,7 @@ export const RequirementsPage = () => {
     return variants[urgency] || 'default';
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<ProcurementRequirement>[] = [
     {
       key: 'requirement_number',
       label: 'Req. Number',
@@ -131,7 +133,7 @@ export const RequirementsPage = () => {
       sortable: true,
     },
     {
-      key: 'urgency',
+      key: 'urgency', // Using 'urgency' directly as key is fine if data matches
       label: 'Urgency',
       render: (row) => (
         <Badge variant={getUrgencyVariant(row.urgency)} className="capitalize">
@@ -154,7 +156,7 @@ export const RequirementsPage = () => {
       render: (row) => row.estimated_budget ? `₹${parseFloat(row.estimated_budget).toLocaleString()}` : '-',
     },
     {
-      key: 'actions',
+      key: 'id', // Use ID for actions key to be unique, but label is Actions
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
@@ -189,10 +191,14 @@ export const RequirementsPage = () => {
       </div>
 
       <DataTable
-        columns={columns}
-        data={data}
+        title="Requirements List"
+        columns={columns as Column<any>[]}
+        data={data || null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={error ? (error as any).message || 'Error loading data' : null}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

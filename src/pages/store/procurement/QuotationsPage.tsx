@@ -14,15 +14,17 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { QuotationForm } from './forms/QuotationForm';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
+import { SupplierQuotation, SupplierQuotationCreateInput } from '../../../types/store.types';
+import { PaginatedResponse } from '../../../types/core.types';
 
 export const QuotationsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+  const [selectedQuotation, setSelectedQuotation] = useState<SupplierQuotation | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quotationToDelete, setQuotationToDelete] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = useQuotations(filters);
+  const { data, isLoading, refetch, error } = useQuotations(filters);
   const createMutation = useCreateQuotation();
   const updateMutation = useUpdateQuotation();
   const deleteMutation = useDeleteQuotation();
@@ -33,7 +35,7 @@ export const QuotationsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleEdit = (quotation: any) => {
+  const handleEdit = (quotation: SupplierQuotation) => {
     setSelectedQuotation(quotation);
     setIsFormOpen(true);
   };
@@ -57,13 +59,13 @@ export const QuotationsPage = () => {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (formData: SupplierQuotationCreateInput) => {
     try {
       if (selectedQuotation) {
-        await updateMutation.mutateAsync({ id: selectedQuotation.id, data });
+        await updateMutation.mutateAsync({ id: selectedQuotation.id, data: formData });
         toast.success('Quotation updated successfully');
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(formData);
         toast.success('Quotation created successfully');
       }
       setIsFormOpen(false);
@@ -73,7 +75,7 @@ export const QuotationsPage = () => {
     }
   };
 
-  const handleMarkSelected = async (quotation: any) => {
+  const handleMarkSelected = async (quotation: SupplierQuotation) => {
     try {
       await selectMutation.mutateAsync({ id: quotation.id, data: quotation });
       toast.success('Quotation marked as selected');
@@ -87,13 +89,13 @@ export const QuotationsPage = () => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       received: 'secondary',
       under_review: 'default',
-      selected: 'outline',
+      accepted: 'outline',
       rejected: 'destructive',
     };
     return variants[status] || 'default';
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<SupplierQuotation>[] = [
     {
       key: 'quotation_number',
       label: 'Quotation Number',
@@ -107,9 +109,9 @@ export const QuotationsPage = () => {
       sortable: true,
     },
     {
-      key: 'supplier_name',
+      key: 'supplier',
       label: 'Supplier',
-      render: (row) => row.supplier_name || `Supplier #${row.supplier}`,
+      render: (row) => row.supplier_details?.name || `Supplier #${row.supplier}`,
     },
     {
       key: 'status',
@@ -138,7 +140,7 @@ export const QuotationsPage = () => {
       render: (row) => row.grand_total ? `₹${parseFloat(row.grand_total).toLocaleString()}` : '-',
     },
     {
-      key: 'actions',
+      key: 'id',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
@@ -173,10 +175,14 @@ export const QuotationsPage = () => {
       </div>
 
       <DataTable
+        title="Supplier Quotations"
         columns={columns}
-        data={data}
+        data={data as PaginatedResponse<SupplierQuotation> | null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={error ? (error as any).message || 'Error loading data' : null}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

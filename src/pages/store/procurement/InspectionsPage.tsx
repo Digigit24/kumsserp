@@ -13,15 +13,16 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { InspectionForm } from './forms/InspectionForm';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
+import { InspectionNote } from '../../../types/store.types';
 
 export const InspectionsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [selectedInspection, setSelectedInspection] = useState<InspectionNote | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [inspectionToDelete, setInspectionToDelete] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = useInspections(filters);
+  const { data, isLoading, refetch, error } = useInspections(filters);
   const createMutation = useCreateInspection();
   const updateMutation = useUpdateInspection();
   const deleteMutation = useDeleteInspection();
@@ -31,7 +32,7 @@ export const InspectionsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleEdit = (inspection: any) => {
+  const handleEdit = (inspection: InspectionNote) => {
     setSelectedInspection(inspection);
     setIsFormOpen(true);
   };
@@ -85,16 +86,16 @@ export const InspectionsPage = () => {
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       accept: 'outline',
       reject: 'destructive',
-      conditional: 'default',
+      partial_accept: 'default',
     };
     return variants[recommendation] || 'default';
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<InspectionNote>[] = [
     {
       key: 'grn_number',
       label: 'GRN Number',
-      render: (row) => <span className="font-semibold">{row.grn_number || `GRN #${row.grn}`}</span>,
+      render: (row) => <span className="font-semibold">{row.grn || `GRN #${row.grn}`}</span>,
       sortable: true,
     },
     {
@@ -104,9 +105,9 @@ export const InspectionsPage = () => {
       sortable: true,
     },
     {
-      key: 'inspector_name',
+      key: 'inspector',
       label: 'Inspector',
-      render: (row) => row.inspector_name || `Inspector #${row.inspector}`,
+      render: (row) => `Inspector #${row.inspector}`,
     },
     {
       key: 'overall_status',
@@ -141,12 +142,12 @@ export const InspectionsPage = () => {
       label: 'Recommendation',
       render: (row) => (
         <Badge variant={getRecommendationVariant(row.recommendation)} className="capitalize">
-          {row.recommendation}
+          {row.recommendation.replace('_', ' ')}
         </Badge>
       ),
     },
     {
-      key: 'actions',
+      key: 'id',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
@@ -175,10 +176,14 @@ export const InspectionsPage = () => {
       </div>
 
       <DataTable
-        columns={columns}
-        data={data}
+        title="Quality Inspections List"
+        columns={columns as Column<any>[]}
+        data={data || null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={error ? (error as any).message || 'Error loading data' : null}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

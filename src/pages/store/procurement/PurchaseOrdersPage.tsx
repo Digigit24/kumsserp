@@ -16,15 +16,17 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { PurchaseOrderForm } from './forms/PurchaseOrderForm';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
+import { PurchaseOrder, PurchaseOrderCreateInput } from '../../../types/store.types';
+import { PaginatedResponse } from '../../../types/core.types';
 
 export const PurchaseOrdersPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedPO, setSelectedPO] = useState<any>(null);
+  const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [poToDelete, setPoToDelete] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = usePurchaseOrders(filters);
+  const { data, isLoading, refetch, error } = usePurchaseOrders(filters);
   const createMutation = useCreatePurchaseOrder();
   const updateMutation = useUpdatePurchaseOrder();
   const deleteMutation = useDeletePurchaseOrder();
@@ -37,7 +39,7 @@ export const PurchaseOrdersPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleEdit = (po: any) => {
+  const handleEdit = (po: PurchaseOrder) => {
     setSelectedPO(po);
     setIsFormOpen(true);
   };
@@ -61,13 +63,13 @@ export const PurchaseOrdersPage = () => {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (formData: PurchaseOrderCreateInput) => {
     try {
       if (selectedPO) {
-        await updateMutation.mutateAsync({ id: selectedPO.id, data });
+        await updateMutation.mutateAsync({ id: selectedPO.id, data: formData });
         toast.success('Purchase order updated successfully');
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(formData);
         toast.success('Purchase order created successfully');
       }
       setIsFormOpen(false);
@@ -77,7 +79,7 @@ export const PurchaseOrdersPage = () => {
     }
   };
 
-  const handleSendToSupplier = async (po: any) => {
+  const handleSendToSupplier = async (po: PurchaseOrder) => {
     try {
       await sendMutation.mutateAsync({ id: po.id, data: po });
       toast.success('PO sent to supplier successfully');
@@ -87,7 +89,7 @@ export const PurchaseOrdersPage = () => {
     }
   };
 
-  const handleAcknowledge = async (po: any) => {
+  const handleAcknowledge = async (po: PurchaseOrder) => {
     try {
       await acknowledgeMutation.mutateAsync({ id: po.id, data: po });
       toast.success('PO acknowledged successfully');
@@ -97,7 +99,7 @@ export const PurchaseOrdersPage = () => {
     }
   };
 
-  const handleGeneratePdf = async (po: any) => {
+  const handleGeneratePdf = async (po: PurchaseOrder) => {
     try {
       await pdfMutation.mutateAsync({ id: po.id, data: po });
       toast.success('PDF generated successfully');
@@ -111,14 +113,14 @@ export const PurchaseOrdersPage = () => {
       draft: 'secondary',
       sent: 'default',
       acknowledged: 'outline',
-      in_progress: 'default',
-      completed: 'outline',
+      partially_received: 'default',
+      fulfilled: 'outline',
       cancelled: 'destructive',
     };
     return variants[status] || 'default';
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<PurchaseOrder>[] = [
     {
       key: 'po_number',
       label: 'PO Number',
@@ -132,9 +134,9 @@ export const PurchaseOrdersPage = () => {
       sortable: true,
     },
     {
-      key: 'supplier_name',
+      key: 'supplier',
       label: 'Supplier',
-      render: (row) => row.supplier_name || `Supplier #${row.supplier}`,
+      render: (row) => row.supplier_details?.name || `Supplier #${row.supplier}`,
     },
     {
       key: 'status',
@@ -156,7 +158,7 @@ export const PurchaseOrdersPage = () => {
       render: (row) => row.expected_delivery_date ? new Date(row.expected_delivery_date).toLocaleDateString() : '-',
     },
     {
-      key: 'actions',
+      key: 'id',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
@@ -201,10 +203,14 @@ export const PurchaseOrdersPage = () => {
       </div>
 
       <DataTable
+        title="Purchase Orders List"
         columns={columns}
-        data={data}
+        data={data as PaginatedResponse<PurchaseOrder> | null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={error ? (error as any).message || 'Error loading data' : null}
+        onRefresh={refetch}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

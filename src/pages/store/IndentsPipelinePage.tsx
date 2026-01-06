@@ -34,19 +34,19 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
   {
     id: 'pending_college',
     title: 'College Approval',
-    status: 'pending_college_approval',
+    status: ['submitted', 'pending_college_approval'],
     color: 'bg-blue-100',
   },
   {
     id: 'pending_super_admin',
-    title: 'Super Admin',
-    status: 'pending_super_admin',
+    title: 'Super Admin Approval',
+    status: ['college_approved', 'pending_super_admin'],
     color: 'bg-purple-100',
   },
   {
     id: 'approved',
     title: 'Approved',
-    status: 'super_admin_approved',
+    status: ['super_admin_approved', 'approved'],
     color: 'bg-green-100',
   },
   {
@@ -61,6 +61,12 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
     status: 'fulfilled',
     color: 'bg-emerald-100',
   },
+  {
+    id: 'rejected',
+    title: 'Rejected / Cancelled',
+    status: ['rejected', 'rejected_by_college', 'rejected_by_super_admin', 'cancelled'],
+    color: 'bg-red-100',
+  },
 ];
 
 export const IndentsPipelinePage = () => {
@@ -71,7 +77,9 @@ export const IndentsPipelinePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
-  const { data, isLoading, refetch } = useStoreIndents(filters);
+  // Fetch all indents (no default filters) to populate all pipeline columns
+  const { data, isLoading, refetch } = useStoreIndents({});
+  // const { data, isLoading, refetch } = useStoreIndents(filters); // Previous: bound to filters state
   const createMutation = useCreateStoreIndent();
   const submitMutation = useSubmitStoreIndent();
   const collegeApproveMutation = useCollegeAdminApprove();

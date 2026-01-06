@@ -3,11 +3,16 @@
  * Base URL and all API endpoints
  */
 import type { User } from "../types/auth.types";
+// Base API URL - Local Development
+export const API_BASE_URL = "http://127.0.0.1:8000";
+export const WS_CHAT_URL = "ws://127.0.0.1:8000/ws/chat/";
+export const WS_NOTIFICATIONS_URL = "ws://127.0.0.1:8000/ws/notifications/";
+
 // Base API URL - Production
-export const API_BASE_URL = "https://kumsserp2.celiyo.com";
-export const WS_CHAT_URL = "wss://kumsserp2.celiyo.com/ws/chat/";
-export const WS_NOTIFICATIONS_URL =
-  "wss://kumsserp2.celiyo.com/ws/notifications/";
+// export const API_BASE_URL = "https://kumsserp2.celiyo.com";
+// export const WS_CHAT_URL = "wss://kumsserp2.celiyo.com/ws/v1/chat/";
+// export const WS_NOTIFICATIONS_URL =
+//   "wss://kumsserp2.celiyo.com/ws/v1/notifications/";
 
 /**
  * API Endpoints
@@ -965,6 +970,122 @@ export const API_ENDPOINTS = {
     adjustStock: (id: number) =>
       `/api/v1/store/central-inventory/${id}/adjust_stock/`,
     lowStock: "/api/v1/store/central-inventory/low_stock/",
+  },
+
+  // Store Module - Procurement Requirements
+  procurementRequirements: {
+    list: "/api/v1/store/procurement/requirements/",
+    create: "/api/v1/store/procurement/requirements/",
+    detail: (id: number) => `/api/v1/store/procurement/requirements/${id}/`,
+    update: (id: number) => `/api/v1/store/procurement/requirements/${id}/`,
+    patch: (id: number) => `/api/v1/store/procurement/requirements/${id}/`,
+    delete: (id: number) => `/api/v1/store/procurement/requirements/${id}/`,
+    submitForApproval: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/submit_for_approval/`,
+    quotations: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/quotations/`,
+    compareQuotations: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/compare_quotations/`,
+    selectQuotation: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/select_quotation/`,
+  },
+
+  // Store Module - Supplier Quotations
+  supplierQuotations: {
+    list: "/api/v1/store/procurement/quotations/",
+    create: "/api/v1/store/procurement/quotations/",
+    detail: (id: number) => `/api/v1/store/procurement/quotations/${id}/`,
+    update: (id: number) => `/api/v1/store/procurement/quotations/${id}/`,
+    patch: (id: number) => `/api/v1/store/procurement/quotations/${id}/`,
+    delete: (id: number) => `/api/v1/store/procurement/quotations/${id}/`,
+    markSelected: (id: number) =>
+      `/api/v1/store/procurement/quotations/${id}/mark_selected/`,
+  },
+
+  // Store Module - Purchase Orders
+  purchaseOrders: {
+    list: "/api/v1/store/procurement/purchase-orders/",
+    create: "/api/v1/store/procurement/purchase-orders/",
+    detail: (id: number) => `/api/v1/store/procurement/purchase-orders/${id}/`,
+    update: (id: number) => `/api/v1/store/procurement/purchase-orders/${id}/`,
+    patch: (id: number) => `/api/v1/store/procurement/purchase-orders/${id}/`,
+    delete: (id: number) => `/api/v1/store/procurement/purchase-orders/${id}/`,
+    generatePdf: (id: number) =>
+      `/api/v1/store/procurement/purchase-orders/${id}/generate_pdf/`,
+    sendToSupplier: (id: number) =>
+      `/api/v1/store/procurement/purchase-orders/${id}/send_to_supplier/`,
+    acknowledge: (id: number) =>
+      `/api/v1/store/procurement/purchase-orders/${id}/acknowledge/`,
+  },
+
+  // Store Module - Goods Receipt Notes
+  goodsReceipts: {
+    list: "/api/v1/store/procurement/goods-receipts/",
+    create: "/api/v1/store/procurement/goods-receipts/",
+    detail: (id: number) => `/api/v1/store/procurement/goods-receipts/${id}/`,
+    update: (id: number) => `/api/v1/store/procurement/goods-receipts/${id}/`,
+    patch: (id: number) => `/api/v1/store/procurement/goods-receipts/${id}/`,
+    delete: (id: number) => `/api/v1/store/procurement/goods-receipts/${id}/`,
+    submitForInspection: (id: number) =>
+      `/api/v1/store/procurement/goods-receipts/${id}/submit_for_inspection/`,
+    postToInventory: (id: number) =>
+      `/api/v1/store/procurement/goods-receipts/${id}/post_to_inventory/`,
+  },
+
+  // Store Module - Inspections
+  inspections: {
+    list: "/api/v1/store/procurement/inspections/",
+    create: "/api/v1/store/procurement/inspections/",
+    detail: (id: number) => `/api/v1/store/procurement/inspections/${id}/`,
+    update: (id: number) => `/api/v1/store/procurement/inspections/${id}/`,
+    patch: (id: number) => `/api/v1/store/procurement/inspections/${id}/`,
+    delete: (id: number) => `/api/v1/store/procurement/inspections/${id}/`,
+  },
+
+  // Store Module - Inventory Transactions
+  inventoryTransactions: {
+    list: "/api/v1/store/inventory-transactions/",
+    detail: (id: number) => `/api/v1/store/inventory-transactions/${id}/`,
+  },
+
+  // Store Module - Store Indents
+  storeIndents: {
+    list: "/api/v1/store/indents/",
+    create: "/api/v1/store/indents/",
+    detail: (id: number) => `/api/v1/store/indents/${id}/`,
+    update: (id: number) => `/api/v1/store/indents/${id}/`,
+    patch: (id: number) => `/api/v1/store/indents/${id}/`,
+    delete: (id: number) => `/api/v1/store/indents/${id}/`,
+    submit: (id: number) => `/api/v1/store/indents/${id}/submit/`,
+    collegeAdminApprove: (id: number) =>
+      `/api/v1/store/indents/${id}/college_admin_approve/`,
+    collegeAdminReject: (id: number) =>
+      `/api/v1/store/indents/${id}/college_admin_reject/`,
+    superAdminApprove: (id: number) =>
+      `/api/v1/store/indents/${id}/super_admin_approve/`,
+    superAdminReject: (id: number) =>
+      `/api/v1/store/indents/${id}/super_admin_reject/`,
+    issueMaterials: (id: number) =>
+      `/api/v1/store/indents/${id}/issue_materials/`,
+    pendingCollegeApprovals: "/api/v1/store/indents/pending_college_approvals/",
+    pendingSuperAdminApprovals:
+      "/api/v1/store/indents/pending_super_admin_approvals/",
+  },
+
+  // Store Module - Material Issue Notes
+  materialIssues: {
+    list: "/api/v1/store/material-issues/",
+    create: "/api/v1/store/material-issues/",
+    detail: (id: number) => `/api/v1/store/material-issues/${id}/`,
+    update: (id: number) => `/api/v1/store/material-issues/${id}/`,
+    patch: (id: number) => `/api/v1/store/material-issues/${id}/`,
+    delete: (id: number) => `/api/v1/store/material-issues/${id}/`,
+    markDispatched: (id: number) =>
+      `/api/v1/store/material-issues/${id}/mark_dispatched/`,
+    markReceived: (id: number) =>
+      `/api/v1/store/material-issues/${id}/mark_received/`,
+    generateGatePass: (id: number) =>
+      `/api/v1/store/material-issues/${id}/generate_gate_pass/`,
   },
 };
 
