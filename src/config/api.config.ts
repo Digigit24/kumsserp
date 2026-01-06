@@ -3,10 +3,11 @@
  * Base URL and all API endpoints
  */
 import type { User } from "../types/auth.types";
-// Base API URL - Development
-export const API_BASE_URL = "http://127.0.0.1:8000";
-export const WS_CHAT_URL = "ws://127.0.0.1:8000/ws/chat/";
-export const WS_NOTIFICATIONS_URL = "ws://127.0.0.1:8000/ws/notifications/";
+// Base API URL - Production
+export const API_BASE_URL = "https://kumsserp2.celiyo.com";
+export const WS_CHAT_URL = "wss://kumsserp2.celiyo.com/ws/chat/";
+export const WS_NOTIFICATIONS_URL =
+  "wss://kumsserp2.celiyo.com/ws/notifications/";
 
 /**
  * API Endpoints
@@ -458,7 +459,8 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/examinations/results/${id}/`,
     delete: (id: number) => `/api/v1/examinations/results/${id}/`,
     publish: (id: number) => `/api/v1/examinations/results/${id}/publish/`,
-    student: (studentId: number) => `/api/v1/examinations/results/student/${studentId}/`,
+    student: (studentId: number) =>
+      `/api/v1/examinations/results/student/${studentId}/`,
   },
 
   // Examination Module - Test Papers
@@ -469,7 +471,8 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
     patch: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
     delete: (id: number) => `/api/v1/examinations/test-papers/${id}/`,
-    sendToStore: (id: number) => `/api/v1/examinations/test-papers/${id}/send_to_store/`,
+    sendToStore: (id: number) =>
+      `/api/v1/examinations/test-papers/${id}/send_to_store/`,
   },
 
   // Examination Module - Admit Cards
@@ -571,7 +574,8 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
     delete: (id: number) => `/api/v1/attendance/student-attendance/${id}/`,
     bulkMark: "/api/v1/attendance/student-attendance/bulk_mark/",
-    summary: (studentId: number) => `/api/v1/attendance/student-attendance/summary/${studentId}/`,
+    summary: (studentId: number) =>
+      `/api/v1/attendance/student-attendance/summary/${studentId}/`,
   },
 
   // Attendance Module - Staff Attendance
@@ -745,8 +749,6 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/fees/online-payments/${id}/`,
   },
 
-
-
   // Library Module - Books
   books: {
     list: "/api/v1/library/books/",
@@ -779,8 +781,6 @@ export const API_ENDPOINTS = {
     delete: (id: number) => `/api/v1/library/issues/${id}/`,
     renew: (id: number) => `/api/v1/library/issues/${id}/renew/`,
   },
-
-
 
   // Library Module - Library Cards
   libraryCards: {
@@ -923,7 +923,8 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
     patch: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
     delete: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/`,
-    grade: (id: number) => `/api/v1/teachers/assignment-submissions/${id}/grade/`,
+    grade: (id: number) =>
+      `/api/v1/teachers/assignment-submissions/${id}/grade/`,
     mySubmissions: "/api/v1/teachers/assignment-submissions/my-submissions/",
   },
 
@@ -949,7 +950,8 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/store/central-stores/${id}/`,
     delete: (id: number) => `/api/v1/store/central-stores/${id}/`,
     inventory: (id: number) => `/api/v1/store/central-stores/${id}/inventory/`,
-    stockSummary: (id: number) => `/api/v1/store/central-stores/${id}/stock_summary/`,
+    stockSummary: (id: number) =>
+      `/api/v1/store/central-stores/${id}/stock_summary/`,
   },
 
   // Store Module - Central Inventory
@@ -960,7 +962,8 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/store/central-inventory/${id}/`,
     patch: (id: number) => `/api/v1/store/central-inventory/${id}/`,
     delete: (id: number) => `/api/v1/store/central-inventory/${id}/`,
-    adjustStock: (id: number) => `/api/v1/store/central-inventory/${id}/adjust_stock/`,
+    adjustStock: (id: number) =>
+      `/api/v1/store/central-inventory/${id}/adjust_stock/`,
     lowStock: "/api/v1/store/central-inventory/low_stock/",
   },
 };
@@ -975,18 +978,22 @@ export const API_ENDPOINTS = {
  */
 const getCollegeId = (): string => {
   try {
-    const storedUser = localStorage.getItem('kumss_user');
+    const storedUser = localStorage.getItem("kumss_user");
     if (!storedUser) {
-      return 'all';
+      return "all";
     }
 
     const user = JSON.parse(storedUser) as User;
-   if (user.userType === 'super_admin') {
-      return 'all';
+    if (user.userType === "super_admin") {
+      return "all";
     }
 
-        if (user.college === 0 || user.college === null || user.college === undefined) {
-      return 'all';
+    if (
+      user.college === 0 ||
+      user.college === null ||
+      user.college === undefined
+    ) {
+      return "all";
     }
 
     // Return the user's college ID if available
@@ -994,10 +1001,10 @@ const getCollegeId = (): string => {
       return String(user.college);
     }
 
-    return 'all';
+    return "all";
   } catch (error) {
-    console.error('Error parsing user data for college ID:', error);
-    return 'all';
+    console.error("Error parsing user data for college ID:", error);
+    return "all";
   }
 };
 
