@@ -24,6 +24,8 @@ import {
   useApproveRequirement,
   useRejectRequirement,
 } from '../../../hooks/useProcurement';
+import { QuotationSelectionDialog } from './QuotationSelectionDialog';
+import { ReceiveGoodsDialog } from './ReceiveGoodsDialog';
 
 interface RequirementDetailDialogProps {
   open: boolean;
@@ -40,6 +42,8 @@ export const RequirementDetailDialog = ({
 }: RequirementDetailDialogProps) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [showQuotationDialog, setShowQuotationDialog] = useState(false);
+  const [showReceiveGoodsDialog, setShowReceiveGoodsDialog] = useState(false);
 
   const { data: requirement, isLoading } = useRequirement(requirementId || 0);
   const submitMutation = useSubmitRequirement();
@@ -338,9 +342,9 @@ export const RequirementDetailDialog = ({
                     <p className="text-sm text-green-800 mb-3">
                       Requirement approved! Now you can add quotations from vendors.
                     </p>
-                    <Button size="sm" onClick={() => toast.info('Quotation collection coming soon')}>
+                    <Button size="sm" onClick={() => setShowQuotationDialog(true)}>
                       <DollarSign className="h-4 w-4 mr-2" />
-                      Add Quotation
+                      View & Add Quotations
                     </Button>
                   </div>
                 )}
@@ -351,7 +355,7 @@ export const RequirementDetailDialog = ({
                     <p className="text-sm text-yellow-800 mb-3">
                       Compare quotations and select the best one to create a purchase order.
                     </p>
-                    <Button size="sm" onClick={() => toast.info('Quotation selection coming soon')}>
+                    <Button size="sm" onClick={() => setShowQuotationDialog(true)}>
                       <CheckCircle className="h-4 w-4 mr-2" />
                       View & Select Quotations
                     </Button>
@@ -364,7 +368,7 @@ export const RequirementDetailDialog = ({
                     <p className="text-sm text-orange-800 mb-3">
                       Purchase order created. When goods arrive, create a GRN to receive them.
                     </p>
-                    <Button size="sm" onClick={() => toast.info('GRN receiving coming soon')}>
+                    <Button size="sm" onClick={() => setShowReceiveGoodsDialog(true)}>
                       <Truck className="h-4 w-4 mr-2" />
                       Receive Goods (GRN)
                     </Button>
@@ -469,6 +473,28 @@ export const RequirementDetailDialog = ({
           </div>
         )}
       </DialogContent>
+
+      {/* Quotation Selection Dialog */}
+      <QuotationSelectionDialog
+        open={showQuotationDialog}
+        onOpenChange={setShowQuotationDialog}
+        requirementId={requirementId}
+        onSuccess={() => {
+          setShowQuotationDialog(false);
+          onSuccess?.();
+        }}
+      />
+
+      {/* Receive Goods Dialog */}
+      <ReceiveGoodsDialog
+        open={showReceiveGoodsDialog}
+        onOpenChange={setShowReceiveGoodsDialog}
+        purchaseOrderId={requirement?.purchase_order_id || null}
+        onSuccess={() => {
+          setShowReceiveGoodsDialog(false);
+          onSuccess?.();
+        }}
+      />
     </Dialog>
   );
 };
