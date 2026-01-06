@@ -13,7 +13,7 @@ import { LucideIcon } from 'lucide-react';
 export interface KanbanColumn {
   id: string;
   title: string;
-  status: string;
+  status: string | string[];
   color: string; // e.g., 'bg-slate-100', 'bg-blue-100'
 }
 
@@ -52,8 +52,11 @@ interface KanbanBoardProps {
 }
 
 export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No items to display' }: KanbanBoardProps) => {
-  const getCardsForColumn = (status: string) => {
-    return cards.filter(card => card.status === status);
+  const getCardsForColumn = (columnStatus: string | string[]) => {
+    if (Array.isArray(columnStatus)) {
+      return cards.filter(card => columnStatus.includes(card.status));
+    }
+    return cards.filter(card => card.status === columnStatus);
   };
 
   if (isLoading) {

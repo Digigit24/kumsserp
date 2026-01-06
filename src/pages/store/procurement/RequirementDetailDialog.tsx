@@ -1,14 +1,3 @@
-/**
- * Requirement Detail Dialog - Full workflow with stepper (7 steps)
- * Step 1: Define requirement items
- * Step 2: Approvals
- * Step 3: Collect quotations
- * Step 4: Select quotation
- * Step 5: Create PO
- * Step 6: Receive GRN
- * Step 7: Post to inventory
- */
-
 import { useState, useMemo } from 'react';
 import { Package, CheckCircle, XCircle, FileText, Loader2, Send, ThumbsUp, DollarSign, ShoppingCart, Truck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,6 +15,7 @@ import {
 } from '../../../hooks/useProcurement';
 import { QuotationSelectionDialog } from './QuotationSelectionDialog';
 import { ReceiveGoodsDialog } from './ReceiveGoodsDialog';
+import { ProcurementRequirement, RequirementItem } from '../../../types/store.types';
 
 interface RequirementDetailDialogProps {
   open: boolean;
@@ -45,7 +35,7 @@ export const RequirementDetailDialog = ({
   const [showQuotationDialog, setShowQuotationDialog] = useState(false);
   const [showReceiveGoodsDialog, setShowReceiveGoodsDialog] = useState(false);
 
-  const { data: requirement, isLoading } = useRequirement(requirementId || 0);
+  const { data: requirement, isLoading } = useRequirement(requirementId || 0) as { data: ProcurementRequirement, isLoading: boolean };
   const submitMutation = useSubmitRequirement();
   const approveMutation = useApproveRequirement();
   const rejectMutation = useRejectRequirement();
@@ -186,7 +176,7 @@ export const RequirementDetailDialog = ({
   };
 
   const totalEstimate = requirement?.items?.reduce(
-    (sum: number, item: any) => sum + (item.quantity || 0) * (item.estimated_price || 0),
+    (sum: number, item: RequirementItem) => sum + (item.quantity || 0) * (parseFloat(item.estimated_unit_price || '0') || 0),
     0
   ) || 0;
 
@@ -250,23 +240,23 @@ export const RequirementDetailDialog = ({
                     </div>
                     <div>
                       <span className="text-muted-foreground">Priority:</span>{' '}
-                      <Badge variant={requirement.priority === 'urgent' ? 'destructive' : 'outline'} className="capitalize">
-                        {requirement.priority}
+                      <Badge variant={requirement.urgency === 'urgent' ? 'destructive' : 'outline'} className="capitalize">
+                        {requirement.urgency}
                       </Badge>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Department:</span>{' '}
-                      <span className="font-medium">{requirement.department_name || '-'}</span>
+                      <span className="text-muted-foreground">Store:</span>{' '}
+                      <span className="font-medium">Store #{requirement.central_store}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Estimated Total:</span>{' '}
                       <span className="font-semibold">₹{totalEstimate.toFixed(2)}</span>
                     </div>
                   </div>
-                  {requirement.purpose && (
+                  {requirement.justification && (
                     <div className="mt-3 pt-3 border-t">
-                      <p className="text-xs text-muted-foreground mb-1">Purpose</p>
-                      <p className="text-sm">{requirement.purpose}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Justification</p>
+                      <p className="text-sm">{requirement.justification}</p>
                     </div>
                   )}
                 </div>
@@ -279,28 +269,28 @@ export const RequirementDetailDialog = ({
                       <thead className="bg-muted">
                         <tr>
                           <th className="p-3 text-left text-xs">#</th>
-                          <th className="p-3 text-left text-xs">Item Name</th>
+                          <th className="p-3 text-left text-xs">Item Description</th>
                           <th className="p-3 text-right text-xs">Quantity</th>
                           <th className="p-3 text-left text-xs">Unit</th>
-                          <th className="p-3 text-right text-xs">Est. Price</th>
+                          <th className="p-3 text-right text-xs">Est. Unit Price</th>
                           <th className="p-3 text-right text-xs">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {requirement.items?.map((item: any, index: number) => (
+                        {requirement.items?.map((item: RequirementItem, index: number) => (
                           <tr key={index} className="border-t">
                             <td className="p-3 text-sm">{index + 1}</td>
                             <td className="p-3">
-                              <p className="text-sm font-medium">{item.item_name}</p>
+                              <p className="text-sm font-medium">{item.item_description}</p>
                               {item.specifications && (
                                 <p className="text-xs text-muted-foreground">{item.specifications}</p>
                               )}
                             </td>
                             <td className="p-3 text-right text-sm">{item.quantity}</td>
                             <td className="p-3 text-sm">{item.unit}</td>
-                            <td className="p-3 text-right text-sm">₹{item.estimated_price?.toFixed(2)}</td>
+                            <td className="p-3 text-right text-sm">₹{parseFloat(item.estimated_unit_price || '0').toFixed(2)}</td>
                             <td className="p-3 text-right font-semibold text-sm">
-                              ₹{((item.quantity || 0) * (item.estimated_price || 0)).toFixed(2)}
+                              ₹{((item.quantity || 0) * (parseFloat(item.estimated_unit_price || '0') || 0)).toFixed(2)}
                             </td>
                           </tr>
                         ))}
@@ -387,11 +377,12 @@ export const RequirementDetailDialog = ({
                   </div>
                 )}
 
+                {/* Rejection Display */}
                 {requirement.status === 'rejected' && requirement.rejection_reason && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 text-red-900 mb-2">
-                      <XCircle className="h-5 w-5" />
-                      <h3 className="font-semibold">Requirement Rejected</h3>
+                       <XCircle className="h-5 w-5" />
+                       <h3 className="font-semibold">Requirement Rejected</h3>
                     </div>
                     <p className="text-sm text-red-800 mb-2">Reason:</p>
                     <p className="text-sm text-red-900 font-medium">{requirement.rejection_reason}</p>
@@ -474,7 +465,6 @@ export const RequirementDetailDialog = ({
         )}
       </DialogContent>
 
-      {/* Quotation Selection Dialog */}
       <QuotationSelectionDialog
         open={showQuotationDialog}
         onOpenChange={setShowQuotationDialog}
@@ -485,11 +475,10 @@ export const RequirementDetailDialog = ({
         }}
       />
 
-      {/* Receive Goods Dialog */}
       <ReceiveGoodsDialog
         open={showReceiveGoodsDialog}
         onOpenChange={setShowReceiveGoodsDialog}
-        purchaseOrderId={requirement?.purchase_order_id || null}
+        purchaseOrderId={(requirement as any)?.purchase_order_id || null}
         onSuccess={() => {
           setShowReceiveGoodsDialog(false);
           onSuccess?.();

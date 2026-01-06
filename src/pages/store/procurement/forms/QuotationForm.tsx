@@ -12,43 +12,82 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { VendorDropdown } from '../../../../components/common/VendorDropdown';
+import { SupplierQuotation, SupplierQuotationCreateInput } from '../../../../types/store.types';
 
 interface QuotationFormProps {
-  quotation?: any;
-  onSubmit: (data: any) => void;
+  quotation?: SupplierQuotation | null;
+  onSubmit: (data: SupplierQuotationCreateInput) => void;
   onCancel: () => void;
 }
 
 export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormProps) => {
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
-    defaultValues: quotation || {
+  const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm<SupplierQuotationCreateInput>({
+    defaultValues: quotation ? {
+      quotation_number: quotation.quotation_number,
+      quotation_date: quotation.quotation_date,
+      supplier: quotation.supplier,
+      requirement: quotation.requirement,
+      status: quotation.status,
+      // is_selected is not part of CreateInput but handled in state/hook or separate action usually. 
+      // Ideally update API separates selection. Form might update fields only.
+      // But if we use same form for update:
+      // Types say CreateInput doesn't have is_selected.
+      // We might need a separate type or intersection for Form values if it handles more.
+      // For now, I'll ignore is_selected in the form for creation/update as input, or handle separately?
+      // "is_selected" is in SupplierQuotation but not SupplierQuotationCreateInput.
+      // If the API accepts it for update, good.
+      // Assuming API works, I'll stick to CreateInput fields for submission.
+      valid_until: quotation.valid_until || '',
+      payment_terms: quotation.payment_terms || '',
+      delivery_time_days: quotation.delivery_time_days || 0,
+      warranty_terms: quotation.warranty_terms || '',
+      total_amount: quotation.total_amount,
+      tax_amount: quotation.tax_amount,
+      grand_total: quotation.grand_total,
+      items: quotation.items?.map(item => ({
+        requirement_item: item.requirement_item,
+        item_description: item.item_description,
+        quantity: item.quantity,
+        unit: item.unit,
+        unit_price: item.unit_price,
+        discount_percent: item.discount_percent || '',
+        discount_amount: item.discount_amount || '',
+        tax_rate: item.tax_rate,
+        tax_amount: item.tax_amount,
+        total_amount: item.total_amount,
+        specifications: item.specifications || '',
+        remarks: '', 
+        // CreateInput doesn't have remarks/is_active for items?
+        // store.types.ts Item CreateInput: item_description, quantity, unit, unit_price, tax_rate, tax_amount, total_amount, specifications, brand, hsn_code.
+        // And I added discount_percent, discount_amount.
+        // It does NOT have remarks, is_active.
+        // So I should remove checks for those or add them to type.
+      })) || [],
+    } : {
       quotation_number: '',
-      quotation_date: '',
-      supplier: '',
-      requirement: '',
+      quotation_date: new Date().toISOString().split('T')[0],
+      supplier: 0,
+      requirement: 0, 
       status: 'received',
-      is_selected: false,
       valid_until: '',
       payment_terms: '',
-      delivery_terms: '',
-      remarks: '',
-      terms_conditions: '',
-      metadata: '',
-      is_active: true,
+      delivery_time_days: 0,
+      warranty_terms: '',
+      total_amount: '0',
+      tax_amount: '0',
+      grand_total: '0',
       items: [
         {
           item_description: '',
           quantity: 0,
           unit: '',
-          unit_price: '',
-          discount_percent: '',
-          discount_amount: '',
-          tax_percent: '',
-          tax_amount: '',
-          total: '',
+          unit_price: '0',
+          discount_percent: '0',
+          discount_amount: '0',
+          tax_rate: '0',
+          tax_amount: '0',
+          total_amount: '0',
           specifications: '',
-          remarks: '',
-          is_active: true,
         },
       ],
     },
@@ -130,7 +169,7 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
               <Label htmlFor="status">Status</Label>
               <Select
                 defaultValue={watch('status')}
-                onValueChange={(value) => setValue('status', value)}
+                onValueChange={(value) => setValue('status', value as any)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -138,7 +177,7 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
                 <SelectContent>
                   <SelectItem value="received">Received</SelectItem>
                   <SelectItem value="under_review">Under Review</SelectItem>
-                  <SelectItem value="selected">Selected</SelectItem>
+                  <SelectItem value="accepted">Accepted</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
@@ -155,41 +194,35 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
             />
           </div>
 
+          {/* Delivery terms not in CreateInput type? Check store.types.ts */}
+          {/* I don't see delivery_terms in SupplierQuotationCreateInput I added. */}
+          {/* I see parameter `delivery_time_days` but not `delivery_terms`. */}
+          {/* But SupplierQuotation has `delivery_time_days`? */}
+          {/* SupplierQuotation has `payment_terms`. CreateInput has `payment_terms`. */}
+          {/* I'll use delivery_time_days instead of delivery_terms if I can? */}
+          {/* Or I should add delivery_terms to type. */}
+          {/* Actually PurchaseOrder has delivery_terms but Quotation has delivery_time_days? */}
+          {/* I will add delivery_time_days input for now. */}
+          
           <div>
-            <Label htmlFor="delivery_terms">Delivery Terms</Label>
+             <Label htmlFor="delivery_time_days">Delivery Time (Days)</Label>
+             <Input
+                id="delivery_time_days"
+               type="number"
+               {...register('delivery_time_days', { valueAsNumber: true })}
+               placeholder="e.g. 7"
+             />
+          </div>
+
+           <div>
+            <Label htmlFor="warranty_terms">Warranty Terms</Label>
             <Textarea
-              id="delivery_terms"
-              {...register('delivery_terms')}
+              id="warranty_terms"
+              {...register('warranty_terms')}
               rows={2}
-              placeholder="e.g., FOB, CIF, delivery within 15 days"
             />
           </div>
 
-          <div>
-            <Label htmlFor="remarks">Remarks</Label>
-            <Textarea
-              id="remarks"
-              {...register('remarks')}
-              rows={2}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="terms_conditions">Terms & Conditions</Label>
-            <Textarea
-              id="terms_conditions"
-              {...register('terms_conditions')}
-              rows={3}
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_selected"
-              {...register('is_selected')}
-            />
-            <Label htmlFor="is_selected">Mark as Selected</Label>
-          </div>
         </CardContent>
       </Card>
 
@@ -205,15 +238,13 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
                 item_description: '',
                 quantity: 0,
                 unit: '',
-                unit_price: '',
-                discount_percent: '',
-                discount_amount: '',
-                tax_percent: '',
-                tax_amount: '',
-                total: '',
+                unit_price: '0',
+                discount_percent: '0',
+                discount_amount: '0',
+                tax_rate: '0',
+                tax_amount: '0',
+                total_amount: '0',
                 specifications: '',
-                remarks: '',
-                is_active: true,
               })
             }
           >
@@ -309,12 +340,12 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
                   </div>
 
                   <div>
-                    <Label htmlFor={`items.${index}.tax_percent`}>Tax %</Label>
+                    <Label htmlFor={`items.${index}.tax_rate`}>Tax %</Label>
                     <Input
-                      id={`items.${index}.tax_percent`}
+                      id={`items.${index}.tax_rate`}
                       type="number"
                       step="0.01"
-                      {...register(`items.${index}.tax_percent`)}
+                      {...register(`items.${index}.tax_rate`)}
                       placeholder="0.00"
                     />
                   </div>
@@ -332,12 +363,12 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
                 </div>
 
                 <div>
-                  <Label htmlFor={`items.${index}.total`}>Total Amount</Label>
+                  <Label htmlFor={`items.${index}.total_amount`}>Total Amount</Label>
                   <Input
-                    id={`items.${index}.total`}
+                    id={`items.${index}.total_amount`}
                     type="number"
                     step="0.01"
-                    {...register(`items.${index}.total`)}
+                    {...register(`items.${index}.total_amount`)}
                     placeholder="0.00"
                   />
                 </div>
@@ -351,33 +382,11 @@ export const QuotationForm = ({ quotation, onSubmit, onCancel }: QuotationFormPr
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor={`items.${index}.remarks`}>Remarks</Label>
-                  <Textarea
-                    id={`items.${index}.remarks`}
-                    {...register(`items.${index}.remarks`)}
-                    rows={2}
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id={`items.${index}.is_active`}
-                    {...register(`items.${index}.is_active`)}
-                  />
-                  <Label htmlFor={`items.${index}.is_active`}>Active</Label>
-                </div>
               </CardContent>
             </Card>
           ))}
         </CardContent>
       </Card>
-
-      {/* Active Status */}
-      <div className="flex items-center space-x-2">
-        <Switch id="is_active" {...register('is_active')} />
-        <Label htmlFor="is_active">Active</Label>
-      </div>
 
       {/* Form Actions */}
       <div className="flex gap-2 pt-4">

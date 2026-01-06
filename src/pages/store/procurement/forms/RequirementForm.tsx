@@ -6,24 +6,24 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
-import { Switch } from '../../../../components/ui/switch';
 import { Textarea } from '../../../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { CentralStoreDropdown } from '../../../../components/common/CentralStoreDropdown';
 import { CategoryDropdown } from '../../../../components/common/CategoryDropdown';
+import { ProcurementRequirement, ProcurementRequirementCreateInput } from '../../../../types/store.types';
+import { useEffect } from 'react';
 
 interface RequirementFormProps {
-  requirement?: any;
+  requirement?: ProcurementRequirement | null;
   onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 export const RequirementForm = ({ requirement, onSubmit, onCancel }: RequirementFormProps) => {
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
-    defaultValues: requirement || {
-      requirement_number: '',
+  const { register, handleSubmit, formState: { errors }, control, watch, setValue, reset } = useForm({
+    defaultValues: {
       title: '',
       description: '',
       required_by_date: '',
@@ -31,10 +31,7 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
       status: 'draft',
       estimated_budget: '',
       justification: '',
-      metadata: '',
       central_store: '',
-      approval_request: '',
-      is_active: true,
       items: [
         {
           item_description: '',
@@ -45,35 +42,66 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
           specifications: '',
           remarks: '',
           category: '',
-          is_active: true,
         },
       ],
     },
   });
+
+  useEffect(() => {
+    if (requirement) {
+      reset({
+        title: requirement.title,
+        description: requirement.description,
+        required_by_date: requirement.required_by_date,
+        urgency: requirement.urgency,
+        status: requirement.status,
+        estimated_budget: requirement.estimated_budget,
+        justification: requirement.justification,
+        central_store: requirement.central_store.toString(),
+        items: requirement.items?.map((item: any) => ({
+          item_description: item.item_description,
+          quantity: item.quantity,
+          unit: item.unit,
+          estimated_unit_price: item.estimated_unit_price,
+          estimated_total: item.estimated_total,
+          specifications: item.specifications,
+          remarks: item.remarks,
+          category: item.category?.toString(),
+        })) || [],
+      });
+    }
+  }, [requirement, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items',
   });
 
+  const onFormSubmit = (data: any) => {
+    // Process data to match API expectations
+    const payload = {
+      ...data,
+      central_store: Number(data.central_store),
+      estimated_budget: data.estimated_budget.toString(),
+      items: data.items.map((item: any) => ({
+        ...item,
+        category: item.category ? Number(item.category) : undefined,
+        quantity: Number(item.quantity),
+      })),
+    };
+    onSubmit(payload);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Basic Information */}
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
+          {requirement && <p className="text-sm text-muted-foreground">Requirement #: {requirement.requirement_number}</p>}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="requirement_number" required>Requirement Number</Label>
-              <Input
-                id="requirement_number"
-                {...register('requirement_number', { required: 'Requirement number is required' })}
-              />
-              {errors.requirement_number && <p className="text-sm text-red-500">{errors.requirement_number.message}</p>}
-            </div>
-
             <div>
               <Label htmlFor="required_by_date" required>Required By Date</Label>
               <Input
@@ -83,15 +111,15 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
               />
               {errors.required_by_date && <p className="text-sm text-red-500">{errors.required_by_date.message}</p>}
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="title" required>Title</Label>
-            <Input
-              id="title"
-              {...register('title', { required: 'Title is required' })}
-            />
-            {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+            <div>
+              <Label htmlFor="title" required>Title</Label>
+              <Input
+                id="title"
+                {...register('title', { required: 'Title is required' })}
+              />
+              {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+            </div>
           </div>
 
           <div>
@@ -125,9 +153,10 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select
+               <Select
                 defaultValue={watch('status')}
                 onValueChange={(value) => setValue('status', value)}
+                disabled={!requirement} // Disable status change on creation, default is draft
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -135,12 +164,7 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="quotation_received">Quotation Received</SelectItem>
-                  <SelectItem value="po_created">PO Created</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  {/* Add other statuses if editable */}
                 </SelectContent>
               </Select>
             </div>
@@ -203,7 +227,6 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                 specifications: '',
                 remarks: '',
                 category: '',
-                is_active: true,
               })
             }
           >
@@ -250,8 +273,12 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                       {...register(`items.${index}.quantity`, {
                         required: 'Required',
                         valueAsNumber: true,
+                        min: { value: 0.0001, message: 'Must be greater than 0' }
                       })}
                     />
+                    {errors.items?.[index]?.quantity && (
+                      <p className="text-sm text-red-500">{errors.items[index].quantity.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -261,6 +288,9 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                       {...register(`items.${index}.unit`, { required: 'Unit is required' })}
                       placeholder="e.g., kg, pcs, ltr"
                     />
+                     {errors.items?.[index]?.unit && (
+                      <p className="text-sm text-red-500">{errors.items[index].unit.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -320,25 +350,11 @@ export const RequirementForm = ({ requirement, onSubmit, onCancel }: Requirement
                     rows={2}
                   />
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id={`items.${index}.is_active`}
-                    {...register(`items.${index}.is_active`)}
-                  />
-                  <Label htmlFor={`items.${index}.is_active`}>Active</Label>
-                </div>
               </CardContent>
             </Card>
           ))}
         </CardContent>
       </Card>
-
-      {/* Active Status */}
-      <div className="flex items-center space-x-2">
-        <Switch id="is_active" {...register('is_active')} />
-        <Label htmlFor="is_active">Active</Label>
-      </div>
 
       {/* Form Actions */}
       <div className="flex gap-2 pt-4">

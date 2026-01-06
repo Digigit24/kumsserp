@@ -54,7 +54,8 @@ export const TransfersWorkflowPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
 
-  const { data, isLoading, refetch} = useMaterialIssues(filters);
+  // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
+  const { data, isLoading, refetch } = useMaterialIssues({}); // No filters by default
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
     status: 'super_admin_approved'
   });

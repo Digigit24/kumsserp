@@ -14,44 +14,49 @@ const apiClient = axios.create({
  * Called when token expires or auth fails
  */
 function handleAuthFailure(errorMessage?: string) {
-  console.error('[apiClient] Auth failure:', errorMessage || 'Token expired or invalid');
+  console.error(
+    "[apiClient] Auth failure:",
+    errorMessage || "Token expired or invalid"
+  );
 
   // Get the auth store and reset it
   const authStore = useAuthStore.getState();
   authStore.reset();
 
   // Clear all auth-related data from localStorage
-  localStorage.removeItem('access');
-  localStorage.removeItem('refresh');
-  localStorage.removeItem('kumss_user');
-  localStorage.removeItem('kumss_user_id');
-  localStorage.removeItem('kumss_college_id');
-  localStorage.removeItem('kumss_auth_token');
-  localStorage.removeItem('auth-storage'); // Zustand persisted state
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("kumss_user");
+  localStorage.removeItem("kumss_user_id");
+  localStorage.removeItem("kumss_college_id");
+  localStorage.removeItem("kumss_auth_token");
+  localStorage.removeItem("auth-storage"); // Zustand persisted state
 
-  console.log('[apiClient] All auth data cleared. Redirecting to login...');
+  console.log("[apiClient] All auth data cleared. Redirecting to login...");
 
   // Redirect to login page
-  window.location.href = '/login';
+  window.location.href = "/login";
 }
 
 // Add request interceptor to include auth token in every request
 apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage
-    const token = localStorage.getItem('access');
+    const token = localStorage.getItem("kumss_auth_token");
 
-    console.log('[apiClient] Request interceptor - Token:', token);
+    console.log("[apiClient] Request interceptor - Token:", token);
 
     // Add Authorization header if token exists
+    // Note: getDefaultHeaders already adds this, but we ensure it here if access token handling was intended
+    // We align with api.config.ts which uses 'Token ' prefix
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log('[apiClient] Added Authorization header to request');
+      config.headers.Authorization = `Token ${token}`;
+      console.log("[apiClient] Added Authorization header to request");
     } else {
-      console.warn('[apiClient] No token found in localStorage');
+      console.warn("[apiClient] No token found in localStorage");
     }
 
-    console.log('[apiClient] Final request headers:', config.headers);
+    console.log("[apiClient] Final request headers:", config.headers);
 
     return config;
   },
@@ -66,14 +71,17 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle authentication errors (401 Unauthorized, 403 Forbidden)
     if (error.response?.status === 401) {
-      handleAuthFailure('401 Unauthorized - Token expired or invalid');
+      handleAuthFailure("401 Unauthorized - Token expired or invalid");
     } else if (error.response?.status === 403) {
       // 403 might indicate an expired or revoked token in some APIs
-      const errorMessage = error.response?.data?.detail || error.response?.data?.message;
-      if (errorMessage?.toLowerCase().includes('token') ||
-          errorMessage?.toLowerCase().includes('credential') ||
-          errorMessage?.toLowerCase().includes('authentication')) {
-        handleAuthFailure('403 Forbidden - Authentication required');
+      const errorMessage =
+        error.response?.data?.detail || error.response?.data?.message;
+      if (
+        errorMessage?.toLowerCase().includes("token") ||
+        errorMessage?.toLowerCase().includes("credential") ||
+        errorMessage?.toLowerCase().includes("authentication")
+      ) {
+        handleAuthFailure("403 Forbidden - Authentication required");
       }
     }
 

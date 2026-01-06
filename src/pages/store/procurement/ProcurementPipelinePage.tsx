@@ -6,13 +6,13 @@
 import { useState } from 'react';
 import { Plus, FileText, DollarSign, ShoppingCart, Package, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../../components/workflow/KanbanBoard';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { useRequirements } from '../../../hooks/useProcurement';
 import { CreateRequirementDialog } from './CreateRequirementDialog';
 import { RequirementDetailDialog } from './RequirementDetailDialog';
+import { ProcurementRequirement } from '../../../types/store.types';
 
 // Kanban columns for procurement workflow
 const PROCUREMENT_COLUMNS: KanbanColumn[] = [
@@ -24,8 +24,8 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
   },
   {
     id: 'submitted',
-    title: 'Submitted',
-    status: 'submitted',
+    title: 'Submitted / Pending',
+    status: ['submitted', 'pending_approval'],
     color: 'bg-blue-100',
   },
   {
@@ -52,6 +52,12 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
     status: 'fulfilled',
     color: 'bg-emerald-100',
   },
+  {
+    id: 'rejected',
+    title: 'Rejected / Cancelled',
+    status: ['rejected', 'cancelled'],
+    color: 'bg-red-100',
+  },
 ];
 
 export const ProcurementPipelinePage = () => {
@@ -65,13 +71,13 @@ export const ProcurementPipelinePage = () => {
 
   // Convert requirements to Kanban cards
   const kanbanCards: KanbanCard[] = (data?.results || [])
-    .filter((req: any) => {
+    .filter((req: ProcurementRequirement) => {
       if (searchTerm && !req.requirement_number.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
       return true;
     })
-    .map((req: any) => {
+    .map((req: ProcurementRequirement) => {
       const card: KanbanCard = {
         id: req.id,
         status: req.status,
@@ -79,11 +85,11 @@ export const ProcurementPipelinePage = () => {
         subtitle: `Due: ${new Date(req.required_by_date).toLocaleDateString()}`,
         badges: [
           {
-            label: req.priority,
+            label: req.urgency,
             variant:
-              req.priority === 'urgent'
+              req.urgency === 'urgent'
                 ? 'destructive'
-                : req.priority === 'high'
+                : req.urgency === 'high'
                 ? 'outline'
                 : 'secondary',
           },
@@ -96,7 +102,7 @@ export const ProcurementPipelinePage = () => {
           },
           {
             icon: FileText,
-            label: req.department_name || 'Department',
+            label: `Store #${req.central_store}`, // Using Store ID as name is not directly available
             color: 'text-muted-foreground',
           },
         ],
