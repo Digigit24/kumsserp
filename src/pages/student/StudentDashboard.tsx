@@ -2,6 +2,7 @@ import { AttendanceCalendar } from '@/components/attendance/AttendanceCalendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAssignments } from '@/hooks/useAssignments';
 import {
   AlertCircle,
   BarChart3,
@@ -19,7 +20,6 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAssignments } from '@/hooks/useAssignments';
 
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
