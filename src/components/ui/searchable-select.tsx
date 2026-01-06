@@ -43,7 +43,7 @@ export function SearchableSelect({
 
   // Find selected option
   const selectedOption = useMemo(
-    () => options.find((option) => option.value === value),
+    () => options.find((option) => option.value == value),
     [options, value]
   );
 
@@ -60,6 +60,7 @@ export function SearchableSelect({
   }, [options, searchQuery]);
 
   const handleSelect = (currentValue: number | string) => {
+    console.log('SearchableSelect - Selecting:', currentValue);
     onChange(currentValue);
     setOpen(false);
     setSearchQuery('');
@@ -104,17 +105,21 @@ export function SearchableSelect({
             ) : (
               filteredOptions.map((option) => (
                 <button
+                  type="button"
                   key={option.value}
-                  onClick={() => handleSelect(option.value)}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(option.value);
+                  }}
                   className={cn(
                     'relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
-                    value === option.value && 'bg-accent'
+                    value == option.value && 'bg-accent'
                   )}
                 >
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value === option.value ? 'opacity-100' : 'opacity-0'
+                      value == option.value ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   <div className="flex flex-col items-start">

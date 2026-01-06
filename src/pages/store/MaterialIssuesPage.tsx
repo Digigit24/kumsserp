@@ -100,11 +100,27 @@ export const MaterialIssuesPage = () => {
         }
       });
 
+      // Check if we need to use FormData (file upload)
+      const hasFile = cleanedData.min_document instanceof File;
+      
+      let payload = cleanedData;
+      if (hasFile) {
+        const formData = new FormData();
+        Object.keys(cleanedData).forEach(key => {
+            if (key === 'items') {
+                formData.append('items', JSON.stringify(cleanedData.items));
+            } else if (cleanedData[key] !== undefined && cleanedData[key] !== null) {
+                formData.append(key, cleanedData[key]);
+            }
+        });
+        payload = formData;
+      }
+
       if (selectedIssue) {
-        await updateMutation.mutateAsync({ id: selectedIssue.id, data: cleanedData });
+        await updateMutation.mutateAsync({ id: selectedIssue.id, data: payload });
         toast.success('Material issue updated successfully');
       } else {
-        await createMutation.mutateAsync(cleanedData);
+        await createMutation.mutateAsync(payload);
         toast.success('Material issue created successfully');
       }
       setIsFormOpen(false);
@@ -224,10 +240,14 @@ export const MaterialIssuesPage = () => {
       </div>
 
       <DataTable
+        title="Material Issues"
         columns={columns}
-        data={data}
+        data={data || null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        error={null}
+        onRefresh={refetch}
+        onFiltersChange={setFilters}
+        filters={filters}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
