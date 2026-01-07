@@ -15,13 +15,10 @@ import { Input } from '../../components/ui/input';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import {
   useConfirmReceipt,
-<<<<<<< HEAD
   useCreateMaterialIssue,
   useDispatchMaterialIssue,
-  useMaterialIssues
-=======
+  useMaterialIssues,
   usePatchMaterialIssue,
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 } from '../../hooks/useMaterialIssues';
 import { useStoreIndents } from '../../hooks/useStoreIndents';
 import { MaterialIssueForm } from './forms/MaterialIssueForm';
@@ -74,8 +71,8 @@ export const TransfersWorkflowPage = () => {
   });
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
-<<<<<<< HEAD
   const createMutation = useCreateMaterialIssue();
+  const patchMutation = usePatchMaterialIssue();
 
   const handleCreate = () => {
     setIsCreateDialogOpen(true);
@@ -91,9 +88,6 @@ export const TransfersWorkflowPage = () => {
       toast.error(error.message || 'Failed to create Material Issue');
     }
   };
-=======
-  const patchMutation = usePatchMaterialIssue();
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 
   const handleDispatch = async (min: any) => {
     try {
@@ -155,7 +149,7 @@ export const TransfersWorkflowPage = () => {
       const isDispatching = dispatchMutation.isPending && dispatchMutation.variables?.id === min.id;
       const isConfirming = confirmReceiptMutation.isPending && confirmReceiptMutation.variables?.id === min.id;
       const isStartingTransit = patchMutation.isPending && patchMutation.variables?.id === min.id;
-      
+
       const isActionPending = isDispatching || isConfirming || isStartingTransit;
 
       const card: KanbanCard = {

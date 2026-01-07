@@ -13,10 +13,8 @@ import { Badge } from '../../components/ui/badge';
 import { userApi } from '../../services/accounts.service';
 import type { UserFilters, UserListItem } from '../../types/accounts.types';
 import { UserForm } from './components/UserForm';
-import { useAuth } from '../../hooks/useAuth';
-import { User } from '../../types/accounts.types';
 
-const isSuperAdmin = (user: User | null | undefined) => user?.user_type === 'super_admin';
+
 
 const UsersPage = () => {
   const { user } = useAuth();
@@ -132,11 +130,7 @@ const UsersPage = () => {
         { value: 'central_manager', label: 'Central Store Manager' },
       ],
     },
-<<<<<<< HEAD
     ...(isSuperAdmin(user as any) ? [{
-=======
-    ...(isSuperAdmin((useAuth().user) as unknown as User) ? [{
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -188,17 +182,10 @@ const UsersPage = () => {
       <DataTable
         title="Users"
         description="Manage users in the system"
-<<<<<<< HEAD
-        data={data || null}
-        columns={columns}
-        isLoading={isLoading}
-        error={error ? (error as Error).message : null}
-=======
         data={data ?? null}
         columns={columns}
         isLoading={isLoading}
         error={error instanceof Error ? error.message : error ? String(error) : null}
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}

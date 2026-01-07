@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialIssuesApi } from '../services/store.service';
-=======
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { materialIssuesApi } from "../services/store.service";
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 
 export const materialIssueKeys = {
   all: ["materialIssues"] as const,
@@ -80,7 +75,6 @@ export const useDeleteMaterialIssue = () => {
 export const useDispatchMaterialIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
-<<<<<<< HEAD
     mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.dispatch(id, data),
     onMutate: async ({ id }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -105,7 +99,7 @@ export const useDispatchMaterialIssue = () => {
       // Return a context object with the snapshotted value
       return { previousList, previousDetail };
     },
-    onError: (err, newTodo, context) => {
+    onError: (_err, newTodo, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousList) {
         queryClient.setQueryData(materialIssueKeys.lists(), context.previousList);
@@ -117,11 +111,6 @@ export const useDispatchMaterialIssue = () => {
     },
     onSettled: (_, __, variables) => {
       // Always refetch after error or success:
-=======
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
-      materialIssuesApi.dispatch(id, data),
-    onSuccess: (_, variables) => {
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: materialIssueKeys.detail(variables.id),
@@ -133,7 +122,6 @@ export const useDispatchMaterialIssue = () => {
 export const useConfirmReceipt = () => {
   const queryClient = useQueryClient();
   return useMutation({
-<<<<<<< HEAD
     mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.confirmReceipt(id, data),
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: materialIssueKeys.lists() });
@@ -154,7 +142,7 @@ export const useConfirmReceipt = () => {
 
       return { previousList, previousDetail };
     },
-    onError: (err, newTodo, context) => {
+    onError: (_err, newTodo, context) => {
       if (context?.previousList) {
         queryClient.setQueryData(materialIssueKeys.lists(), context.previousList);
       }
@@ -163,11 +151,6 @@ export const useConfirmReceipt = () => {
       }
     },
     onSettled: (_, __, variables) => {
-=======
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
-      materialIssuesApi.confirmReceipt(id, data),
-    onSuccess: (_, variables) => {
->>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: materialIssueKeys.detail(variables.id),
