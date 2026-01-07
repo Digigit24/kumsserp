@@ -2,6 +2,8 @@
  * Student Form Component - Matches backend API structure
  */
 
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege, isSuperAdmin } from '@/utils/auth.utils';
 import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -22,7 +24,7 @@ interface StudentFormProps {
 
 interface StudentFormData {
     user?: string; // UUID - optional for create, backend may auto-create
-    college: number;
+    college: number | null;
     admission_number: string;
     admission_date: string;
     admission_type: string;
@@ -74,6 +76,7 @@ const GENDERS = [
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFormProps) {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -81,7 +84,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
 
     const [formData, setFormData] = useState<StudentFormData>({
         user: '', // Will be auto-generated or manually entered
-        college: 1,
+        college: getCurrentUserCollege(user) || 1, // Default to 1 if null and not strict but helpful
         admission_number: '',
         admission_date: new Date().toISOString().split('T')[0],
         admission_type: 'regular',
@@ -129,27 +132,15 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         if ((mode === 'edit' || mode === 'view') && studentId) {
             fetchStudent();
         } else if (mode === 'create') {
-            // Auto-populate college from logged-in user
-            const storedUser = localStorage.getItem('kumss_user');
-            let collegeId = 1;
-
-            if (storedUser) {
-                try {
-                    const user = JSON.parse(storedUser);
-                    if (user?.college) {
-                        collegeId = user.college;
-                    } else if (user?.user_roles && user.user_roles.length > 0) {
-                        const primaryRole = user.user_roles.find((r: any) => r.is_primary) || user.user_roles[0];
-                        collegeId = primaryRole.college_id || 1;
-                    }
-                } catch (e) {
-                    console.error('Failed to parse user data:', e);
-                }
+            // College is already initialized via state using utility
+            // If super admin and no college set, keep it null or strict
+            if (isSuperAdmin(user) && !formData.college) {
+                setFormData(prev => ({ ...prev, college: null }));
+            } else if (!formData.college) {
+                setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user) }));
             }
-
-            setFormData(prev => ({ ...prev, college: collegeId }));
         }
-    }, [mode, studentId]);
+    }, [mode, studentId, user]);
 
     const fetchStudent = async () => {
         if (!studentId) return;
@@ -200,6 +191,11 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         // Validation
         if (!formData.user?.trim()) {
             setError('Please provide the user ID/UUID for this student');
+            return;
+        }
+
+        if (isSuperAdmin(user) && !formData.college) {
+            setError('College is required');
             return;
         }
 
@@ -341,6 +337,12 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                         )}
                         {usersError && <p className="text-xs text-destructive">Failed to load student users: {usersError}</p>}
                     </div>
+
+                    <CollegeField
+                        value={formData.college}
+                        onChange={(val) => setFormData({ ...formData, college: Number(val) })}
+                        error={error && error.includes('College') ? 'College is required' : undefined}
+                    />
 
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">

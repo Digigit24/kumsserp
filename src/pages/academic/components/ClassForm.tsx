@@ -3,14 +3,16 @@
  * Form for creating and editing classes
  */
 
-import { useState, useEffect } from 'react';
-import { classApi, programApi } from '../../../services/academic.service';
-import { useAcademicSessions } from '../../../hooks/useCore';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Switch } from '../../../components/ui/switch';
+import { useAcademicSessions } from '../../../hooks/useCore';
+import { classApi, programApi } from '../../../services/academic.service';
 import type { Class, ClassCreateInput } from '../../../types/academic.types';
 
 interface ClassFormProps {
@@ -20,19 +22,8 @@ interface ClassFormProps {
     onCancel: () => void;
 }
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps) {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,7 +33,7 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
     const { data: sessionsData } = useAcademicSessions({ page_size: 100 });
 
     const [formData, setFormData] = useState<ClassCreateInput>({
-        college: getCollegeId(),
+        college: getCurrentUserCollege(user) || 0,
         program: 0,
         academic_session: 0,
         name: '',
@@ -54,7 +45,11 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
 
     useEffect(() => {
         fetchPrograms();
-    }, []);
+        // Update college if user loads late
+        if (!formData.college && mode === 'create') {
+            setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user) || 0 }));
+        }
+    }, [user, mode]);
 
     useEffect(() => {
         if ((mode === 'edit' || mode === 'view') && classId) {
@@ -130,8 +125,15 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
         <form onSubmit={handleSubmit} className="space-y-6">
             {error && <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4"><p className="text-sm text-destructive">{error}</p></div>}
 
+            {/* College Field for Super Admin */}
+            <CollegeField
+                value={formData.college}
+                onChange={(val) => setFormData({ ...formData, college: Number(val) })}
+                error={error && error.includes('College') ? 'College is required' : undefined}
+            />
+
             {/* ✅ Show college info for debugging (optional - remove in production) */}
-            {mode === 'create' && (
+            {mode === 'create' && isSuperAdmin(user) && (
                 <div className="rounded-md bg-muted p-3 text-sm">
                     <p className="text-muted-foreground">College ID: {formData.college}</p>
                 </div>
@@ -139,9 +141,9 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
 
             <div className="space-y-2">
                 <Label>Program <span className="text-destructive">*</span></Label>
-                <Select 
-                    value={formData.program?.toString()} 
-                    onValueChange={(v) => setFormData({ ...formData, program: parseInt(v) })} 
+                <Select
+                    value={formData.program?.toString()}
+                    onValueChange={(v) => setFormData({ ...formData, program: parseInt(v) })}
                     disabled={isViewMode}
                 >
                     <SelectTrigger><SelectValue placeholder="Select program" /></SelectTrigger>
@@ -153,9 +155,9 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
 
             <div className="space-y-2">
                 <Label>Academic Session <span className="text-destructive">*</span></Label>
-                <Select 
-                    value={formData.academic_session?.toString()} 
-                    onValueChange={(v) => setFormData({ ...formData, academic_session: parseInt(v) })} 
+                <Select
+                    value={formData.academic_session?.toString()}
+                    onValueChange={(v) => setFormData({ ...formData, academic_session: parseInt(v) })}
                     disabled={isViewMode}
                 >
                     <SelectTrigger><SelectValue placeholder="Select session" /></SelectTrigger>
@@ -167,57 +169,57 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
 
             <div className="space-y-2">
                 <Label>Class Name <span className="text-destructive">*</span></Label>
-                <Input 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                    placeholder="e.g., BSc CS - Sem 1" 
-                    disabled={isViewMode} 
-                    required 
+                <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., BSc CS - Sem 1"
+                    disabled={isViewMode}
+                    required
                 />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label>Semester</Label>
-                    <Input 
-                        type="number" 
-                        value={formData.semester} 
-                        onChange={(e) => setFormData({ ...formData, semester: parseInt(e.target.value) || 1 })} 
+                    <Input
+                        type="number"
+                        value={formData.semester}
+                        onChange={(e) => setFormData({ ...formData, semester: parseInt(e.target.value) || 1 })}
                         min={1}
                         max={12}
-                        disabled={isViewMode} 
+                        disabled={isViewMode}
                     />
                 </div>
                 <div className="space-y-2">
                     <Label>Year</Label>
-                    <Input 
-                        type="number" 
-                        value={formData.year} 
-                        onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || 1 })} 
+                    <Input
+                        type="number"
+                        value={formData.year}
+                        onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || 1 })}
                         min={1}
                         max={6}
-                        disabled={isViewMode} 
+                        disabled={isViewMode}
                     />
                 </div>
             </div>
 
             <div className="space-y-2">
                 <Label>Max Students</Label>
-                <Input 
-                    type="number" 
-                    value={formData.max_students} 
-                    onChange={(e) => setFormData({ ...formData, max_students: parseInt(e.target.value) || 60 })} 
+                <Input
+                    type="number"
+                    value={formData.max_students}
+                    onChange={(e) => setFormData({ ...formData, max_students: parseInt(e.target.value) || 60 })}
                     min={1}
-                    disabled={isViewMode} 
+                    disabled={isViewMode}
                 />
             </div>
 
             <div className="flex items-center justify-between rounded-lg border p-4">
                 <Label>Active Status</Label>
-                <Switch 
-                    checked={formData.is_active} 
-                    onCheckedChange={(c) => setFormData({ ...formData, is_active: c })} 
-                    disabled={isViewMode} 
+                <Switch
+                    checked={formData.is_active}
+                    onCheckedChange={(c) => setFormData({ ...formData, is_active: c })}
+                    disabled={isViewMode}
                 />
             </div>
 

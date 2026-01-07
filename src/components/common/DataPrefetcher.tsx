@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { coreKeys } from '../../hooks/useCore';
-import { collegeApi, academicYearApi } from '../../services/core.service';
+import { academicYearApi, collegeApi } from '../../services/core.service';
 
 /**
  * Component to prefetch common data for the application
