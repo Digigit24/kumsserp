@@ -35,6 +35,7 @@ export interface KanbanCard {
     label: string;
     onClick: () => void;
     disabled?: boolean;
+    loading?: boolean;
   };
   secondaryActions?: Array<{
     label: string;
@@ -147,7 +148,8 @@ export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No item
                                   e.stopPropagation();
                                   card.primaryAction?.onClick();
                                 }}
-                                disabled={card.primaryAction.disabled}
+                                disabled={card.primaryAction.disabled || card.primaryAction.loading}
+                                loading={card.primaryAction.loading}
                                 className="w-full"
                               >
                                 {card.primaryAction.label}

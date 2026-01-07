@@ -955,7 +955,8 @@ export const API_ENDPOINTS = {
     patch: (id: number) => `/api/v1/store/central-stores/${id}/`,
     delete: (id: number) => `/api/v1/store/central-stores/${id}/`,
     inventory: (id: number) => `/api/v1/store/central-stores/${id}/inventory/`,
-    stockSummary: (id: number) => `/api/v1/store/central-stores/${id}/stock_summary/`,
+    stockSummary: (id: number) =>
+      `/api/v1/store/central-stores/${id}/stock_summary/`,
     hierarchy: "/api/v1/store/central-stores/list/",
   },
 
@@ -1083,7 +1084,7 @@ export const API_ENDPOINTS = {
     markDispatched: (id: number) =>
       `/api/v1/store/material-issues/${id}/mark_dispatched/`,
     markReceived: (id: number) =>
-      `/api/v1/store/material-issues/${id}/mark_dispatched/`,
+      `/api/v1/store/material-issues/${id}/confirm_receipt/`,
     generateGatePass: (id: number) =>
       `/api/v1/store/material-issues/${id}/generate_gate_pass/`,
   },

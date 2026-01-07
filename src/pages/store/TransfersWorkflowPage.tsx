@@ -3,14 +3,14 @@
  * Shows fulfillment queue and dispatch tracking
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Truck, Package, CheckCircle, FileText, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent } from '../../components/ui/card';
 import {
   useMaterialIssues,
   useDispatchMaterialIssue,
@@ -50,9 +50,10 @@ const MIN_COLUMNS: KanbanColumn[] = [
 
 export const TransfersWorkflowPage = () => {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<Record<string, any>>({});
+
   const [searchTerm, setSearchTerm] = useState('');
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
 
   // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
   const { data, isLoading, refetch } = useMaterialIssues({ 
@@ -82,20 +83,22 @@ export const TransfersWorkflowPage = () => {
   };
 
   const handleConfirmReceipt = async (min: any) => {
+    if (confirmingId) return; // Prevent multiple clicks
+    
     try {
+      setConfirmingId(min.id);
       await confirmReceiptMutation.mutateAsync({
         id: min.id,
         data: {
-          receipt_date: new Date().toISOString().split('T')[0],
-          receipt_confirmation_notes: 'Confirmed by college store',
-          status: 'received',
-          completed_date: new Date().toISOString().split('T')[0],
+          notes: 'Confirmed by college store',
         },
       });
       toast.success('Receipt confirmed successfully');
       refetch();
     } catch (error: any) {
       toast.error(error.message || 'Failed to confirm receipt');
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -135,7 +138,7 @@ export const TransfersWorkflowPage = () => {
           {
             label: 'View',
             icon: Eye,
-            onClick: () => console.log('View MIN details', min),
+            onClick: () => navigate('/store/material-issues'),
           },
         ],
       };
@@ -150,6 +153,8 @@ export const TransfersWorkflowPage = () => {
         card.primaryAction = {
           label: 'Confirm Receipt',
           onClick: () => handleConfirmReceipt(min),
+          loading: confirmingId === min.id,
+          disabled: confirmingId !== null, // Optional: disable others while one is processing
         };
       }
 

@@ -23,6 +23,7 @@ export const MaterialIssuesPage = () => {
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<number | null>(null);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useMaterialIssues(filters);
   const createMutation = useCreateMaterialIssue();
@@ -142,12 +143,17 @@ export const MaterialIssuesPage = () => {
   };
 
   const handleConfirmReceipt = async (issue: any) => {
+    if (confirmingId) return;
+
     try {
-      await confirmReceiptMutation.mutateAsync({ id: issue.id, data: issue });
+      setConfirmingId(issue.id);
+      await confirmReceiptMutation.mutateAsync({ id: issue.id, data: { notes: 'Material receipt confirmed' } });
       toast.success('Receipt confirmed successfully');
       refetch();
     } catch (error: any) {
       toast.error(error.message || 'Failed to confirm receipt');
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -206,7 +212,12 @@ export const MaterialIssuesPage = () => {
             </Button>
           )}
           {row.status === 'dispatched' && (
-            <Button size="sm" onClick={() => handleConfirmReceipt(row)}>
+            <Button 
+              size="sm" 
+              onClick={() => handleConfirmReceipt(row)}
+              loading={confirmingId === row.id}
+              disabled={confirmingId !== null}
+            >
               <Package className="h-4 w-4 mr-1" />
               Confirm
             </Button>
