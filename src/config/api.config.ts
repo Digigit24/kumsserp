@@ -1086,7 +1086,7 @@ export const API_ENDPOINTS = {
     markReceived: (id: number) =>
       `/api/v1/store/material-issues/${id}/confirm_receipt/`,
     generateGatePass: (id: number) =>
-      `/api/v1/store/material-issues/${id}/generate_gate_pass/`,
+      `/api/v1/store/material-issues/${id}/generate_pdf/`,
   },
 };
 

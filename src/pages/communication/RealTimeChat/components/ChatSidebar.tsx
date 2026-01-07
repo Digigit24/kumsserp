@@ -30,6 +30,7 @@ export const ChatSidebar = ({
     // For this MVP step, we'll assume the parent component passes a processed list
 
     const filtered = conversations.filter(c =>
+        (c as any).display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.sender_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.receiver_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -79,14 +80,14 @@ export const ChatSidebar = ({
                             >
                                 <Avatar className="w-10 h-10 border shadow-sm">
                                     {/* Fallback to initials */}
-                                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${chat.sender_name || 'User'}`} />
-                                    <AvatarFallback>{(chat.sender_name || 'U').charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${(chat as any).display_name || chat.sender_name || 'User'}`} />
+                                    <AvatarFallback>{((chat as any).display_name || chat.sender_name || 'U').charAt(0)}</AvatarFallback>
                                 </Avatar>
 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-baseline mb-1">
                                         <span className="font-semibold text-gray-900 truncate">
-                                            {chat.sender_name || 'Unknown User'}
+                                            {(chat as any).display_name || chat.sender_name || 'Unknown User'}
                                         </span>
                                         <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                                             {formatDistanceToNow(new Date(chat.created_at), { addSuffix: false })}

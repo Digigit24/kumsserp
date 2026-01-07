@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { materialIssuesApi } from '../services/store.service';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { materialIssuesApi } from "../services/store.service";
 
 export const materialIssueKeys = {
-  all: ['materialIssues'] as const,
-  lists: () => [...materialIssueKeys.all, 'list'] as const,
+  all: ["materialIssues"] as const,
+  lists: () => [...materialIssueKeys.all, "list"] as const,
   list: (filters?: any) => [...materialIssueKeys.lists(), filters] as const,
-  details: () => [...materialIssueKeys.all, 'detail'] as const,
+  details: () => [...materialIssueKeys.all, "detail"] as const,
   detail: (id: number) => [...materialIssueKeys.details(), id] as const,
 };
 
@@ -37,10 +37,27 @@ export const useCreateMaterialIssue = () => {
 export const useUpdateMaterialIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
+    },
+  });
+};
+
+export const usePatchMaterialIssue = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.patch(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -58,10 +75,13 @@ export const useDeleteMaterialIssue = () => {
 export const useDispatchMaterialIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.dispatch(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.dispatch(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -69,10 +89,13 @@ export const useDispatchMaterialIssue = () => {
 export const useConfirmReceipt = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.confirmReceipt(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.confirmReceipt(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };

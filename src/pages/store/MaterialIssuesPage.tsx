@@ -13,6 +13,7 @@ import {
   useDispatchMaterialIssue,
   useConfirmReceipt,
   useGeneratePdf,
+  usePatchMaterialIssue,
 } from '../../hooks/useMaterialIssues';
 import { MaterialIssueForm } from './forms/MaterialIssueForm';
 import { toast } from 'sonner';
@@ -32,6 +33,7 @@ export const MaterialIssuesPage = () => {
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
   const generatePdfMutation = useGeneratePdf();
+  const patchMutation = usePatchMaterialIssue();
 
   const handleCreate = () => {
     setSelectedIssue(null);
@@ -134,11 +136,24 @@ export const MaterialIssuesPage = () => {
 
   const handleDispatch = async (issue: any) => {
     try {
-      await dispatchMutation.mutateAsync({ id: issue.id, data: issue });
+      await dispatchMutation.mutateAsync({ id: issue.id, data: {} });
       toast.success('Material dispatched successfully');
       refetch();
     } catch (error: any) {
       toast.error(error.message || 'Failed to dispatch');
+    }
+  };
+
+  const handleStartTransit = async (issue: any) => {
+    try {
+      await patchMutation.mutateAsync({ 
+        id: issue.id, 
+        data: { status: 'in_transit' } 
+      });
+      toast.success('Transit started successfully');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start transit');
     }
   };
 
@@ -203,37 +218,79 @@ export const MaterialIssuesPage = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-2">
-          {row.status === 'prepared' && (
-            <Button size="sm" onClick={() => handleDispatch(row)}>
-              <Truck className="h-4 w-4 mr-1" />
-              Dispatch
-            </Button>
-          )}
-          {row.status === 'dispatched' && (
+      render: (row) => {
+        const isDispatching = dispatchMutation.isPending && dispatchMutation.variables?.id === row.id;
+        const isConfirming = confirmReceiptMutation.isPending && confirmReceiptMutation.variables?.id === row.id;
+        const isGeneratingPdf = generatePdfMutation.isPending && generatePdfMutation.variables === row.id;
+        const isDeleting = deleteMutation.isPending && deleteMutation.variables === row.id;
+        const isStartingTransit = patchMutation.isPending && patchMutation.variables?.id === row.id;
+        
+        const isAnyActionPending = isDispatching || isConfirming || isGeneratingPdf || isDeleting || isStartingTransit;
+
+        return (
+          <div className="flex gap-2">
+            {row.status === 'prepared' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleDispatch(row)}
+                loading={isDispatching}
+                disabled={isAnyActionPending}
+              >
+                <Truck className="h-4 w-4 mr-1" />
+                Dispatch
+              </Button>
+            )}
+            {row.status === 'dispatched' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleStartTransit(row)}
+                loading={isStartingTransit}
+                disabled={isAnyActionPending}
+              >
+                <Truck className="h-4 w-4 mr-1" />
+                In Transit
+              </Button>
+            )}
+            {row.status === 'in_transit' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleConfirmReceipt(row)}
+                loading={isConfirming}
+                disabled={isAnyActionPending}
+              >
+                <Package className="h-4 w-4 mr-1" />
+                Confirm
+              </Button>
+            )}
             <Button 
               size="sm" 
-              onClick={() => handleConfirmReceipt(row)}
-              loading={confirmingId === row.id}
-              disabled={confirmingId !== null}
+              variant="outline" 
+              onClick={() => handleGeneratePdf(row.id)}
+              loading={isGeneratingPdf}
+              disabled={isAnyActionPending}
             >
-              <Package className="h-4 w-4 mr-1" />
-              Confirm
+              <FileText className="h-4 w-4 mr-1" />
+              PDF
             </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={() => handleGeneratePdf(row.id)}>
-            <FileText className="h-4 w-4 mr-1" />
-            PDF
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => handleEdit(row)}
+              disabled={isAnyActionPending}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={() => handleDelete(row.id)}
+              disabled={isAnyActionPending}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

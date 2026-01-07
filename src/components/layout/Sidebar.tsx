@@ -49,13 +49,12 @@ const GLASS_STYLES = {
   )
 }
 
-import { WS_NOTIFICATIONS_URL } from "@/config/api.config"
-import { useChatSocket } from "@/hooks/useChatSocket"
+import { useNotificationWebSocket } from "@/hooks/useNotificationWebSocket"
 import { useModulePrefetcher } from "@/hooks/useModulePrefetcher"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
-export const Sidebar = () => {
+export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const location = useLocation()
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -64,17 +63,20 @@ export const Sidebar = () => {
   const prefetchModule = useModulePrefetcher()
 
   // Notification Socket
-  const { lastMessage: notificationMsg } = useChatSocket(WS_NOTIFICATIONS_URL, token);
+  const { notifications } = useNotificationWebSocket(token);
+  const [lastNotifId, setLastNotifId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (notificationMsg) {
-      // Assuming payload structure: { title: "New Notice", message: "..." }
-      // or just a string. For now, we display mostly raw or simple format.
-      const title = notificationMsg.title || "New Notification";
-      const desc = notificationMsg.message || "You have a new update.";
-      toast.info(title, { description: desc });
+    if (notifications.length > 0) {
+      const latest = notifications[notifications.length - 1];
+      if (latest.id !== lastNotifId) {
+        const title = latest.title || "New Notification";
+        const desc = latest.message || "You have a new update.";
+        toast.info(title, { description: desc });
+        setLastNotifId(latest.id);
+      }
     }
-  }, [notificationMsg]);
+  }, [notifications, lastNotifId]);
 
 
   const userType = useMemo(() => {
@@ -230,7 +232,10 @@ export const Sidebar = () => {
                               <Link
                                 key={item.name}
                                 to={item.href}
-                                onClick={() => setOpenPopover(null)}
+                                onClick={() => {
+                                  setOpenPopover(null);
+                                  onNavigate?.();
+                                }}
                                 className={cn(
                                   "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg",
                                   "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5",
@@ -292,6 +297,7 @@ export const Sidebar = () => {
                           <Link
                             key={item.name}
                             to={item.href}
+                            onClick={() => onNavigate?.()}
                             className={cn(
                               GLASS_STYLES.navLink,
                               active && GLASS_STYLES.navLinkActive

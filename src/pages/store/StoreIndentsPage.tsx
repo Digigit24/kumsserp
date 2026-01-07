@@ -185,22 +185,35 @@ export const StoreIndentsPage = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-2">
-          {row.status === 'draft' && (
-            <Button size="sm" onClick={() => handleSubmitIndent(row)}>
-              <Send className="h-4 w-4 mr-1" />
-              Submit
+      render: (row) => {
+        const isSubmitting = submitMutation.isPending && submitMutation.variables?.id === row.id;
+        // For delete, we might not have variables if it's separate dialog, but if we use mutation directly or tracking ID:
+        // Actually delete is handled via dialog using 'indentToDelete'.
+        // But the 'submit' button triggers mutation directly.
+        // We should add loading to Submit button.
+        
+        return (
+          <div className="flex gap-2">
+            {row.status === 'draft' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleSubmitIndent(row)}
+                loading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                <Send className="h-4 w-4 mr-1" />
+                Submit
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => handleEdit(row)} disabled={isSubmitting}>
+              <Edit className="h-4 w-4" />
             </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={() => handleEdit(row)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+            <Button size="sm" variant="destructive" onClick={() => handleDelete(row.id)} disabled={isSubmitting}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -219,7 +232,7 @@ export const StoreIndentsPage = () => {
 
       <DataTable
         columns={columns}
-        data={data}
+        data={data || null}
         isLoading={isLoading}
         onPageChange={(page) => setFilters({ ...filters, page })}
       />

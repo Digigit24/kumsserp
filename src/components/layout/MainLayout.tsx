@@ -27,7 +27,7 @@ export const MainLayout: React.FC = () => {
           />
           {/* Sidebar */}
           <div className="fixed inset-y-0 left-0 z-50 lg:hidden">
-            <Sidebar />
+            <Sidebar onNavigate={() => setSidebarOpen(false)} />
           </div>
         </>
       )}
