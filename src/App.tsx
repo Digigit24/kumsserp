@@ -4,6 +4,7 @@ import { PermissionsProvider } from "./contexts/PermissionsContext";
 import { HierarchicalContextProvider } from "./contexts/HierarchicalContext";
 import { ChatProvider } from "./contexts/ChatContext";
 import { DataPrefetcher } from "./components/common/DataPrefetcher";
+import { ModuleDataPrefetcher } from "./components/common/ModuleDataPrefetcher";
 import AppRoutes from "./routes/routes";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <HierarchicalContextProvider>
             <ChatProvider>
               <DataPrefetcher />
+              <ModuleDataPrefetcher />
               <AppRoutes />
             </ChatProvider>
           </HierarchicalContextProvider>

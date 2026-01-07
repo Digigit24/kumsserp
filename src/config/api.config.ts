@@ -1137,6 +1137,7 @@ export const getDefaultHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-College-ID": getCollegeId(),
+    Accept: "application/json",
   };
 
   // Add Authorization header if token exists

@@ -68,26 +68,47 @@ const fetchApi = async <T>(url: string, options?: RequestInit): Promise<T> => {
     headers.delete("Content-Type");
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw {
-      message: errorData.detail || errorData.message || "Request failed",
-      status: response.status,
-      errors: errorData,
-    };
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { detail: errorText || response.statusText };
+      }
+
+      throw {
+        message: errorData.detail || errorData.message || "Request failed",
+        status: response.status,
+        errors: errorData,
+      };
+    }
+
+    if (response.status === 204) {
+      return {} as T;
+    }
+
+    const text = await response.text();
+    if (!text) {
+      return {} as T;
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.error("JSON Parse Error:", e, "Response Text:", text);
+      throw new Error("Invalid JSON response from server");
+    }
+  } catch (error) {
+    throw error;
   }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
 };
 
 // ============================================================================

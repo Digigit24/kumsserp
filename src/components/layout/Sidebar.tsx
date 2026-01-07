@@ -51,6 +51,7 @@ const GLASS_STYLES = {
 
 import { WS_NOTIFICATIONS_URL } from "@/config/api.config"
 import { useChatSocket } from "@/hooks/useChatSocket"
+import { useModulePrefetcher } from "@/hooks/useModulePrefetcher"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
@@ -60,6 +61,7 @@ export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [openPopover, setOpenPopover] = useState<string | null>(null)
   const { user, token } = useAuth()
+  const prefetchModule = useModulePrefetcher()
 
   // Notification Socket
   const { lastMessage: notificationMsg } = useChatSocket(WS_NOTIFICATIONS_URL, token);
@@ -254,10 +256,16 @@ export const Sidebar = () => {
                     </Popover>
                   ) : (
                     // Expanded state - Normal behavior
-                    <Tooltip>
+                      <Tooltip>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => setOpenGroup(isOpen ? null : group.group)}
+                          onClick={() => {
+                            const newOpenState = isOpen ? null : group.group
+                            setOpenGroup(newOpenState)
+                            if (newOpenState) {
+                              prefetchModule(group.group)
+                            }
+                          }}
                           className={GLASS_STYLES.groupButton}
                         >
                           <GroupIcon className="h-5 w-5 transition-all group-hover:scale-110 group-hover:text-primary" />
