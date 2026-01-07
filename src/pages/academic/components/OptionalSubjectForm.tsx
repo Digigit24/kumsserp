@@ -2,17 +2,20 @@
  * Optional Subject Form Component
  */
 
-import { useState, useEffect } from 'react';
-import { optionalSubjectApi, classApi, subjectApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
+import { Checkbox } from '../../../components/ui/checkbox';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Switch } from '../../../components/ui/switch';
 import { Textarea } from '../../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Checkbox } from '../../../components/ui/checkbox';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import type { OptionalSubject, OptionalSubjectCreateInput } from '../../../types/academic.types';
+import { classApi, optionalSubjectApi, subjectApi } from '../../../services/academic.service';
+import type { OptionalSubjectCreateInput } from '../../../types/academic.types';
 
 interface OptionalSubjectFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -30,7 +33,9 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
     const [subjects, setSubjects] = useState<any[]>([]);
     const [loadingData, setLoadingData] = useState(false);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<OptionalSubjectCreateInput>({
+        college: getCurrentUserCollege(user as any) || 0,
         class_obj: 0,
         name: '',
         description: null,
@@ -168,6 +173,14 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
                     </div>
                 </div>
             )}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => {
+                    setFormData({ ...formData, college: Number(val), class_obj: 0 });
+                }}
+                className="mb-4"
+            />
 
             {/* Class */}
             <div className="space-y-2">

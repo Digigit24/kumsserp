@@ -2,15 +2,18 @@
  * Subject Assignment Form Component
  */
 
-import { useState, useEffect } from 'react';
-import { subjectAssignmentApi, subjectApi, classApi, sectionApi } from '../../../services/academic.service';
-import { userApi } from '../../../services/accounts.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import type { SubjectAssignment, SubjectAssignmentCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { classApi, sectionApi, subjectApi, subjectAssignmentApi } from '../../../services/academic.service';
+import { userApi } from '../../../services/accounts.service';
+import type { SubjectAssignmentCreateInput } from '../../../types/academic.types';
 import type { UserListItem } from '../../../types/accounts.types';
 
 interface SubjectAssignmentFormProps {
@@ -32,7 +35,9 @@ export function SubjectAssignmentForm({ mode, subjectAssignmentId, onSuccess, on
     const [loadingData, setLoadingData] = useState(false);
     const [loadingSections, setLoadingSections] = useState(false);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<SubjectAssignmentCreateInput>({
+        college: getCurrentUserCollege(user as any) || 0,
         subject: 0,
         class_obj: 0,
         section: null,
@@ -175,6 +180,15 @@ export function SubjectAssignmentForm({ mode, subjectAssignmentId, onSuccess, on
                 </div>
             )}
 
+            {/* College Selection */}
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => {
+                    setFormData({ ...formData, college: Number(val), class_obj: 0, section: null });
+                }}
+                className="mb-4"
+            />
+
             {/* Subject */}
             <div className="space-y-2">
                 <Label htmlFor="subject">
@@ -234,9 +248,9 @@ export function SubjectAssignmentForm({ mode, subjectAssignmentId, onSuccess, on
                     <SelectTrigger id="section">
                         <SelectValue placeholder={
                             loadingSections ? "Loading sections..." :
-                            !formData.class_obj ? "Select a class first" :
-                            sections.length === 0 ? "No sections available" :
-                            "Select section (optional)"
+                                !formData.class_obj ? "Select a class first" :
+                                    sections.length === 0 ? "No sections available" :
+                                        "Select section (optional)"
                         } />
                     </SelectTrigger>
                     <SelectContent>

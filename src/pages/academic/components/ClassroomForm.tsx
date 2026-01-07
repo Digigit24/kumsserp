@@ -2,14 +2,17 @@
  * Classroom Form Component
  */
 
-import { useState, useEffect } from 'react';
-import { classroomApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import type { Classroom, ClassroomCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { classroomApi } from '../../../services/academic.service';
+import type { ClassroomCreateInput } from '../../../types/academic.types';
 
 interface ClassroomFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -26,25 +29,14 @@ const ROOM_TYPES = [
     { value: 'conference', label: 'Conference Room' },
 ];
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function ClassroomForm({ mode, classroomId, onSuccess, onCancel }: ClassroomFormProps) {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<ClassroomCreateInput>({
-        college: getCollegeId(), // ✅ Get from logged-in user
+        college: getCurrentUserCollege(user as any) || 0,
         code: '',
         name: '',
         room_type: 'classroom',
@@ -93,9 +85,9 @@ export function ClassroomForm({ mode, classroomId, onSuccess, onCancel }: Classr
         try {
             setIsLoading(true);
             setError(null);
-            
+
             console.log('Submitting classroom data:', formData); // ✅ Debug log
-            
+
             if (mode === 'create') {
                 await classroomApi.create(formData);
             } else if (mode === 'edit' && classroomId) {
@@ -116,6 +108,13 @@ export function ClassroomForm({ mode, classroomId, onSuccess, onCancel }: Classr
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {error && <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4"><p className="text-sm text-destructive">{error}</p></div>}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => setFormData({ ...formData, college: Number(val) })}
+                className="mb-4"
+            />
+
 
             <div className="space-y-2">
                 <Label htmlFor="code">Room Code <span className="text-destructive">*</span></Label>

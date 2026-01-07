@@ -3,15 +3,18 @@
  * Form for creating and editing programs
  */
 
-import { useState, useEffect } from 'react';
-import { programApi, facultyApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import type { Program, ProgramCreateInput, ProgramUpdateInput, FacultyListItem } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
+import { facultyApi, programApi } from '../../../services/academic.service';
+import type { FacultyListItem, Program, ProgramCreateInput, ProgramUpdateInput } from '../../../types/academic.types';
 
 interface ProgramFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -33,18 +36,6 @@ const DURATION_TYPES = [
     { value: 'semesters', label: 'Semesters' },
 ];
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function ProgramForm({ mode, programId, onSuccess, onCancel }: ProgramFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
@@ -52,8 +43,9 @@ export function ProgramForm({ mode, programId, onSuccess, onCancel }: ProgramFor
     const [program, setProgram] = useState<Program | null>(null);
     const [faculties, setFaculties] = useState<FacultyListItem[]>([]);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<ProgramCreateInput>({
-        college: getCollegeId(), // ✅ Get from logged-in user
+        college: getCurrentUserCollege(user as any) || 0,
         faculty: 0,
         code: '',
         name: '',
@@ -168,6 +160,14 @@ export function ProgramForm({ mode, programId, onSuccess, onCancel }: ProgramFor
                     <p className="text-sm text-destructive">{error}</p>
                 </div>
             )}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => {
+                    setFormData({ ...formData, college: Number(val), faculty: 0 });
+                }}
+                className="mb-4"
+            />
 
             {/* Faculty Selection */}
             <div className="space-y-2">

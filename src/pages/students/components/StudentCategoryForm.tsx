@@ -3,14 +3,15 @@
  * Used for creating and editing student categories
  */
 
-import { useState, useEffect } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { studentCategoryApi } from '../../../services/students.service';
-import type { StudentCategory, StudentCategoryCreateInput, StudentCategoryUpdateInput } from '../../../types/students.types';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
-import { getCurrentUser } from '../../../services/auth.service';
+import { useAuth } from '../../../hooks/useAuth';
+import { studentCategoryApi } from '../../../services/students.service';
+import type { StudentCategory, StudentCategoryCreateInput, StudentCategoryUpdateInput } from '../../../types/students.types';
 
 interface StudentCategoryFormProps {
   mode: 'create' | 'edit';
@@ -20,12 +21,13 @@ interface StudentCategoryFormProps {
 }
 
 export const StudentCategoryForm = ({ mode, category, onSuccess, onCancel }: StudentCategoryFormProps) => {
-  const { theme } = useTheme();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<StudentCategoryCreateInput>({
-    college: 0,
+    college: getCurrentUserCollege(user as any) || 0,
     name: '',
     code: '',
     description: '',
@@ -44,11 +46,9 @@ export const StudentCategoryForm = ({ mode, category, onSuccess, onCancel }: Stu
       });
     } else if (mode === 'create') {
       // Get college ID from current user
-      const user = getCurrentUser();
-      const collegeId = user?.college || 0;
-      setFormData(prev => ({ ...prev, college: collegeId }));
+      setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user as any) || 0 }));
     }
-  }, [mode, category]);
+  }, [mode, category, user]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -134,6 +134,11 @@ export const StudentCategoryForm = ({ mode, category, onSuccess, onCancel }: Stu
       )}
 
       <div className="space-y-4">
+        <CollegeField
+          value={formData.college}
+          onChange={(val) => handleChange('college', Number(val))}
+          error={errors.college}
+        />
         {/* Category Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-2">

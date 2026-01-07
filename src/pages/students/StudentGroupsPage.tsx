@@ -4,13 +4,16 @@
  */
 
 import { useState } from 'react';
-import { useStudentGroups, useStudentGroup, useDeleteStudentGroup } from '../../hooks/useStudents';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentGroup, useStudentGroup, useStudentGroups } from '../../hooks/useStudents';
+import type { StudentGroupFilters, StudentGroupListItem } from '../../types/students.types';
+import { isSuperAdmin } from '../../utils/auth.utils';
 import { StudentGroupForm } from './components/StudentGroupForm';
-import type { StudentGroupListItem, StudentGroupFilters, StudentGroup } from '../../types/students.types';
 
 export const StudentGroupsPage = () => {
   const [filters, setFilters] = useState<StudentGroupFilters>({ page: 1, page_size: 20 });
@@ -24,6 +27,8 @@ export const StudentGroupsPage = () => {
   const [groupToDelete, setGroupToDelete] = useState<StudentGroupListItem | null>(null);
 
   const { data: selectedGroup } = useStudentGroup(selectedGroupId);
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
   // Define table columns
   const columns: Column<StudentGroupListItem>[] = [
@@ -55,6 +60,15 @@ export const StudentGroupsPage = () => {
 
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
     {
       name: 'is_active',
       label: 'Active Status',
@@ -90,7 +104,7 @@ export const StudentGroupsPage = () => {
 
   const confirmDelete = async () => {
     if (groupToDelete) {
-      await deleteMutation.mutateAsync(groupToDelete.id);
+      await deleteMutation.mutate(groupToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setGroupToDelete(null);
@@ -135,8 +149,8 @@ export const StudentGroupsPage = () => {
           sidebarMode === 'create'
             ? 'Add New Group'
             : sidebarMode === 'edit'
-            ? 'Edit Group'
-            : selectedGroup?.name || 'Group Details'
+              ? 'Edit Group'
+              : selectedGroup?.name || 'Group Details'
         }
         mode={sidebarMode}
         width="lg"
@@ -215,13 +229,13 @@ export const StudentGroupsPage = () => {
                   {selectedGroup.created_by && (
                     <div>
                       <label className="text-xs text-muted-foreground">Created By</label>
-                      <p>{selectedGroup.created_by.full_name || selectedGroup.created_by.username}</p>
+                      <p>{selectedGroup.created_by.first_name} {selectedGroup.created_by.last_name}</p>
                     </div>
                   )}
                   {selectedGroup.updated_by && (
                     <div>
                       <label className="text-xs text-muted-foreground">Updated By</label>
-                      <p>{selectedGroup.updated_by.full_name || selectedGroup.updated_by.username}</p>
+                      <p>{selectedGroup.updated_by.first_name} {selectedGroup.updated_by.last_name}</p>
                     </div>
                   )}
                 </div>
@@ -249,7 +263,7 @@ export const StudentGroupsPage = () => {
         description={`Are you sure you want to delete the group "${groupToDelete?.name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

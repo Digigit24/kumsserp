@@ -3,21 +3,26 @@
  * Displays all student addresses with CRUD operations
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useStudentAddresses, useDeleteStudentAddress, useStudents } from '../../hooks/useStudents';
-import { DataTable, Column } from '../../components/common/DataTable';
-import { Badge } from '../../components/ui/badge';
-import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
-import { StudentAddressForm } from './components/StudentAddressForm';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Label } from '../../components/ui/label';
+import { isSuperAdmin } from '@/utils/auth.utils';
 import { MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable } from '../../components/common/DataTable';
+import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
+import { Badge } from '../../components/ui/badge';
+import { Label } from '../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentAddress, useStudentAddresses, useStudents } from '../../hooks/useStudents';
 import type { StudentAddress } from '../../types/students.types';
+import { StudentAddressForm } from './components/StudentAddressForm';
 
 export const StudentAddressesPage = () => {
-  const navigate = useNavigate();
+
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentAddresses(filters);
   const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
@@ -29,11 +34,11 @@ export const StudentAddressesPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
 
   // Define table columns
-  const columns: Column<StudentAddress>[] = [
+  const columns: Column<any>[] = [
     {
       key: 'address_type',
       label: 'Type',
-      render: (address) => (
+      render: (address: any) => (
         <Badge variant="outline" className="capitalize">
           {address.address_type}
         </Badge>
@@ -42,12 +47,12 @@ export const StudentAddressesPage = () => {
     {
       key: 'student_name',
       label: 'Student',
-      render: (address) => address.student_name || `Student #${address.student}`,
+      render: (address: any) => address.student_name || `Student #${address.student}`,
     },
     {
       key: 'address',
       label: 'Address',
-      render: (address) => (
+      render: (address: any) => (
         <div className="flex items-start gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
           <div>
@@ -75,14 +80,14 @@ export const StudentAddressesPage = () => {
     setAddressDialogOpen(true);
   };
 
-  const handleDelete = (address: StudentAddress) => {
+  const handleDelete = (address: any) => {
     setSelectedAddress(address);
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (selectedAddress) {
-      await deleteMutation.mutateAsync(selectedAddress.id);
+      await deleteMutation.mutate(selectedAddress.id);
       refetch();
       setDeleteDialogOpen(false);
       setSelectedAddress(null);
@@ -94,6 +99,19 @@ export const StudentAddressesPage = () => {
     setAddressDialogOpen(false);
     setSelectedStudentId(null);
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -108,7 +126,8 @@ export const StudentAddressesPage = () => {
         onAdd={handleAdd}
         onDelete={handleDelete}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search by student, city, state..."
         addButtonLabel="Add Address"
       />
@@ -167,7 +186,7 @@ export const StudentAddressesPage = () => {
         description="Are you sure you want to delete this address? This action cannot be undone."
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

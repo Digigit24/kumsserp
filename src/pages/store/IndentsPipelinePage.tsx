@@ -3,23 +3,25 @@
  * Shows indents organized by status columns
  */
 
+import { AlertCircle, Eye, Package, Plus, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Plus, Eye, CheckCircle, XCircle, AlertCircle, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
+import { useAuth } from '../../hooks/useAuth';
 import {
-  useStoreIndents,
-  useCreateStoreIndent,
-  useSubmitStoreIndent,
   useCollegeAdminApprove,
   useCollegeAdminReject,
+  useCreateStoreIndent,
+  useStoreIndents,
+  useSubmitStoreIndent,
   useSuperAdminApprove,
   useSuperAdminReject,
 } from '../../hooks/useStoreIndents';
+import { isSuperAdmin } from '../../utils/auth.utils';
 import { StoreIndentPipeline } from './forms/StoreIndentPipeline';
 import { PrepareDispatchDialog } from './PrepareDispatchDialog';
 
@@ -46,7 +48,7 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
   {
     id: 'approved',
     title: 'Approved',
-    status: ['super_admin_approved', 'approved'],
+    status: ['approved', 'super_admin_approved'], // Support both for backward compatibility
     color: 'bg-green-100',
   },
   {
@@ -70,6 +72,7 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
 ];
 
 export const IndentsPipelinePage = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedIndent, setSelectedIndent] = useState<any>(null);
@@ -181,8 +184,8 @@ export const IndentsPipelinePage = () => {
               indent.priority === 'urgent'
                 ? 'destructive'
                 : indent.priority === 'high'
-                ? 'outline'
-                : 'secondary',
+                  ? 'outline'
+                  : 'secondary',
           },
         ],
         indicators: [
@@ -210,29 +213,43 @@ export const IndentsPipelinePage = () => {
           },
         ];
       } else if (indent.status === 'pending_college_approval') {
+        const canApprove = user?.user_type === 'college_admin' || isSuperAdmin(user);
+
         card.primaryAction = {
-          label: 'Approve',
-          onClick: () => handleApprove(indent),
+          label: canApprove ? 'Approve' : 'Waiting for Approval',
+          onClick: canApprove ? () => handleApprove(indent) : undefined,
+          disabled: !canApprove,
         };
-        card.secondaryActions = [
-          {
-            label: 'Reject',
-            icon: XCircle,
-            onClick: () => handleReject(indent),
-          },
-        ];
+
+        // Only show reject if they can approve
+        if (canApprove) {
+          card.secondaryActions = [
+            {
+              label: 'Reject',
+              icon: XCircle,
+              onClick: () => handleReject(indent),
+            },
+          ];
+        }
       } else if (indent.status === 'pending_super_admin') {
+        const canApprove = isSuperAdmin(user);
+
         card.primaryAction = {
-          label: 'Approve',
-          onClick: () => handleApprove(indent),
+          label: canApprove ? 'Approve' : 'Waiting for Approval',
+          onClick: canApprove ? () => handleApprove(indent) : undefined,
+          disabled: !canApprove,
         };
-        card.secondaryActions = [
-          {
-            label: 'Reject',
-            icon: XCircle,
-            onClick: () => handleReject(indent),
-          },
-        ];
+
+        // Only show reject if they can approve
+        if (canApprove) {
+          card.secondaryActions = [
+            {
+              label: 'Reject',
+              icon: XCircle,
+              onClick: () => handleReject(indent),
+            },
+          ];
+        }
       } else if (indent.status === 'super_admin_approved') {
         card.primaryAction = {
           label: 'Prepare MIN',

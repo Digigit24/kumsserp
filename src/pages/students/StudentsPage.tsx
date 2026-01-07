@@ -3,19 +3,22 @@
  * Uses DataTable and DetailSidebar for CRUD operations
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudents, useDeleteStudent } from '../../hooks/useStudents';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Badge } from '../../components/ui/badge';
-import { Avatar, AvatarFallback } from '../../components/ui/avatar';
-import { StudentForm } from './components/StudentForm';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ContextSelectorToolbar } from '../../components/context';
+import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { Badge } from '../../components/ui/badge';
 import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import type { StudentListItem, StudentFilters } from '../../types/students.types';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudent, useStudents } from '../../hooks/useStudents';
+import type { StudentFilters, StudentListItem } from '../../types/students.types';
+import { isSuperAdmin } from '../../utils/auth.utils';
+import { StudentForm } from './components/StudentForm';
 
 export const StudentsPage = () => {
     const navigate = useNavigate();
@@ -34,8 +37,8 @@ export const StudentsPage = () => {
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
     const { data, isLoading, error, refetch } = useStudents({
         ...filters,
-        class_obj: selectedClass || undefined,
-        section: selectedSection || undefined,
+        current_class: selectedClass || undefined,
+        current_section: selectedSection || undefined,
     });
     const deleteMutation = useDeleteStudent();
 
@@ -135,7 +138,21 @@ export const StudentsPage = () => {
     ];
 
     // Define filter configuration
+    // Fetch colleges for filter
+    const { user } = useAuth();
+    const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
+    // Define filter configuration
     const filterConfig: FilterConfig[] = [
+        ...(isSuperAdmin(user as any) ? [{
+            name: 'college',
+            label: 'College',
+            type: 'select' as const,
+            options: [
+                { value: '', label: 'All Colleges' },
+                ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+            ],
+        }] : []),
         {
             name: 'is_active',
             label: 'Active Status',
@@ -188,7 +205,7 @@ export const StudentsPage = () => {
 
     const confirmDelete = async () => {
         if (selectedStudent) {
-            await deleteMutation.mutateAsync(selectedStudent.id);
+            await deleteMutation.mutate(selectedStudent.id);
             refetch();
             setDeleteDialogOpen(false);
             setSelectedStudent(null);
@@ -252,7 +269,7 @@ export const StudentsPage = () => {
                 description={`Are you sure you want to delete ${selectedStudent?.full_name}? This action cannot be undone.`}
                 confirmLabel="Delete"
                 onConfirm={confirmDelete}
-                loading={deleteMutation.isPending}
+                loading={deleteMutation.isLoading}
             />
         </div>
     );

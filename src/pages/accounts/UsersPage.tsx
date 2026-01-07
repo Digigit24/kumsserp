@@ -3,6 +3,8 @@
  * Complete CRUD interface for user management
  */
 
+import { useAuth } from '@/hooks/useAuth';
+import { isSuperAdmin } from '@/utils/auth.utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
@@ -13,6 +15,7 @@ import type { UserFilters, UserListItem } from '../../types/accounts.types';
 import { UserForm } from './components/UserForm';
 
 const UsersPage = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<UserFilters>({ page: 1, page_size: 20 });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -125,7 +128,7 @@ const UsersPage = () => {
         { value: 'central_manager', label: 'Central Store Manager' },
       ],
     },
-    ...(isSuperAdmin(useAuth().user) ? [{
+    ...(isSuperAdmin(user as any) ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -182,10 +185,10 @@ const UsersPage = () => {
       <DataTable
         title="Users"
         description="Manage users in the system"
-        data={data}
+        data={data || null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error ? (error as Error).message : null}
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}

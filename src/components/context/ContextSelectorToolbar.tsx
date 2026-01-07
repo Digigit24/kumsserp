@@ -5,12 +5,12 @@
  * Perfect for pages like Attendance that need hierarchical filtering
  */
 
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CollegeSelector } from './CollegeSelector';
-import { ClassSelector } from './ClassSelector';
-import { SectionSelector } from './SectionSelector';
 import { usePermissions } from '@/contexts/PermissionsContext';
+import React from 'react';
+import { ClassSelector } from './ClassSelector';
+import { CollegeSelector } from './CollegeSelector';
+import { SectionSelector } from './SectionSelector';
 
 interface ContextSelectorToolbarProps {
   showCollege?: boolean;
@@ -41,7 +41,7 @@ export const ContextSelectorToolbar: React.FC<ContextSelectorToolbarProps> = ({
     <Card className={className}>
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {showCollege && <CollegeSelector required />}
+          {showCollege && !permissions?.isCollegeAdmin && <CollegeSelector required />}
           {showClass && <ClassSelector required />}
           {showSection && <SectionSelector required />}
         </div>

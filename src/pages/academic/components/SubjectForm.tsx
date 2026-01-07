@@ -2,15 +2,18 @@
  * Subject Form Component
  */
 
-import { useState, useEffect } from 'react';
-import { subjectApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import type { Subject, SubjectCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
+import { subjectApi } from '../../../services/academic.service';
+import type { SubjectCreateInput } from '../../../types/academic.types';
 
 interface SubjectFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -25,25 +28,14 @@ const SUBJECT_TYPES = [
     { value: 'both', label: 'Theory & Practical' },
 ];
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function SubjectForm({ mode, subjectId, onSuccess, onCancel }: SubjectFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<SubjectCreateInput>({
-        college: getCollegeId(), // ✅ Get from logged-in user
+        college: getCurrentUserCollege(user as any) || 0,
         code: '',
         name: '',
         short_name: '',
@@ -94,9 +86,9 @@ export function SubjectForm({ mode, subjectId, onSuccess, onCancel }: SubjectFor
         try {
             setIsLoading(true);
             setError(null);
-            
+
             console.log('Submitting subject data:', formData); // ✅ Debug log
-            
+
             if (mode === 'create') {
                 await subjectApi.create(formData);
             } else if (mode === 'edit' && subjectId) {
@@ -117,6 +109,14 @@ export function SubjectForm({ mode, subjectId, onSuccess, onCancel }: SubjectFor
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {error && <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4"><p className="text-sm text-destructive">{error}</p></div>}
+
+            {error && <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4"><p className="text-sm text-destructive">{error}</p></div>}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => setFormData({ ...formData, college: Number(val) })}
+                className="mb-4"
+            />
 
             <div className="space-y-2">
                 <Label>Subject Code <span className="text-destructive">*</span></Label>

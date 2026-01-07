@@ -4,20 +4,20 @@
  */
 
 import {
-  buildApiUrl,
-  getDefaultHeaders,
-  API_ENDPOINTS,
+    API_ENDPOINTS,
+    buildApiUrl,
+    getDefaultHeaders,
 } from "../config/api.config";
 import type { PaginatedResponse } from "../types/core.types";
 import type {
-  Vendor,
-  VendorCreateInput,
-  VendorUpdateInput,
-  VendorFilters,
-  StockReceipt,
-  StockReceiptCreateInput,
-  StockReceiptUpdateInput,
-  StockReceiptFilters,
+    StockReceipt,
+    StockReceiptCreateInput,
+    StockReceiptFilters,
+    StockReceiptUpdateInput,
+    Vendor,
+    VendorCreateInput,
+    VendorFilters,
+    VendorUpdateInput,
 } from "../types/store.types";
 
 // ============================================================================
@@ -485,6 +485,61 @@ export const stockReceiptApi = {
     });
   },
 };
+// ============================================================================
+// COLLEGE STORE API
+// ============================================================================
+
+export const collegeStoresApi = {
+  list: async (filters?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<any>>(
+      buildApiUrl(`${API_ENDPOINTS.collegeStores.list}${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<any> => {
+    return fetchApi<any>(
+      buildApiUrl(API_ENDPOINTS.collegeStores.detail(id))
+    );
+  },
+
+  create: async (data: any): Promise<any> => {
+    return fetchApi<any>(buildApiUrl(API_ENDPOINTS.collegeStores.create), {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(
+      buildApiUrl(API_ENDPOINTS.collegeStores.update(id)),
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  patch: async (id: number, data: any): Promise<any> => {
+    return fetchApi<any>(
+      buildApiUrl(API_ENDPOINTS.collegeStores.patch(id)),
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(
+      buildApiUrl(API_ENDPOINTS.collegeStores.delete(id)),
+      {
+        method: "DELETE",
+      }
+    );
+  },
+};
+
 // ============================================================================
 // CENTRAL STORE API
 // ============================================================================

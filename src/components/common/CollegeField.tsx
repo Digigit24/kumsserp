@@ -1,5 +1,5 @@
 
-import { fetchApi } from '@/api/apiClient';
+import apiClient from '@/api/apiClient';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,8 +39,8 @@ export const CollegeField: React.FC<CollegeFieldProps> = ({
     const { data: collegesData, isLoading } = useQuery({
         queryKey: ['colleges-list'],
         queryFn: async () => {
-            const response = await fetchApi<any>('/api/v1/core/colleges/');
-            return response;
+            const response = await apiClient.get('/api/v1/core/colleges/');
+            return response.data;
         },
         enabled: isSuper,
         staleTime: 5 * 60 * 1000 // Cache for 5 minutes

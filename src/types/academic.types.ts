@@ -175,6 +175,7 @@ export interface SectionCreateInput {
   name: string;
   max_students?: number;
   is_active?: boolean;
+  college?: number;
 }
 
 export interface SectionUpdateInput extends Partial<SectionCreateInput> {}
@@ -254,6 +255,7 @@ export interface OptionalSubjectCreateInput {
   min_selection?: number;
   max_selection?: number;
   is_active?: boolean;
+  college?: number;
 }
 
 export interface OptionalSubjectUpdateInput extends Partial<OptionalSubjectCreateInput> {}
@@ -300,6 +302,7 @@ export interface SubjectAssignmentCreateInput {
   lab_instructor?: string | null;
   is_optional?: boolean;
   is_active?: boolean;
+  college?: number;
 }
 
 export interface SubjectAssignmentUpdateInput extends Partial<SubjectAssignmentCreateInput> {}
@@ -469,6 +472,7 @@ export interface LabScheduleCreateInput {
   effective_from: string;
   effective_to?: string | null;
   is_active?: boolean;
+  college?: number;
 }
 
 export interface LabScheduleUpdateInput extends Partial<LabScheduleCreateInput> {}
@@ -500,6 +504,7 @@ export interface ClassTeacherCreateInput {
   is_current?: boolean;
   academic_session: number;
   is_active?: boolean;
+  college?: number;
 }
 
 export interface ClassTeacherUpdateInput extends Partial<ClassTeacherCreateInput> {}

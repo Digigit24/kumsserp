@@ -3,16 +3,22 @@
  * Manages student certificates with CRUD operations
  */
 
+import { isSuperAdmin } from '@/utils/auth.utils';
 import { useState } from 'react';
-import { Column, DataTable } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
 import { useCertificates, useDeleteCertificate } from '../../hooks/useStudents';
 import type { CertificateFilters, CertificateListItem } from '../../types/students.types';
 import { CertificateForm } from './components/CertificateForm';
 
 export const CertificatesPage = () => {
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState<CertificateFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useCertificates(filters);
   const deleteMutation = useDeleteCertificate();
@@ -82,12 +88,25 @@ export const CertificatesPage = () => {
 
   const confirmDelete = async () => {
     if (certificateToDelete) {
-      await deleteMutation.mutateAsync(certificateToDelete.id);
+      await deleteMutation.mutate(certificateToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setCertificateToDelete(null);
     }
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -103,7 +122,8 @@ export const CertificatesPage = () => {
         onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search certificates..."
         addButtonLabel="Issue Certificate"
       />
@@ -139,7 +159,7 @@ export const CertificatesPage = () => {
         description={`Are you sure you want to delete the certificate "${certificateToDelete?.certificate_number}" for "${certificateToDelete?.student_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

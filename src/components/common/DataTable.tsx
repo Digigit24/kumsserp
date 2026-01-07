@@ -41,12 +41,15 @@ interface DataTableProps<T> {
   error: string | null;
   onRefresh: () => void;
   onAdd?: () => void;
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
   onRowClick?: (item: T) => void;
   filters?: Record<string, any>;
   onFiltersChange?: (filters: Record<string, any>) => void;
   filterConfig?: FilterConfig[];
   searchPlaceholder?: string;
   addButtonLabel?: string;
+  actions?: (item: T) => React.ReactNode;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -58,12 +61,15 @@ export function DataTable<T extends Record<string, any>>({
   error,
   onRefresh,
   onAdd,
+  onEdit,
+  onDelete,
   onRowClick,
   filters = {},
   onFiltersChange,
   filterConfig = [],
   searchPlaceholder = 'Search...',
   addButtonLabel = 'Add New',
+  actions,
 }: DataTableProps<T>) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -260,6 +266,9 @@ export function DataTable<T extends Record<string, any>>({
                       )}
                     </TableHead>
                   ))}
+                  {(onEdit || onDelete || actions) && (
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -276,6 +285,69 @@ export function DataTable<T extends Record<string, any>>({
                           : item[column.key]?.toString() || '-'}
                       </TableCell>
                     ))}
+                    {(onEdit || onDelete || actions) && (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {actions && actions(item)}
+                          {onEdit && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(item);
+                              }}
+                            >
+                              <span className="sr-only">Edit</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                              >
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                <path d="m15 5 4 4" />
+                              </svg>
+                            </Button>
+                          )}
+                          {onDelete && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(item);
+                              }}
+                            >
+                              <span className="sr-only">Delete</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

@@ -4,35 +4,38 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGuardians, useDeleteGuardian } from '../../hooks/useStudents';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
-import { Badge } from '../../components/ui/badge';
-import { GuardianForm } from './components/GuardianForm';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import type { StudentGuardian } from '../../types/students.types';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteGuardian, useGuardians } from '../../hooks/useStudents';
+import type { GuardianListItem } from '../../types/students.types';
+import { isSuperAdmin } from '../../utils/auth.utils';
+import { GuardianForm } from './components/GuardianForm';
 
 export const GuardiansPage = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useGuardians(filters);
   const deleteMutation = useDeleteGuardian();
 
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('create');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedGuardian, setSelectedGuardian] = useState<StudentGuardian | null>(null);
+  const [selectedGuardian, setSelectedGuardian] = useState<GuardianListItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Define table columns
-  const columns: Column<StudentGuardian>[] = [
+  const columns: Column<GuardianListItem>[] = [
     {
       key: 'full_name',
       label: 'Guardian Name',
       sortable: true,
       render: (guardian) => (
         <div className="flex flex-col">
-          <span className="font-medium">{guardian.first_name} {guardian.last_name}</span>
+          <span className="font-medium">{guardian.full_name}</span>
           <span className="text-xs text-muted-foreground capitalize">{guardian.relation}</span>
         </div>
       ),
@@ -47,11 +50,6 @@ export const GuardiansPage = () => {
       label: 'Phone',
       render: (guardian) => guardian.phone || '-',
     },
-    {
-      key: 'occupation',
-      label: 'Occupation',
-      render: (guardian) => guardian.occupation || '-',
-    },
   ];
 
   const handleAdd = () => {
@@ -60,20 +58,20 @@ export const GuardiansPage = () => {
     setIsSidebarOpen(true);
   };
 
-  const handleEdit = (guardian: StudentGuardian) => {
+  const handleEdit = (guardian: GuardianListItem) => {
     setSelectedGuardian(guardian);
     setSidebarMode('edit');
     setIsSidebarOpen(true);
   };
 
-  const handleDelete = (guardian: StudentGuardian) => {
+  const handleDelete = (guardian: GuardianListItem) => {
     setSelectedGuardian(guardian);
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (selectedGuardian) {
-      await deleteMutation.mutateAsync(selectedGuardian.id);
+      await deleteMutation.mutate(selectedGuardian.id);
       refetch();
       setDeleteDialogOpen(false);
       setSelectedGuardian(null);
@@ -91,6 +89,26 @@ export const GuardiansPage = () => {
     refetch();
   };
 
+  const handleFiltersChange = (newFilters: Record<string, any>) => {
+    setFilters(prev => ({
+      ...prev,
+      ...newFilters
+    }));
+  };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <DataTable
@@ -105,7 +123,8 @@ export const GuardiansPage = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
+        filterConfig={filterConfig}
         searchPlaceholder="Search by name, email, phone..."
         addButtonLabel="Add Guardian"
       />
@@ -120,7 +139,8 @@ export const GuardiansPage = () => {
       >
         <GuardianForm
           mode={sidebarMode}
-          guardian={selectedGuardian || undefined}
+          // Cast to any because Form might expect full object, but will fetch or handle partial
+          guardian={selectedGuardian as any}
           onSuccess={handleFormSuccess}
           onCancel={handleCloseSidebar}
         />
@@ -134,7 +154,7 @@ export const GuardiansPage = () => {
         description="Are you sure you want to delete this guardian? This action cannot be undone."
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

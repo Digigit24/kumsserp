@@ -1,7 +1,6 @@
 // Store Module Types
 //
 
-import type { PaginatedResponse } from './core.types';
 
 // ============================================================================
 // SUPPLIERS & VENDORS
@@ -612,6 +611,49 @@ export interface MaterialIssueNote {
 }
 
 // ============================================================================
+// COLLEGE STORE
+// ============================================================================
+
+export interface CollegeStore {
+  id: number;
+  name: string;
+  code: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  pincode: string;
+  contact_phone: string;
+  contact_email: string;
+  is_active: boolean;
+  college: number;
+  college_name?: string;
+  manager: number | string | null;
+  manager_name?: string;
+  created_by: number;
+  updated_by: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollegeStoreCreateInput {
+  name: string;
+  code: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  contact_phone: string;
+  contact_email: string;
+  is_active?: boolean;
+  college: number;
+  manager?: number | string | null;
+}
+
+export interface CollegeStoreUpdateInput extends Partial<CollegeStoreCreateInput> {}
+
+// ============================================================================
 // CENTRAL STORE & INVENTORY
 // ============================================================================
 
@@ -641,7 +683,6 @@ export interface CentralInventory {
   item_display?: string; // from docs
   central_store: number;
   central_store_name?: string;
-  item: number;
   item_name?: string;
   quantity_on_hand: number;
   quantity_allocated: number;

@@ -3,7 +3,7 @@
  * Based on Django backend models
  */
 
-import { AuditFields, PaginatedResponse } from './core.types';
+import { AuditFields } from './core.types';
 
 // ============================================================================
 // COMMON TYPES
@@ -50,9 +50,11 @@ export interface StudentCategoryCreateInput {
 
 export interface StudentCategoryUpdateInput extends Partial<StudentCategoryCreateInput> {}
 
+// ...
 export interface StudentCategoryFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   is_active?: boolean;
   search?: string;
   ordering?: string;
@@ -90,6 +92,7 @@ export interface StudentGroupUpdateInput extends Partial<StudentGroupCreateInput
 export interface StudentGroupFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   is_active?: boolean;
   search?: string;
   ordering?: string;
@@ -216,6 +219,7 @@ export interface StudentUpdateInput extends Partial<StudentCreateInput> {}
 export interface StudentFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   program?: number;
   current_class?: number;
   current_section?: number;
@@ -280,6 +284,7 @@ export interface GuardianUpdateInput extends Partial<GuardianCreateInput> {}
 export interface GuardianFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   relation?: string;
   search?: string;
   ordering?: string;
@@ -373,6 +378,7 @@ export interface StudentAddressUpdateInput extends Partial<StudentAddressCreateI
 export interface StudentAddressFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   address_type?: string;
   city?: string;
@@ -429,6 +435,7 @@ export interface StudentDocumentUpdateInput extends Partial<Omit<StudentDocument
 export interface StudentDocumentFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   document_type?: string;
   is_verified?: boolean;
@@ -480,6 +487,7 @@ export interface StudentMedicalRecordUpdateInput extends Partial<StudentMedicalR
 export interface StudentMedicalRecordFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   is_active?: boolean;
   ordering?: string;
@@ -534,6 +542,7 @@ export interface PreviousAcademicRecordUpdateInput extends Partial<PreviousAcade
 export interface PreviousAcademicRecordFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   level?: string;
   year_of_passing?: number;
@@ -588,6 +597,7 @@ export interface StudentPromotionUpdateInput extends Partial<StudentPromotionCre
 export interface StudentPromotionFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   from_class?: number;
   to_class?: number;
@@ -644,6 +654,7 @@ export interface CertificateUpdateInput extends Partial<CertificateCreateInput> 
 export interface CertificateFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   certificate_type?: string;
   is_active?: boolean;
@@ -695,6 +706,7 @@ export interface StudentIDCardUpdateInput extends Partial<StudentIDCardCreateInp
 export interface StudentIDCardFilters {
   page?: number;
   page_size?: number;
+  college?: number;
   student?: number;
   is_active?: boolean;
   is_reissue?: boolean;

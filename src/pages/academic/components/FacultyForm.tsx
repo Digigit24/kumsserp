@@ -3,13 +3,16 @@
  * Form for creating and editing faculties
  */
 
-import { useState, useEffect } from 'react';
-import { facultyApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
 import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
+import { facultyApi } from '../../../services/academic.service';
 import type { Faculty, FacultyCreateInput, FacultyUpdateInput } from '../../../types/academic.types';
 
 interface FacultyFormProps {
@@ -19,26 +22,15 @@ interface FacultyFormProps {
     onCancel: () => void;
 }
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function FacultyForm({ mode, facultyId, onSuccess, onCancel }: FacultyFormProps) {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [faculty, setFaculty] = useState<Faculty | null>(null);
 
     const [formData, setFormData] = useState<FacultyCreateInput>({
-        college: getCollegeId(), // ✅ Get from logged-in user
+        college: getCurrentUserCollege(user as any) || 0,
         code: '',
         name: '',
         short_name: '',
@@ -126,6 +118,13 @@ export function FacultyForm({ mode, facultyId, onSuccess, onCancel }: FacultyFor
                     <p className="text-sm text-destructive">{error}</p>
                 </div>
             )}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => handleChange('college', Number(val))}
+                className="mb-4"
+            />
+
 
             {/* Code */}
             <div className="space-y-2">

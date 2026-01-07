@@ -2,15 +2,18 @@
  * Lab Schedule Form Component
  */
 
-import { useState, useEffect } from 'react';
-import { labScheduleApi, subjectAssignmentApi, sectionApi, classroomApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { AlertCircle, Loader2, Clock } from 'lucide-react';
-import type { LabSchedule, LabScheduleCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { classroomApi, labScheduleApi, sectionApi, subjectAssignmentApi } from '../../../services/academic.service';
+import type { LabScheduleCreateInput } from '../../../types/academic.types';
 
 interface LabScheduleFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -29,7 +32,9 @@ export function LabScheduleForm({ mode, labScheduleId, onSuccess, onCancel }: La
     const [classrooms, setClassrooms] = useState<any[]>([]);
     const [loadingData, setLoadingData] = useState(false);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<LabScheduleCreateInput>({
+        college: getCurrentUserCollege(user as any) || 0,
         subject_assignment: 0,
         section: 0,
         day_of_week: 1,
@@ -168,6 +173,20 @@ export function LabScheduleForm({ mode, labScheduleId, onSuccess, onCancel }: La
                     </div>
                 </div>
             )}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => {
+                    setFormData({
+                        ...formData,
+                        college: Number(val),
+                        subject_assignment: 0,
+                        section: 0,
+                        classroom: null
+                    });
+                }}
+                className="mb-4"
+            />
 
             {/* Subject Assignment */}
             <div className="space-y-2">

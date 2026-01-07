@@ -4,13 +4,16 @@
  */
 
 import { useState } from 'react';
-import { useStudentCategories, useStudentCategory, useDeleteStudentCategory } from '../../hooks/useStudents';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentCategory, useStudentCategories, useStudentCategory } from '../../hooks/useStudents';
+import type { StudentCategoryFilters, StudentCategoryListItem } from '../../types/students.types';
+import { isSuperAdmin } from '../../utils/auth.utils';
 import { StudentCategoryForm } from './components/StudentCategoryForm';
-import type { StudentCategoryListItem, StudentCategoryFilters, StudentCategory } from '../../types/students.types';
 
 export const StudentCategoriesPage = () => {
   const [filters, setFilters] = useState<StudentCategoryFilters>({ page: 1, page_size: 20 });
@@ -24,6 +27,8 @@ export const StudentCategoriesPage = () => {
   const [categoryToDelete, setCategoryToDelete] = useState<StudentCategoryListItem | null>(null);
 
   const { data: selectedCategory } = useStudentCategory(selectedCategoryId);
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
   // Define table columns
   const columns: Column<StudentCategoryListItem>[] = [
@@ -66,6 +71,15 @@ export const StudentCategoriesPage = () => {
 
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
     {
       name: 'is_active',
       label: 'Active Status',
@@ -101,7 +115,7 @@ export const StudentCategoriesPage = () => {
 
   const confirmDelete = async () => {
     if (categoryToDelete) {
-      await deleteMutation.mutateAsync(categoryToDelete.id);
+      await deleteMutation.mutate(categoryToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setCategoryToDelete(null);
@@ -146,8 +160,8 @@ export const StudentCategoriesPage = () => {
           sidebarMode === 'create'
             ? 'Add New Category'
             : sidebarMode === 'edit'
-            ? 'Edit Category'
-            : selectedCategory?.name || 'Category Details'
+              ? 'Edit Category'
+              : selectedCategory?.name || 'Category Details'
         }
         mode={sidebarMode}
         width="lg"
@@ -234,13 +248,13 @@ export const StudentCategoriesPage = () => {
                   {selectedCategory.created_by && (
                     <div>
                       <label className="text-xs text-muted-foreground">Created By</label>
-                      <p>{selectedCategory.created_by.full_name || selectedCategory.created_by.username}</p>
+                      <p>{selectedCategory.created_by.first_name} {selectedCategory.created_by.last_name}</p>
                     </div>
                   )}
                   {selectedCategory.updated_by && (
                     <div>
                       <label className="text-xs text-muted-foreground">Updated By</label>
-                      <p>{selectedCategory.updated_by.full_name || selectedCategory.updated_by.username}</p>
+                      <p>{selectedCategory.updated_by.first_name} {selectedCategory.updated_by.last_name}</p>
                     </div>
                   )}
                 </div>
@@ -268,7 +282,7 @@ export const StudentCategoriesPage = () => {
         description={`Are you sure you want to delete the category "${categoryToDelete?.name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

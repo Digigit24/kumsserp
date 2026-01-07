@@ -3,21 +3,27 @@
  * Displays all student documents with CRUD operations
  */
 
+import { isSuperAdmin } from '@/utils/auth.utils';
+import { FileText, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudentDocuments, useDeleteStudentDocument, useStudents } from '../../hooks/useStudents';
-import { DataTable, Column } from '../../components/common/DataTable';
-import { Badge } from '../../components/ui/badge';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
-import { UploadDocumentDialog } from './components/UploadDocumentDialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
-import { FileText, Upload } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentDocument, useStudentDocuments, useStudents } from '../../hooks/useStudents';
 import type { StudentDocument } from '../../types/students.types';
+import { UploadDocumentDialog } from './components/UploadDocumentDialog';
 
 export const StudentDocumentsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentDocuments(filters);
   const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
@@ -29,12 +35,12 @@ export const StudentDocumentsPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
 
   // Define table columns
-  const columns: Column<StudentDocument>[] = [
+  const columns: Column<any>[] = [
     {
       key: 'document_name',
       label: 'Document Name',
       sortable: true,
-      render: (doc) => (
+      render: (doc: StudentDocument) => (
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{doc.document_name}</span>
@@ -44,7 +50,7 @@ export const StudentDocumentsPage = () => {
     {
       key: 'document_type',
       label: 'Type',
-      render: (doc) => (
+      render: (doc: StudentDocument) => (
         <Badge variant="outline" className="capitalize">
           {doc.document_type.replace(/_/g, ' ')}
         </Badge>
@@ -53,12 +59,12 @@ export const StudentDocumentsPage = () => {
     {
       key: 'student_name',
       label: 'Student',
-      render: (doc) => doc.student_name || `Student #${doc.student}`,
+      render: (doc: StudentDocument) => doc.student_name || `Student #${doc.student}`,
     },
     {
       key: 'is_verified',
       label: 'Status',
-      render: (doc) => (
+      render: (doc: StudentDocument) => (
         <div className="flex gap-2">
           {doc.is_verified && <Badge variant="success">Verified</Badge>}
           {doc.is_active ? (
@@ -72,7 +78,7 @@ export const StudentDocumentsPage = () => {
     {
       key: 'uploaded_date',
       label: 'Uploaded',
-      render: (doc) => new Date(doc.uploaded_date || doc.created_at).toLocaleDateString(),
+      render: (doc: StudentDocument) => new Date(doc.uploaded_date || doc.created_at).toLocaleDateString(),
     },
   ];
 
@@ -89,7 +95,7 @@ export const StudentDocumentsPage = () => {
 
   const confirmDelete = async () => {
     if (selectedDocument) {
-      await deleteMutation.mutateAsync(selectedDocument.id);
+      await deleteMutation.mutate(selectedDocument.id);
       refetch();
       setDeleteDialogOpen(false);
       setSelectedDocument(null);
@@ -101,6 +107,19 @@ export const StudentDocumentsPage = () => {
     setUploadDialogOpen(false);
     setSelectedStudentId(null);
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -115,7 +134,8 @@ export const StudentDocumentsPage = () => {
         onAdd={handleAdd}
         onDelete={handleDelete}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search by document name, type, student..."
         addButtonLabel="Upload Document"
       />
@@ -152,7 +172,7 @@ export const StudentDocumentsPage = () => {
             {selectedStudentId ? (
               <UploadDocumentDialog
                 open={true}
-                onOpenChange={() => {}}
+                onOpenChange={() => { }}
                 studentId={selectedStudentId}
                 onSuccess={handleUploadSuccess}
               />
@@ -174,7 +194,7 @@ export const StudentDocumentsPage = () => {
         description="Are you sure you want to delete this document? This action cannot be undone."
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

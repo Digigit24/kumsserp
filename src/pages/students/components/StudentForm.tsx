@@ -5,6 +5,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { getCurrentUserCollege, isSuperAdmin } from '@/utils/auth.utils';
 import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -84,7 +85,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
 
     const [formData, setFormData] = useState<StudentFormData>({
         user: '', // Will be auto-generated or manually entered
-        college: getCurrentUserCollege(user) || 1, // Default to 1 if null and not strict but helpful
+        college: getCurrentUserCollege(user as any) || 1, // Default to 1 if null and not strict but helpful
         admission_number: '',
         admission_date: new Date().toISOString().split('T')[0],
         admission_type: 'regular',
@@ -134,10 +135,10 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
         } else if (mode === 'create') {
             // College is already initialized via state using utility
             // If super admin and no college set, keep it null or strict
-            if (isSuperAdmin(user) && !formData.college) {
+            if (isSuperAdmin(user as any) && !formData.college) {
                 setFormData(prev => ({ ...prev, college: null }));
             } else if (!formData.college) {
-                setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user) }));
+                setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user as any) }));
             }
         }
     }, [mode, studentId, user]);
@@ -176,6 +177,12 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
                 mother_tongue: data.mother_tongue || '',
                 aadhar_number: data.aadhar_number || '',
                 pan_number: data.pan_number || '',
+                photo: data.photo || '',
+                is_active: data.is_active,
+                is_alumni: data.is_alumni,
+                disabled_date: data.disabled_date || '',
+                disable_reason: data.disable_reason || '',
+                optional_subjects: data.optional_subjects || [],
                 custom_fields: data.custom_fields || {},
             });
         } catch (err: any) {
@@ -194,7 +201,7 @@ export function StudentForm({ mode, studentId, onSuccess, onCancel }: StudentFor
             return;
         }
 
-        if (isSuperAdmin(user) && !formData.college) {
+        if (isSuperAdmin(user as any) && !formData.college) {
             setError('College is required');
             return;
         }

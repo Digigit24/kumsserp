@@ -23,9 +23,10 @@ interface MaterialIssueFormProps {
   materialIssue?: any;
   onSubmit: (data: any) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: MaterialIssueFormProps) => {
+export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitting = false }: MaterialIssueFormProps) => {
   const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
     defaultValues: materialIssue || {
       min_number: '',
@@ -74,8 +75,8 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
   // Helper to find indent_item id
   const findIndentItemId = (itemId: number) => {
     if (!indentData?.items) return null;
-    const match = indentData.items.find((ii: any) => 
-        (typeof ii.central_store_item === 'object' ? ii.central_store_item.id : ii.central_store_item) === itemId
+    const match = indentData.items.find((ii: any) =>
+      (typeof ii.central_store_item === 'object' ? ii.central_store_item.id : ii.central_store_item) === itemId
     );
     return match ? match.id : null;
   };
@@ -174,7 +175,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
                   <StoreIndentDropdown
                     value={field.value}
                     onChange={field.onChange}
-                    status="super_admin_approved"
+                    status="approved"
                     required
                     error={errors.indent?.message}
                     label="Store Indent"
@@ -308,21 +309,21 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
               />
             </div>
 
-             <div>
-                <Label htmlFor="min_document">MIN Document</Label>
-                <Input
-                  id="min_document"
-                  type="file"
-                  onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      setValue('min_document', file);
-                  }}
-                />
-                {materialIssue?.min_document && typeof materialIssue.min_document === 'string' && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Current: <a href={materialIssue.min_document} target="_blank" rel="noreferrer" className="underline">View Document</a>
-                  </p>
-                )}
+            <div>
+              <Label htmlFor="min_document">MIN Document</Label>
+              <Input
+                id="min_document"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  setValue('min_document', file);
+                }}
+              />
+              {materialIssue?.min_document && typeof materialIssue.min_document === 'string' && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Current: <a href={materialIssue.min_document} target="_blank" rel="noreferrer" className="underline">View Document</a>
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -380,14 +381,14 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
                         <StoreItemDropdown
                           value={field.value}
                           onChange={(val) => {
-                              field.onChange(val);
-                              // Auto-set indent_item id if we have indent data
-                              if (val && indentData) {
-                                  const iId = findIndentItemId(val);
-                                  if (iId) {
-                                      setValue(`items.${index}.indent_item`, iId);
-                                  }
+                            field.onChange(val);
+                            // Auto-set indent_item id if we have indent data
+                            if (val && indentData) {
+                              const iId = findIndentItemId(val);
+                              if (iId) {
+                                setValue(`items.${index}.indent_item`, iId);
                               }
+                            }
                           }}
                           required
                           error={errors.items?.[index]?.item?.message}
@@ -484,8 +485,8 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel }: Materia
 
       {/* Form Actions */}
       <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1">
-          {materialIssue ? 'Update' : 'Create'} Material Issue
+        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : materialIssue ? 'Update' : 'Create'} Material Issue
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel

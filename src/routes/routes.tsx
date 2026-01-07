@@ -193,6 +193,7 @@ const PrintRequestsPage = lazy(() => import("../pages/store/PrintRequestsPage"))
 const SaleItemsPage = lazy(() => import("../pages/store/SaleItemsPage"));
 const VendorsPage = lazy(() => import("../pages/store/VendorsPage"));
 const StockReceiptsPage = lazy(() => import("../pages/store/StockReceiptsPage"));
+const CollegeStoresPage = lazy(() => import("../pages/store/CollegeStoresPage").then(m => ({ default: m.CollegeStoresPage })));
 const CentralStoresPage = lazy(() => import("../pages/store/CentralStoresPage").then(m => ({ default: m.CentralStoresPage })));
 const CentralInventoryPage = lazy(() => import("../pages/store/CentralInventoryPage").then(m => ({ default: m.CentralInventoryPage })));
 const MaterialIssuesPage = lazy(() => import("../pages/store/MaterialIssuesPage").then(m => ({ default: m.MaterialIssuesPage })));
@@ -401,6 +402,7 @@ export default function AppRoutes() {
 
                     {/* Store Module - Legacy/Admin Pages */}
                     <Route path="store/hierarchy" element={<LazyRoute component={StoreHierarchyPage} />} />
+                    <Route path="store/college-stores" element={<LazyRoute component={CollegeStoresPage} />} />
                     <Route path="store/central-stores" element={<LazyRoute component={CentralStoresPage} />} />
                     <Route path="store/central-inventory" element={<LazyRoute component={CentralInventoryPage} />} />
                     <Route path="store/material-issues" element={<LazyRoute component={MaterialIssuesPage} />} />

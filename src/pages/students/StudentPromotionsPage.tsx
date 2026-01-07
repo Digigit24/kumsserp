@@ -3,16 +3,22 @@
  * Manages student promotions with CRUD operations
  */
 
+import { isSuperAdmin } from '@/utils/auth.utils';
 import { useState } from 'react';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
-import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Badge } from '../../components/ui/badge';
-import { useStudentPromotions, useDeleteStudentPromotion } from '../../hooks/useStudents';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentPromotion, useStudentPromotions } from '../../hooks/useStudents';
 import type { StudentPromotionFilters, StudentPromotionListItem } from '../../types/students.types';
 import { StudentPromotionForm } from './components/StudentPromotionForm';
 
 export const StudentPromotionsPage = () => {
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState<StudentPromotionFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentPromotions(filters);
   const deleteMutation = useDeleteStudentPromotion();
@@ -73,12 +79,25 @@ export const StudentPromotionsPage = () => {
 
   const confirmDelete = async () => {
     if (promotionToDelete) {
-      await deleteMutation.mutateAsync(promotionToDelete.id);
+      await deleteMutation.mutate(promotionToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setPromotionToDelete(null);
     }
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -94,7 +113,8 @@ export const StudentPromotionsPage = () => {
         onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search promotions..."
         addButtonLabel="Promote Student"
       />
@@ -130,7 +150,7 @@ export const StudentPromotionsPage = () => {
         description={`Are you sure you want to delete the promotion for "${promotionToDelete?.student_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

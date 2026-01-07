@@ -2,16 +2,17 @@
  * Section Form Component - WITH COLLEGE DROPDOWN
  */
 
-import { useState, useEffect } from 'react';
-import { sectionApi, classApi } from '../../../services/academic.service';
-import { useColleges } from '../../../hooks/useCore';
-import { useAuth } from '../../../hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import type { Section, SectionCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { useAuth } from '../../../hooks/useAuth';
+import { classApi, sectionApi } from '../../../services/academic.service';
+import type { SectionCreateInput } from '../../../types/academic.types';
 
 interface SectionFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -26,17 +27,13 @@ export function SectionForm({ mode, sectionId, onSuccess, onCancel }: SectionFor
     const [error, setError] = useState<string | null>(null);
 
     const { user } = useAuth();
-    const userCollegeId = user?.college;
-    const hasOnlyOneCollege = !!userCollegeId;
-
-    // Fetch colleges
-    const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
-
-    const [selectedCollege, setSelectedCollege] = useState<number>(hasOnlyOneCollege ? userCollegeId : 0);
+    // Use standard CollegeField logic instead of custom manual selection
+    const [selectedCollege, setSelectedCollege] = useState<number>(getCurrentUserCollege(user as any) || 0);
     const [classes, setClasses] = useState<any[]>([]);
     const [allClasses, setAllClasses] = useState<any[]>([]);
 
     const [formData, setFormData] = useState<SectionCreateInput>({
+        college: getCurrentUserCollege(user as any) || 0,
         class_obj: 0,
         name: '',
         max_students: 60,
@@ -102,8 +99,8 @@ export function SectionForm({ mode, sectionId, onSuccess, onCancel }: SectionFor
     const handleCollegeChange = (collegeId: string) => {
         const id = parseInt(collegeId);
         setSelectedCollege(id);
-        // Reset class selection when college changes
-        setFormData({ ...formData, class_obj: 0 });
+        // Reset class selection AND update formData college
+        setFormData({ ...formData, college: id, class_obj: 0 });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -182,46 +179,21 @@ export function SectionForm({ mode, sectionId, onSuccess, onCancel }: SectionFor
                 </div>
             )}
 
-            {/* STEP 1: Select College */}
-            {!hasOnlyOneCollege && (
-                <div className="space-y-2 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
-                    <Label className="text-base font-semibold">
-                        Step 1: Select College <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                        value={selectedCollege?.toString()}
-                        onValueChange={handleCollegeChange}
-                        disabled={isViewMode || mode === 'edit'}
-                    >
-                        <SelectTrigger className="bg-background">
-                            <SelectValue placeholder="Choose a college first" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {collegesData?.results.length === 0 ? (
-                                <div className="p-2 text-sm text-muted-foreground">
-                                    No colleges available
-                                </div>
-                            ) : (
-                                collegesData?.results.map((college) => (
-                                    <SelectItem key={college.id} value={college.id.toString()}>
-                                        {college.name}
-                                    </SelectItem>
-                                ))
-                            )}
-                        </SelectContent>
-                    </Select>
-                    {!selectedCollege && mode === 'create' && (
-                        <p className="text-xs text-amber-600">
-                            ⚠️ Select a college to see available classes
-                        </p>
-                    )}
-                    {selectedCollege && (
-                        <p className="text-xs text-green-600">
-                            ✓ College selected - {classes.length} classes available
-                        </p>
-                    )}
-                </div>
-            )}
+            {/* College Selection (Super Admin) - Step 1 */}
+            <div className="space-y-2">
+                <Label className="text-base font-semibold">Step 1: College</Label>
+                <CollegeField
+                    value={selectedCollege || ''}
+                    onChange={(val) => {
+                        handleCollegeChange(val.toString());
+                    }}
+                />
+                {!selectedCollege && mode === 'create' && (
+                    <p className="text-xs text-amber-600 mt-1">
+                        ⚠️ Select a college to see available classes
+                    </p>
+                )}
+            </div>
 
             {/* STEP 2: Select Class */}
             <div className="space-y-2">

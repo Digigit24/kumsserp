@@ -4,8 +4,9 @@
  */
 
 import { useAuth } from '@/hooks/useAuth';
-import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { getCurrentUserCollege, isSuperAdmin } from '@/utils/auth.utils';
 import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -33,7 +34,7 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
     const { data: sessionsData } = useAcademicSessions({ page_size: 100 });
 
     const [formData, setFormData] = useState<ClassCreateInput>({
-        college: getCurrentUserCollege(user) || 0,
+        college: getCurrentUserCollege(user as any) || 0,
         program: 0,
         academic_session: 0,
         name: '',
@@ -47,7 +48,7 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
         fetchPrograms();
         // Update college if user loads late
         if (!formData.college && mode === 'create') {
-            setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user) || 0 }));
+            setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user as any) || 0 }));
         }
     }, [user, mode]);
 
@@ -133,7 +134,7 @@ export function ClassForm({ mode, classId, onSuccess, onCancel }: ClassFormProps
             />
 
             {/* ✅ Show college info for debugging (optional - remove in production) */}
-            {mode === 'create' && isSuperAdmin(user) && (
+            {mode === 'create' && isSuperAdmin(user as any) && (
                 <div className="rounded-md bg-muted p-3 text-sm">
                     <p className="text-muted-foreground">College ID: {formData.college}</p>
                 </div>

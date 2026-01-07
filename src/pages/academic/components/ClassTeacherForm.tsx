@@ -3,17 +3,20 @@
  * Enhanced with section support and better UX
  */
 
-import { useState, useEffect } from 'react';
-import { classTeacherApi, classApi, sectionApi } from '../../../services/academic.service';
-import { userApi } from '../../../services/accounts.service';
-import { useAcademicSessions } from '../../../hooks/useCore';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import type { ClassTeacher, ClassTeacherCreateInput } from '../../../types/academic.types';
+import { Switch } from '../../../components/ui/switch';
+import { useAcademicSessions } from '../../../hooks/useCore';
+import { classApi, classTeacherApi, sectionApi } from '../../../services/academic.service';
+import { userApi } from '../../../services/accounts.service';
+import type { ClassTeacherCreateInput } from '../../../types/academic.types';
 import type { UserListItem } from '../../../types/accounts.types';
 
 interface ClassTeacherFormProps {
@@ -33,6 +36,7 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
     const [loadingSections, setLoadingSections] = useState(false);
     const [loadingTeachers, setLoadingTeachers] = useState(false);
 
+    const { user } = useAuth();
     const { data: sessionsData, isLoading: isLoadingSessions } = useAcademicSessions({ page_size: 100 });
 
     const [formData, setFormData] = useState<ClassTeacherCreateInput>({
@@ -42,6 +46,7 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
         academic_session: 0,
         assigned_from: new Date().toISOString().split('T')[0],
         is_active: true,
+        college: getCurrentUserCollege(user as any) || 0,
     });
 
     useEffect(() => {
@@ -196,6 +201,17 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
                 </div>
             )}
 
+            {/* College (Super Admin Only) */}
+            <CollegeField
+                value={formData.college || ''}
+                onChange={(val) => {
+                    setFormData({ ...formData, college: Number(val), class_obj: 0, section: 0 });
+                    setClasses([]); // Clear classes when college changes
+                    setSections([]);
+                }}
+                className="mb-4"
+            />
+
             {/* Class Selection */}
             <div className="space-y-2">
                 <Label htmlFor="class">
@@ -293,8 +309,8 @@ export function ClassTeacherForm({ mode, classTeacherId, onSuccess, onCancel }: 
                     <SelectTrigger id="teacher">
                         <SelectValue placeholder={
                             loadingTeachers ? "Loading teachers..." :
-                            teachers.length === 0 ? "No teachers available" :
-                            "Select teacher"
+                                teachers.length === 0 ? "No teachers available" :
+                                    "Select teacher"
                         } />
                     </SelectTrigger>
                     <SelectContent>

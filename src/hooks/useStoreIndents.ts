@@ -204,7 +204,34 @@ export const useSubmitStoreIndent = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       storeIndentsApi.submit(id, data),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData(storeIndentKeys.lists());
+      const previousDetail = queryClient.getQueryData(storeIndentKeys.detail(id));
+
+      queryClient.setQueriesData({ queryKey: storeIndentKeys.lists() }, (old: any) => {
+        if (!old || !old.results) return old;
+        return {
+          ...old,
+          results: old.results.map((item: any) =>
+            item.id === id ? { ...item, status: "pending_college_approval" } : item
+          ),
+        };
+      });
+
+      return { previousList, previousDetail };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(storeIndentKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(storeIndentKeys.detail(newTodo.id), context.previousDetail);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: storeIndentKeys.detail(variables.id),
@@ -226,7 +253,34 @@ export const useCollegeAdminApprove = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       storeIndentsApi.collegeAdminApprove(id, data),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData(storeIndentKeys.lists());
+      const previousDetail = queryClient.getQueryData(storeIndentKeys.detail(id));
+
+      queryClient.setQueriesData({ queryKey: storeIndentKeys.lists() }, (old: any) => {
+        if (!old || !old.results) return old;
+        return {
+          ...old,
+          results: old.results.map((item: any) =>
+            item.id === id ? { ...item, status: "pending_super_admin" } : item
+          ),
+        };
+      });
+
+      return { previousList, previousDetail };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(storeIndentKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(storeIndentKeys.detail(newTodo.id), context.previousDetail);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: storeIndentKeys.detail(variables.id),
@@ -240,7 +294,34 @@ export const useCollegeAdminReject = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       storeIndentsApi.collegeAdminReject(id, data),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData(storeIndentKeys.lists());
+      const previousDetail = queryClient.getQueryData(storeIndentKeys.detail(id));
+
+      queryClient.setQueriesData({ queryKey: storeIndentKeys.lists() }, (old: any) => {
+        if (!old || !old.results) return old;
+        return {
+          ...old,
+          results: old.results.map((item: any) =>
+            item.id === id ? { ...item, status: "rejected" } : item
+          ),
+        };
+      });
+
+      return { previousList, previousDetail };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(storeIndentKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(storeIndentKeys.detail(newTodo.id), context.previousDetail);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: storeIndentKeys.detail(variables.id),
@@ -262,7 +343,34 @@ export const useSuperAdminApprove = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       storeIndentsApi.superAdminApprove(id, data),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData(storeIndentKeys.lists());
+      const previousDetail = queryClient.getQueryData(storeIndentKeys.detail(id));
+
+      queryClient.setQueriesData({ queryKey: storeIndentKeys.lists() }, (old: any) => {
+        if (!old || !old.results) return old;
+        return {
+          ...old,
+          results: old.results.map((item: any) =>
+            item.id === id ? { ...item, status: "super_admin_approved" } : item
+          ),
+        };
+      });
+
+      return { previousList, previousDetail };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(storeIndentKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(storeIndentKeys.detail(newTodo.id), context.previousDetail);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: storeIndentKeys.detail(variables.id),
@@ -276,7 +384,34 @@ export const useSuperAdminReject = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       storeIndentsApi.superAdminReject(id, data),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: storeIndentKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData(storeIndentKeys.lists());
+      const previousDetail = queryClient.getQueryData(storeIndentKeys.detail(id));
+
+      queryClient.setQueriesData({ queryKey: storeIndentKeys.lists() }, (old: any) => {
+        if (!old || !old.results) return old;
+        return {
+          ...old,
+          results: old.results.map((item: any) =>
+            item.id === id ? { ...item, status: "rejected" } : item
+          ),
+        };
+      });
+
+      return { previousList, previousDetail };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(storeIndentKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(storeIndentKeys.detail(newTodo.id), context.previousDetail);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: storeIndentKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: storeIndentKeys.detail(variables.id),

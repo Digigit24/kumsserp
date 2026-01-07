@@ -3,21 +3,24 @@
  * Shows fulfillment queue and dispatch tracking
  */
 
+import { CheckCircle, Eye, FileText, Package, Plus, Truck } from 'lucide-react';
 import { useState } from 'react';
-import { Truck, Package, CheckCircle, FileText, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
+import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
 import { Card, CardContent } from '../../components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
+import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import {
-  useMaterialIssues,
-  useDispatchMaterialIssue,
   useConfirmReceipt,
+  useCreateMaterialIssue,
+  useDispatchMaterialIssue,
+  useMaterialIssues
 } from '../../hooks/useMaterialIssues';
 import { useStoreIndents } from '../../hooks/useStoreIndents';
-import { Badge } from '../../components/ui/badge';
+import { MaterialIssueForm } from './forms/MaterialIssueForm';
 import { PrepareDispatchDialog } from './PrepareDispatchDialog';
 
 // Kanban columns for MIN statuses
@@ -54,18 +57,35 @@ export const TransfersWorkflowPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
-  const { data, isLoading, refetch } = useMaterialIssues({ 
+  const { data, isLoading, refetch } = useMaterialIssues({
     ordering: '-created_at',
     page_size: 1000
   });
 
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
-    status: 'super_admin_approved'
+    status: 'approved'
   });
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
+  const createMutation = useCreateMaterialIssue();
+
+  const handleCreate = () => {
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleSubmitNew = async (data: any) => {
+    try {
+      await createMutation.mutateAsync(data);
+      toast.success('Material Issue created successfully');
+      setIsCreateDialogOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create Material Issue');
+    }
+  };
 
   const handleDispatch = async (min: any) => {
     try {
@@ -84,7 +104,7 @@ export const TransfersWorkflowPage = () => {
 
   const handleConfirmReceipt = async (min: any) => {
     if (confirmingId) return; // Prevent multiple clicks
-    
+
     try {
       setConfirmingId(min.id);
       await confirmReceiptMutation.mutateAsync({
@@ -171,6 +191,10 @@ export const TransfersWorkflowPage = () => {
             Track material issue notes from central stores to colleges
           </p>
         </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Material Issue
+        </Button>
       </div>
 
       {/* Filters */}
@@ -200,6 +224,20 @@ export const TransfersWorkflowPage = () => {
 
       {/* Kanban Board */}
       <KanbanBoard columns={MIN_COLUMNS} cards={kanbanCards} isLoading={isLoading} />
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Material Issue Note</DialogTitle>
+          </DialogHeader>
+          <MaterialIssueForm
+            onSubmit={handleSubmitNew}
+            onCancel={() => setIsCreateDialogOpen(false)}
+            isSubmitting={createMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Fulfillment Queue Section */}
       <div className="mt-12">
@@ -236,8 +274,8 @@ export const TransfersWorkflowPage = () => {
                           indent.priority === 'urgent'
                             ? 'destructive'
                             : indent.priority === 'high'
-                            ? 'outline'
-                            : 'secondary'
+                              ? 'outline'
+                              : 'secondary'
                         }
                         className="capitalize"
                       >

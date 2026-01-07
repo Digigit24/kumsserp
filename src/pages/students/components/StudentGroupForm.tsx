@@ -3,14 +3,16 @@
  * Used for creating and editing student groups
  */
 
-import { useState, useEffect } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { studentGroupApi } from '../../../services/students.service';
-import type { StudentGroup, StudentGroupCreateInput, StudentGroupUpdateInput } from '../../../types/students.types';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
-import { getCurrentUser } from '../../../services/auth.service';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { useAuth } from '../../../hooks/useAuth';
+import { studentGroupApi } from '../../../services/students.service';
+import type { StudentGroup, StudentGroupCreateInput, StudentGroupUpdateInput } from '../../../types/students.types';
 
 interface StudentGroupFormProps {
   mode: 'create' | 'edit';
@@ -23,9 +25,10 @@ export const StudentGroupForm = ({ mode, group, onSuccess, onCancel }: StudentGr
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<StudentGroupCreateInput>({
-    college: 0,
+    college: getCurrentUserCollege(user as any) || 0,
     name: '',
     description: '',
   });
@@ -42,11 +45,9 @@ export const StudentGroupForm = ({ mode, group, onSuccess, onCancel }: StudentGr
       });
     } else if (mode === 'create') {
       // Get college ID from current user
-      const user = getCurrentUser();
-      const collegeId = user?.college || 0;
-      setFormData(prev => ({ ...prev, college: collegeId }));
+      setFormData(prev => ({ ...prev, college: getCurrentUserCollege(user as any) || 0 }));
     }
-  }, [mode, group]);
+  }, [mode, group, user]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -127,6 +128,11 @@ export const StudentGroupForm = ({ mode, group, onSuccess, onCancel }: StudentGr
       )}
 
       <div className="space-y-4">
+        <CollegeField
+          value={formData.college}
+          onChange={(val) => handleChange('college', Number(val))}
+          error={errors.college}
+        />
         {/* Group Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-2">

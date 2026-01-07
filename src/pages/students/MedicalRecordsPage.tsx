@@ -3,27 +3,33 @@
  * Displays all student medical records with CRUD operations
  */
 
+import { isSuperAdmin } from '@/utils/auth.utils';
+import { isAdmin, isTeacher } from '@/utils/permissions';
+import { Heart } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudents } from '../../hooks/useStudents';
-import { useMedicalRecords, useCreateMedicalRecord, useDeleteMedicalRecord } from '../../hooks/useMedicalRecords';
-import { DataTable, Column } from '../../components/common/DataTable';
+import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Textarea } from '../../components/ui/textarea';
-import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Heart } from 'lucide-react';
+import { Textarea } from '../../components/ui/textarea';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useCreateMedicalRecord, useDeleteMedicalRecord, useMedicalRecords } from '../../hooks/useMedicalRecords';
+import { useStudents } from '../../hooks/useStudents';
 import type { StudentMedicalRecord } from '../../types/students.types';
-import { isAdmin, isTeacher } from '@/utils/permissions';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 export const MedicalRecordsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useMedicalRecords(filters);
   const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
@@ -183,6 +189,19 @@ export const MedicalRecordsPage = () => {
     }
   };
 
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <DataTable
@@ -195,7 +214,8 @@ export const MedicalRecordsPage = () => {
         onRefresh={refetch}
         onAdd={canManageRecords ? handleAdd : undefined}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search by student, blood group..."
         addButtonLabel="Add Medical Record"
       />

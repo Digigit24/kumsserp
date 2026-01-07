@@ -3,15 +3,17 @@
  * Enhanced with proper field mapping and better UX
  */
 
-import { useState, useEffect } from 'react';
-import { classTimeApi } from '../../../services/academic.service';
-import { useAuth } from '../../../hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Clock, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
-import { AlertCircle, Loader2, Clock } from 'lucide-react';
-import type { ClassTime, ClassTimeCreateInput } from '../../../types/academic.types';
+import { useAuth } from '../../../hooks/useAuth';
+import { classTimeApi } from '../../../services/academic.service';
+import type { ClassTimeCreateInput } from '../../../types/academic.types';
 
 interface ClassTimeFormProps {
     mode: 'view' | 'create' | 'edit';
@@ -26,7 +28,7 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
     const [error, setError] = useState<string | null>(null);
 
     const { user } = useAuth();
-    const collegeId = user?.college || user?.user_roles?.[0]?.college_id || 0;
+    const collegeId = getCurrentUserCollege(user as any) || 0;
 
     const [formData, setFormData] = useState<ClassTimeCreateInput>({
         college: collegeId,
@@ -147,6 +149,13 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
                     </div>
                 </div>
             )}
+
+            {/* College (Super Admin Only) */}
+            <CollegeField
+                value={formData.college}
+                onChange={(val) => setFormData({ ...formData, college: Number(val) })}
+                className="mb-4"
+            />
 
             {/* Period Number */}
             <div className="space-y-2">

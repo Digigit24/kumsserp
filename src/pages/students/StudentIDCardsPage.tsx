@@ -3,16 +3,22 @@
  * Manages student ID cards with CRUD operations
  */
 
+import { isSuperAdmin } from '@/utils/auth.utils';
 import { useState } from 'react';
-import { Column, DataTable } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
+import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { useStudentIDCards, useDeleteStudentIDCard } from '../../hooks/useStudents';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeleteStudentIDCard, useStudentIDCards } from '../../hooks/useStudents';
 import type { StudentIDCardFilters, StudentIDCardListItem } from '../../types/students.types';
 import { StudentIDCardForm } from './components/StudentIDCardForm';
 
 export const StudentIDCardsPage = () => {
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState<StudentIDCardFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = useStudentIDCards(filters);
   const deleteMutation = useDeleteStudentIDCard();
@@ -62,7 +68,7 @@ export const StudentIDCardsPage = () => {
       render: (card) => {
         const validDate = new Date(card.valid_until);
         const isExpired = validDate < new Date();
-        
+
         if (!card.is_active) {
           return <Badge variant="secondary">Inactive</Badge>;
         }
@@ -93,12 +99,25 @@ export const StudentIDCardsPage = () => {
 
   const confirmDelete = async () => {
     if (idCardToDelete) {
-      await deleteMutation.mutateAsync(idCardToDelete.id);
+      await deleteMutation.mutate(idCardToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setIdCardToDelete(null);
     }
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -114,7 +133,8 @@ export const StudentIDCardsPage = () => {
         onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search ID cards..."
         addButtonLabel="Issue ID Card"
       />
@@ -126,8 +146,8 @@ export const StudentIDCardsPage = () => {
           sidebarMode === 'create'
             ? 'Issue ID Card'
             : sidebarMode === 'edit'
-            ? 'Edit ID Card'
-            : 'ID Card Details'
+              ? 'Edit ID Card'
+              : 'ID Card Details'
         }
         mode={sidebarMode}
       >
@@ -150,7 +170,7 @@ export const StudentIDCardsPage = () => {
         description={`Are you sure you want to delete the ID card "${idCardToDelete?.card_number}" for "${idCardToDelete?.student_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );

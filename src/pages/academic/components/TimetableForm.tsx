@@ -3,14 +3,17 @@
  * Enhanced with proper field mapping and better UX
  */
 
-import { useState, useEffect } from 'react';
-import { timetableApi, classApi, sectionApi, subjectAssignmentApi, classTimeApi, classroomApi } from '../../../services/academic.service';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Calendar, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { AlertCircle, Loader2, Calendar, Clock } from 'lucide-react';
+import { Switch } from '../../../components/ui/switch';
+import { classApi, classTimeApi, classroomApi, sectionApi, subjectAssignmentApi, timetableApi } from '../../../services/academic.service';
 import type { TimetableCreateInput } from '../../../types/academic.types';
 
 interface TimetableFormProps {
@@ -30,18 +33,6 @@ const DAYS_OF_WEEK = [
     { value: 6, label: 'Sunday' },
 ];
 
-// Helper function to get college ID from logged-in user
-const getCollegeId = (): number => {
-    try {
-        const storedUser = localStorage.getItem('kumss_user');
-        if (!storedUser) return 0;
-        const user = JSON.parse(storedUser);
-        return user.college || 0;
-    } catch {
-        return 0;
-    }
-};
-
 export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: TimetableFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
@@ -56,8 +47,9 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
     const [loadingSections, setLoadingSections] = useState(false);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
 
+    const { user } = useAuth();
     const [formData, setFormData] = useState<TimetableCreateInput>({
-        college: getCollegeId(), // ✅ Get from logged-in user
+        college: getCurrentUserCollege(user as any) || 0,
         class_obj: 0,
         section: 0,
         subject_assignment: 0,
@@ -168,7 +160,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
             setIsFetching(true);
             const data = await timetableApi.get(timetableId);
             setFormData({
-                college: data.college || getCollegeId(), // ✅ Use from data or fallback
+                college: data.college || getCurrentUserCollege(user as any) || 0, // ✅ Use from data or fallback
                 class_obj: data.class_obj,
                 section: data.section,
                 subject_assignment: data.subject_assignment,
@@ -244,7 +236,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
 
     const isViewMode = mode === 'view';
     const selectedClass = classes.find(c => c.id === formData.class_obj);
-    const selectedSection = sections.find(s => s.id === formData.section);
+
     const selectedAssignment = subjectAssignments.find(a => a.id === formData.subject_assignment);
     const selectedTime = classTimes.find(t => t.id === formData.class_time);
     const selectedDay = DAYS_OF_WEEK.find(d => d.value === formData.day_of_week);
@@ -262,6 +254,14 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                     </div>
                 </div>
             )}
+
+            <CollegeField
+                value={formData.college}
+                onChange={(val: number | string) => {
+                    setFormData({ ...formData, college: Number(val), class_obj: 0, section: 0, subject_assignment: 0 });
+                }}
+                className="mb-4"
+            />
 
             {/* Class Selection */}
             <div className="space-y-2">

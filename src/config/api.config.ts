@@ -946,6 +946,16 @@ export const API_ENDPOINTS = {
     markAsRead: (id: number) => `/api/v1/approvals/notifications/${id}/read/`,
   },
 
+  // Store Module - College Stores
+  collegeStores: {
+    list: "/api/v1/store/college-stores/",
+    create: "/api/v1/store/college-stores/",
+    detail: (id: number) => `/api/v1/store/college-stores/${id}/`,
+    update: (id: number) => `/api/v1/store/college-stores/${id}/`,
+    patch: (id: number) => `/api/v1/store/college-stores/${id}/`,
+    delete: (id: number) => `/api/v1/store/college-stores/${id}/`,
+  },
+
   // Store Module - Central Stores
   centralStores: {
     list: "/api/v1/store/central-stores/",

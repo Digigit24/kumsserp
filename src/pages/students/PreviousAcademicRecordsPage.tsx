@@ -4,13 +4,19 @@
  */
 
 import { useState } from 'react';
-import { Column, DataTable } from '../../components/common/DataTable';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
-import { usePreviousAcademicRecords, useDeletePreviousAcademicRecord } from '../../hooks/useStudents';
+import { useAuth } from '../../hooks/useAuth';
+import { useColleges } from '../../hooks/useCore';
+import { useDeletePreviousAcademicRecord, usePreviousAcademicRecords } from '../../hooks/useStudents';
 import type { PreviousAcademicRecordFilters, PreviousAcademicRecordListItem } from '../../types/students.types';
+import { isSuperAdmin } from '../../utils/auth.utils';
 
 export const PreviousAcademicRecordsPage = () => {
+  const { user } = useAuth();
+  const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+
   const [filters, setFilters] = useState<PreviousAcademicRecordFilters>({ page: 1, page_size: 20 });
   const { data, isLoading, error, refetch } = usePreviousAcademicRecords(filters);
   const deleteMutation = useDeletePreviousAcademicRecord();
@@ -64,12 +70,25 @@ export const PreviousAcademicRecordsPage = () => {
 
   const confirmDelete = async () => {
     if (recordToDelete) {
-      await deleteMutation.mutateAsync(recordToDelete.id);
+      await deleteMutation.mutate(recordToDelete.id);
       refetch();
       setDeleteDialogOpen(false);
       setRecordToDelete(null);
     }
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    ...(isSuperAdmin(user as any) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: [
+        { value: '', label: 'All Colleges' },
+        ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
+      ],
+    }] : []),
+  ];
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
@@ -83,7 +102,8 @@ export const PreviousAcademicRecordsPage = () => {
         onRefresh={refetch}
         onDelete={handleDelete}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={setFilters as any}
+        filterConfig={filterConfig}
         searchPlaceholder="Search academic records..."
       />
 
@@ -95,7 +115,7 @@ export const PreviousAcademicRecordsPage = () => {
         description={`Are you sure you want to delete the ${recordToDelete?.level} record for "${recordToDelete?.student_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={confirmDelete}
-        loading={deleteMutation.isPending}
+        loading={deleteMutation.isLoading}
       />
     </div>
   );
