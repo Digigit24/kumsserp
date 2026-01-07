@@ -16,12 +16,11 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRoute = () => {
-  // 🔥 DEV MODE BYPASS (until login API is ready)
-  if (import.meta.env.DEV) {
-    return <Outlet />;
-  }
-
-  const token = localStorage.getItem("access");
+  /* 
+   * Checking for the correct token key used elsewhere in the app (useLogin.ts)
+   * Removing DEV bypass to ensure consistent auth behavior
+   */
+  const token = localStorage.getItem("kumss_auth_token");
 
   if (!token) {
     return <Navigate to="/login" replace />;

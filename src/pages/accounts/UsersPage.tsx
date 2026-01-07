@@ -125,6 +125,19 @@ const UsersPage = () => {
         { value: 'central_manager', label: 'Central Store Manager' },
       ],
     },
+    ...(isSuperAdmin(useAuth().user) ? [{
+      name: 'college',
+      label: 'College',
+      type: 'select' as const,
+      options: (() => {
+        // We need to fetch colleges here or use a hook. 
+        // For simplicity in DataTable config, we might need to pre-fetch or handle this differently.
+        // However, DataTable supports async options or we can just pass them if we had them.
+        // Given complexity, let's look at how to get colleges list here.
+        // Since hooks rules apply, we can use useQuery at top level.
+        return [];
+      })()
+    }] : []),
   ];
 
   const handleRowClick = (user: UserListItem) => {

@@ -1,6 +1,6 @@
 import { API_BASE_URL, getDefaultHeaders } from "@/config/api.config";
-import axios from "axios";
 import { useAuthStore } from "@/store/auth";
+import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -35,7 +35,10 @@ function handleAuthFailure(errorMessage?: string) {
   console.log("[apiClient] All auth data cleared. Redirecting to login...");
 
   // Redirect to login page
-  window.location.href = "/login";
+  // Redirect to login page if not already there
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
 }
 
 // Add request interceptor to include auth token in every request

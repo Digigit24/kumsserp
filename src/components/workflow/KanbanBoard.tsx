@@ -3,12 +3,12 @@
  * Displays items in columns based on status
  */
 
+import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { LucideIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
 
 export interface KanbanColumn {
   id: string;
@@ -69,126 +69,148 @@ export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No item
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {columns.map(column => {
-        const columnCards = getCardsForColumn(column.status);
+    <>
+      <style>
+        {`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d1d5db; /* gray-300 */
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track:hover {
+          background: #f3f4f6; /* gray-100 */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af; /* gray-400 */
+        }
+        `}
+      </style>
+      <div className="flex gap-4 overflow-x-auto pb-4 h-full items-start">
+        {columns.map(column => {
+          const columnCards = getCardsForColumn(column.status);
 
-        return (
-          <div key={column.id} className="flex-shrink-0 w-80">
-            <div className={cn('rounded-t-lg p-3 border-t border-x', column.color)}>
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm">{column.title}</h3>
-                <Badge variant="secondary" className="ml-2">
-                  {columnCards.length}
-                </Badge>
+          return (
+            <div key={column.id} className="flex-shrink-0 w-80 flex flex-col max-h-[calc(100vh-220px)]">
+              <div className={cn('rounded-t-lg p-3 border-t border-x z-10', column.color)}>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm">{column.title}</h3>
+                  <Badge variant="secondary" className="ml-2">
+                    {columnCards.length}
+                  </Badge>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-muted/30 rounded-b-lg border p-2 min-h-[400px] space-y-2">
-              <AnimatePresence>
-                {columnCards.length === 0 ? (
-                  <div className="text-center text-muted-foreground text-sm py-8">
-                    No items
-                  </div>
-                ) : (
-                  columnCards.map(card => (
-                    <motion.div
-                      key={card.id}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Card
-                        className={cn(
-                          'cursor-pointer hover:shadow-md transition-shadow',
-                          card.onCardClick && 'hover:border-primary'
-                        )}
-                        onClick={card.onCardClick}
+              <div className="bg-muted/30 rounded-b-lg border-x border-b p-2 space-y-2 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                <AnimatePresence>
+                  {columnCards.length === 0 ? (
+                    <div className="text-center text-muted-foreground text-sm py-8">
+                      No items
+                    </div>
+                  ) : (
+                    columnCards.map(card => (
+                      <motion.div
+                        key={card.id}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-semibold">{card.title}</CardTitle>
-                          {card.subtitle && (
-                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+                        <Card
+                          className={cn(
+                            'cursor-pointer hover:shadow-md transition-shadow',
+                            card.onCardClick && 'hover:border-primary'
                           )}
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          {/* Badges */}
-                          {card.badges && card.badges.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {card.badges.map((badge, idx) => (
-                                <Badge key={idx} variant={badge.variant} className="text-xs">
-                                  {badge.label}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Indicators */}
-                          {card.indicators && card.indicators.length > 0 && (
-                            <div className="space-y-1">
-                              {card.indicators.map((indicator, idx) => {
-                                const Icon = indicator.icon;
-                                return (
-                                  <div key={idx} className="flex items-center gap-2 text-xs">
-                                    <Icon className={cn('h-3 w-3', indicator.color)} />
-                                    <span className="text-muted-foreground">{indicator.label}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          <div className="flex flex-col gap-1 pt-2">
-                            {card.primaryAction && (
-                              <Button
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  card.primaryAction?.onClick();
-                                }}
-                                disabled={card.primaryAction.disabled || card.primaryAction.loading}
-                                loading={card.primaryAction.loading}
-                                className="w-full"
-                              >
-                                {card.primaryAction.label}
-                              </Button>
+                          onClick={card.onCardClick}
+                        >
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-semibold">{card.title}</CardTitle>
+                            {card.subtitle && (
+                              <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+                            )}
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {/* Badges */}
+                            {card.badges && card.badges.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {card.badges.map((badge, idx) => (
+                                  <Badge key={idx} variant={badge.variant} className="text-xs">
+                                    {badge.label}
+                                  </Badge>
+                                ))}
+                              </div>
                             )}
 
-                            {card.secondaryActions && card.secondaryActions.length > 0 && (
-                              <div className="flex gap-1">
-                                {card.secondaryActions.map((action, idx) => {
-                                  const Icon = action.icon;
+                            {/* Indicators */}
+                            {card.indicators && card.indicators.length > 0 && (
+                              <div className="space-y-1">
+                                {card.indicators.map((indicator, idx) => {
+                                  const Icon = indicator.icon;
                                   return (
-                                    <Button
-                                      key={idx}
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        action.onClick();
-                                      }}
-                                      className="flex-1"
-                                    >
-                                      {Icon && <Icon className="h-3 w-3 mr-1" />}
-                                      {action.label}
-                                    </Button>
+                                    <div key={idx} className="flex items-center gap-2 text-xs">
+                                      <Icon className={cn('h-3 w-3', indicator.color)} />
+                                      <span className="text-muted-foreground">{indicator.label}</span>
+                                    </div>
                                   );
                                 })}
                               </div>
                             )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-1 pt-2">
+                              {card.primaryAction && (
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    card.primaryAction?.onClick();
+                                  }}
+                                  disabled={card.primaryAction.disabled || card.primaryAction.loading}
+                                  loading={card.primaryAction.loading}
+                                  className="w-full"
+                                >
+                                  {card.primaryAction.label}
+                                </Button>
+                              )}
+
+                              {card.secondaryActions && card.secondaryActions.length > 0 && (
+                                <div className="flex gap-1">
+                                  {card.secondaryActions.map((action, idx) => {
+                                    const Icon = action.icon;
+                                    return (
+                                      <Button
+                                        key={idx}
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          action.onClick();
+                                        }}
+                                        className="flex-1"
+                                      >
+                                        {Icon && <Icon className="h-3 w-3 mr-1" />}
+                                        {action.label}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </>
   );
 };

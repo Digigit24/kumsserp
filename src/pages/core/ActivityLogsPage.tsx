@@ -8,16 +8,25 @@ import { useState } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { useDebounce } from '../../hooks/useDebounce';
 import { activityLogApi } from '../../services/core.service';
 
 const ActivityLogsPage = () => {
   const [filters, setFilters] = useState<any>({ page: 1, page_size: 20, ordering: '-timestamp' });
+
+  // Destructure search from filters for debouncing only the search term
+  const { search, ...restFilters } = filters;
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Combine debounced search with other filters for the query
+  const queryFilters = { ...restFilters, ...(debouncedSearch ? { search: debouncedSearch } : {}) };
+
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['activity-logs', filters],
-    queryFn: () => activityLogApi.list(filters),
+    queryKey: ['activity-logs', queryFilters],
+    queryFn: () => activityLogApi.list(queryFilters),
   });
 
   const { data: selected } = useQuery({

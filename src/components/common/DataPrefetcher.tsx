@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { coreKeys } from '../../hooks/useCore';
-import { collegeApi, academicYearApi } from '../../services/core.service';
+import { academicYearApi, collegeApi } from '../../services/core.service';
 
 /**
  * Component to prefetch common data for the application
@@ -12,6 +12,10 @@ export const DataPrefetcher = () => {
 
   useEffect(() => {
     const prefetchCommonData = async () => {
+      // Check for token first
+      const token = localStorage.getItem('kumss_auth_token');
+      if (!token) return;
+
       // Prefetch Colleges (Dropdowns everywhere)
       await queryClient.prefetchQuery({
         queryKey: coreKeys.collegesList(),

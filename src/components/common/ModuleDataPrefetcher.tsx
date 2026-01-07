@@ -1,25 +1,25 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 
 // Import Service APIs directly to avoid circular dependencies with hooks
-import { 
-  storeIndentsApi, 
-  materialIssuesApi, 
-  centralStoreApi
-} from '../../services/store.service';
-import { 
-  teachersApi, 
-  leaveApplicationsApi
+import {
+  leaveApplicationsApi,
+  teachersApi
 } from '../../services/hr.service';
 import {
   booksApi,
   libraryMembersApi
 } from '../../services/library.service';
+import {
+  centralStoreApi,
+  materialIssuesApi,
+  storeIndentsApi
+} from '../../services/store.service';
 
 // Import Keys from Hooks (or define them here if not exported)
-import { storeIndentKeys } from '../../hooks/useStoreIndents';
 import { materialIssueKeys } from '../../hooks/useMaterialIssues';
+import { storeIndentKeys } from '../../hooks/useStoreIndents';
 
 /**
  * ModuleDataPrefetcher
@@ -33,15 +33,19 @@ export const ModuleDataPrefetcher = () => {
 
   useEffect(() => {
     const prefetchModuleData = async () => {
+      // Check for token first
+      const token = localStorage.getItem('kumss_auth_token');
+      if (!token) return;
+
       // 1. STORE MODULE
       if (pathname.startsWith('/store')) {
         console.log('Prefetching Store Module Data...');
-        
+
         // Prefetch Store Indents (Matches StoreIndentsPage default filters)
         queryClient.prefetchQuery({
           queryKey: storeIndentKeys.list({ page: 1, page_size: 10 }),
           queryFn: () => storeIndentsApi.list({ page: 1, page_size: 10 }),
-          staleTime: 5 * 60 * 1000, 
+          staleTime: 5 * 60 * 1000,
         });
 
         // Prefetch Material Issues (Matches TransfersWorkflowPage default filters)
@@ -55,7 +59,7 @@ export const ModuleDataPrefetcher = () => {
         queryClient.prefetchQuery({
           queryKey: ['central-stores', 'list'],
           queryFn: () => centralStoreApi.list(),
-          staleTime: 10 * 60 * 1000, 
+          staleTime: 10 * 60 * 1000,
         });
       }
 

@@ -2,21 +2,22 @@
  * Store Indent Form - Create/Edit store indents
  */
 
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
-import { Switch } from '../../../components/ui/switch';
-import { Textarea } from '../../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { CollegeDropdown } from '../../../components/common/CollegeDropdown';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
 import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Switch } from '../../../components/ui/switch';
+import { Textarea } from '../../../components/ui/textarea';
 
 interface StoreIndentFormProps {
   indent?: any;
@@ -25,6 +26,8 @@ interface StoreIndentFormProps {
 }
 
 export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormProps) => {
+  const { user } = useAuth();
+
   const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm({
     defaultValues: indent || {
       indent_number: '',
@@ -36,7 +39,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
       rejection_reason: '',
       attachments: '',
       remarks: '',
-      college: '',
+      college: getCurrentUserCollege(user) || '',
       requesting_store_manager: '',
       central_store: '',
       approval_request: '',
@@ -192,13 +195,13 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
               <Controller
                 name="college"
                 control={control}
-                rules={{ required: 'College is required' }}
+                rules={{ required: isSuperAdmin(user) ? 'College is required' : false }}
                 render={({ field }) => (
-                  <CollegeDropdown
+                  <CollegeField
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.college?.message}
+                    error={errors.college?.message as string}
                   />
                 )}
               />
