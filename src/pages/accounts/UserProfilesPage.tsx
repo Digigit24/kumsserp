@@ -73,7 +73,7 @@ export const UserProfilesPage = () => {
       {/* Error State */}
       {error && (
         <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-6">
-          <strong>Error:</strong> {error}
+          <strong>Error:</strong> {(error as any) instanceof Error ? (error as any).message : String(error)}
         </div>
       )}
 

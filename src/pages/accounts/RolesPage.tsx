@@ -132,10 +132,10 @@ const RolesPage = () => {
       <DataTable
         title="Roles & Permissions"
         description="Manage roles and their permissions in the system"
-        data={data}
+        data={data ?? null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}

@@ -11,6 +11,10 @@ import { Badge } from '../../components/ui/badge';
 import { userApi } from '../../services/accounts.service';
 import type { UserFilters, UserListItem } from '../../types/accounts.types';
 import { UserForm } from './components/UserForm';
+import { useAuth } from '../../hooks/useAuth';
+import { User } from '../../types/accounts.types';
+
+const isSuperAdmin = (user: User | null | undefined) => user?.user_type === 'super_admin';
 
 const UsersPage = () => {
   const queryClient = useQueryClient();
@@ -125,16 +129,11 @@ const UsersPage = () => {
         { value: 'central_manager', label: 'Central Store Manager' },
       ],
     },
-    ...(isSuperAdmin(useAuth().user) ? [{
+    ...(isSuperAdmin((useAuth().user) as unknown as User) ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
       options: (() => {
-        // We need to fetch colleges here or use a hook. 
-        // For simplicity in DataTable config, we might need to pre-fetch or handle this differently.
-        // However, DataTable supports async options or we can just pass them if we had them.
-        // Given complexity, let's look at how to get colleges list here.
-        // Since hooks rules apply, we can use useQuery at top level.
         return [];
       })()
     }] : []),
@@ -182,10 +181,10 @@ const UsersPage = () => {
       <DataTable
         title="Users"
         description="Manage users in the system"
-        data={data}
+        data={data ?? null}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}

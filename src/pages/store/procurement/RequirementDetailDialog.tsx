@@ -47,30 +47,18 @@ export const RequirementDetailDialog = ({
     const allSteps: StepperStep[] = [
       {
         id: 'define',
-        title: 'Define Requirements',
+        title: 'Define requirement items',
         description: 'Add items and specifications',
         icon: Package,
         status: requirement.status === 'draft' ? 'current' : 'completed',
       },
       {
-        id: 'submit',
-        title: 'Submit for Approval',
-        description: 'Send to approver',
-        icon: Send,
-        status:
-          requirement.status === 'draft'
-            ? 'upcoming'
-            : requirement.status === 'rejected'
-            ? 'rejected'
-            : 'completed',
-      },
-      {
-        id: 'approval',
-        title: 'Approval',
-        description: 'Waiting for approval',
+        id: 'approvals',
+        title: 'Approvals',
+        description: 'Submit and wait for approval',
         icon: ThumbsUp,
         status:
-          requirement.status === 'submitted'
+          requirement.status === 'submitted' || requirement.status === 'pending_approval'
             ? 'current'
             : requirement.status === 'rejected'
             ? 'rejected'
@@ -80,7 +68,7 @@ export const RequirementDetailDialog = ({
       },
       {
         id: 'quotations',
-        title: 'Collect Quotations',
+        title: 'Collect quotations',
         description: 'Get quotes from vendors',
         icon: DollarSign,
         status:
@@ -92,7 +80,7 @@ export const RequirementDetailDialog = ({
       },
       {
         id: 'select_quote',
-        title: 'Select Quotation',
+        title: 'Select quotation',
         description: 'Choose best quote',
         icon: CheckCircle,
         status:
@@ -114,7 +102,7 @@ export const RequirementDetailDialog = ({
       },
       {
         id: 'receive_grn',
-        title: 'Receive Goods (GRN)',
+        title: 'Receive GRN',
         description: 'Accept delivery',
         icon: Truck,
         status:
@@ -126,7 +114,7 @@ export const RequirementDetailDialog = ({
       },
       {
         id: 'post_inventory',
-        title: 'Post to Inventory',
+        title: 'Post to inventory',
         description: 'Update stock levels',
         icon: Package,
         status: requirement.status === 'fulfilled' ? 'completed' : 'upcoming',
