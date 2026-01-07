@@ -15,9 +15,13 @@ import { Input } from '../../components/ui/input';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import {
   useConfirmReceipt,
+<<<<<<< HEAD
   useCreateMaterialIssue,
   useDispatchMaterialIssue,
   useMaterialIssues
+=======
+  usePatchMaterialIssue,
+>>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 } from '../../hooks/useMaterialIssues';
 import { useStoreIndents } from '../../hooks/useStoreIndents';
 import { MaterialIssueForm } from './forms/MaterialIssueForm';
@@ -70,6 +74,7 @@ export const TransfersWorkflowPage = () => {
   });
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
+<<<<<<< HEAD
   const createMutation = useCreateMaterialIssue();
 
   const handleCreate = () => {
@@ -86,19 +91,35 @@ export const TransfersWorkflowPage = () => {
       toast.error(error.message || 'Failed to create Material Issue');
     }
   };
+=======
+  const patchMutation = usePatchMaterialIssue();
+>>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 
   const handleDispatch = async (min: any) => {
     try {
       await dispatchMutation.mutateAsync({
         id: min.id,
-        data: {
-          dispatch_date: new Date().toISOString().split('T')[0],
-        },
+        data: {},
       });
       toast.success('Material dispatched successfully');
       refetch();
     } catch (error: any) {
       toast.error(error.message || 'Failed to dispatch');
+    }
+  };
+
+  const handleStartTransit = async (min: any) => {
+    try {
+      await patchMutation.mutateAsync({
+        id: min.id,
+        data: {
+          status: 'in_transit'
+        },
+      });
+      toast.success('Transit started successfully');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start transit');
     }
   };
 
@@ -131,6 +152,12 @@ export const TransfersWorkflowPage = () => {
       return true;
     })
     .map((min: any) => {
+      const isDispatching = dispatchMutation.isPending && dispatchMutation.variables?.id === min.id;
+      const isConfirming = confirmReceiptMutation.isPending && confirmReceiptMutation.variables?.id === min.id;
+      const isStartingTransit = patchMutation.isPending && patchMutation.variables?.id === min.id;
+      
+      const isActionPending = isDispatching || isConfirming || isStartingTransit;
+
       const card: KanbanCard = {
         id: min.id,
         status: min.status,
@@ -168,13 +195,22 @@ export const TransfersWorkflowPage = () => {
         card.primaryAction = {
           label: 'Dispatch',
           onClick: () => handleDispatch(min),
+          loading: isDispatching,
+          disabled: isActionPending
         };
-      } else if (min.status === 'dispatched' || min.status === 'in_transit') {
+      } else if (min.status === 'dispatched') {
+        card.primaryAction = {
+          label: 'Mark In Transit',
+          onClick: () => handleStartTransit(min),
+          loading: isStartingTransit,
+          disabled: isActionPending
+        };
+      } else if (min.status === 'in_transit') {
         card.primaryAction = {
           label: 'Confirm Receipt',
           onClick: () => handleConfirmReceipt(min),
-          loading: confirmingId === min.id,
-          disabled: confirmingId !== null, // Optional: disable others while one is processing
+          loading: isConfirming,
+          disabled: isActionPending,
         };
       }
 
@@ -215,8 +251,9 @@ export const TransfersWorkflowPage = () => {
             <h3 className="font-semibold text-blue-900 mb-1">Dispatch Workflow</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• <strong>Prepared:</strong> MIN is ready. Click "Dispatch" to send.</li>
-              <li>• <strong>Dispatched:</strong> Material is on the way. Waiting for college confirmation.</li>
-              <li>• <strong>Received:</strong> College has confirmed receipt.</li>
+              <li>• <strong>Dispatched:</strong> Material left the store. Click "Mark In Transit" when vehicle leaves.</li>
+              <li>• <strong>In Transit:</strong> Material is on the way to the college.</li>
+              <li>• <strong>Received:</strong> College has confirmed receipt of the material.</li>
             </ul>
           </div>
         </div>

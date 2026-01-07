@@ -3,24 +3,23 @@
  * All types matching Django backend models
  */
 
-
 // ============================================================================
 // ENUMS AND CONSTANTS
 // ============================================================================
 
 export type UserType =
-  | 'super_admin'
-  | 'college_admin'
-  | 'teacher'
-  | 'student'
-  | 'parent'
-  | 'staff'
-  | 'hr'
-  | 'store_manager'
-  | 'central_manager'
-  | 'library_manager';
+  | "super_admin"
+  | "college_admin"
+  | "teacher"
+  | "student"
+  | "parent"
+  | "staff"
+  | "hr"
+  | "store_manager"
+  | "central_manager"
+  | "library_manager";
 
-export type GenderChoices = 'male' | 'female' | 'other';
+export type GenderChoices = "male" | "female" | "other";
 
 // ============================================================================
 // USER TYPES
@@ -151,6 +150,35 @@ export interface RoleCreateInput {
 }
 
 export interface RoleUpdateInput extends Partial<RoleCreateInput> {}
+
+export interface RoleTree extends Role {
+  level: number;
+  parent: number | null;
+  parent_name: string | null;
+  is_organizational_position: boolean;
+  children: RoleTree[];
+}
+
+export interface HierarchyPath {
+  path: {
+    id: number;
+    name: string;
+    level: number;
+  }[];
+}
+
+export interface TeamMember {
+  user_id: string;
+  name: string;
+  role: string;
+  level: number;
+}
+
+export interface TeamMembersResponse {
+  role: string;
+  team_members: TeamMember[];
+  total: number;
+}
 
 // ============================================================================
 // USER ROLE TYPES
@@ -295,7 +323,8 @@ export interface UserProfileCreateInput {
   is_active?: boolean;
 }
 
-export interface UserProfileUpdateInput extends Partial<UserProfileCreateInput> {}
+export interface UserProfileUpdateInput
+  extends Partial<UserProfileCreateInput> {}
 
 // ============================================================================
 // FILTER TYPES

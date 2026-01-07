@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useWebSocket } from '../hooks/useWebSocket';
-import { WS_CHAT_URL } from '../config/api.config';
-import { toast } from 'sonner';
+import { useChatWebSocket } from '../hooks/useChatWebSocket';
 
 // Define types for chat messages
 export interface ChatMessage {
@@ -25,51 +23,32 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const token = localStorage.getItem('kumss_auth_token');
+  const { messages: wsMessages, isConnected, sendMessage: rawSendMessage } = useChatWebSocket(token);
 
-  const handleMessage = (data: any) => {
-    // console.log('WS Message Received:', data);
-    
-    if (data.type === 'chat_message') {
-      setMessages((prev) => [...prev, data]);
-      // Only toast if we aren't currently focusing on this chat? 
-      // For now, simpler is better: always toast or let the component handle it.
-      // toast.info(`New message from ${data.sender_name}: ${data.message.substring(0, 20)}...`);
-    } else if (data.type === 'error') {
-      toast.error(data.message);
-    }
-  };
-
-  const { isConnected, sendMessage: sendWsMessage } = useWebSocket({
-    url: WS_CHAT_URL,
-    onMessage: handleMessage,
-    // Only connect if we have a token
-    shouldConnect: !!token, 
-  });
+  // Map messages from hook (camelCase) to Context (snake_case)
+  const messages: ChatMessage[] = wsMessages.map(msg => ({
+    id: msg.id,
+    type: 'chat_message',
+    message: msg.message,
+    sender_id: msg.senderId,
+    sender_name: msg.senderName,
+    timestamp: msg.timestamp,
+    // recipient_id: not provided by hook for incoming messages usually
+  }));
 
   const sendMessage = (recipientId: number, text: string) => {
-    // Optimistic UI update could happen here, but we wait for server echo/ack for simplicity in V1
-    const payload = {
-      type: 'chat_message',
-      recipient_id: recipientId,
-      message: text,
-    };
-    sendWsMessage(payload);
+    rawSendMessage(recipientId, text);
   };
 
   const sendTyping = (recipientId: number) => {
-    sendWsMessage({
-      type: 'typing',
-      recipient_id: recipientId,
-    });
+    // Not supported by current API spec
+    // console.warn('Typing indicators not supported in V1 API');
   };
 
   const markAsRead = (senderId: number) => {
-    sendWsMessage({
-        type: 'mark_read',
-        sender_id: senderId
-    })
+    // Not supported by current API spec
+    // console.warn('Read receipts not supported in V1 API');
   }
 
   return (

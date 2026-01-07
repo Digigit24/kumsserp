@@ -1,11 +1,16 @@
+<<<<<<< HEAD
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialIssuesApi } from '../services/store.service';
+=======
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { materialIssuesApi } from "../services/store.service";
+>>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
 
 export const materialIssueKeys = {
-  all: ['materialIssues'] as const,
-  lists: () => [...materialIssueKeys.all, 'list'] as const,
+  all: ["materialIssues"] as const,
+  lists: () => [...materialIssueKeys.all, "list"] as const,
   list: (filters?: any) => [...materialIssueKeys.lists(), filters] as const,
-  details: () => [...materialIssueKeys.all, 'detail'] as const,
+  details: () => [...materialIssueKeys.all, "detail"] as const,
   detail: (id: number) => [...materialIssueKeys.details(), id] as const,
 };
 
@@ -37,10 +42,27 @@ export const useCreateMaterialIssue = () => {
 export const useUpdateMaterialIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
+    },
+  });
+};
+
+export const usePatchMaterialIssue = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.patch(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -58,6 +80,7 @@ export const useDeleteMaterialIssue = () => {
 export const useDispatchMaterialIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
+<<<<<<< HEAD
     mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.dispatch(id, data),
     onMutate: async ({ id }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -94,8 +117,15 @@ export const useDispatchMaterialIssue = () => {
     },
     onSettled: (_, __, variables) => {
       // Always refetch after error or success:
+=======
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.dispatch(id, data),
+    onSuccess: (_, variables) => {
+>>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };
@@ -103,6 +133,7 @@ export const useDispatchMaterialIssue = () => {
 export const useConfirmReceipt = () => {
   const queryClient = useQueryClient();
   return useMutation({
+<<<<<<< HEAD
     mutationFn: ({ id, data }: { id: number; data: any }) => materialIssuesApi.confirmReceipt(id, data),
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: materialIssueKeys.lists() });
@@ -132,8 +163,15 @@ export const useConfirmReceipt = () => {
       }
     },
     onSettled: (_, __, variables) => {
+=======
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      materialIssuesApi.confirmReceipt(id, data),
+    onSuccess: (_, variables) => {
+>>>>>>> 6fc9722f6798811349ea69f376686def642f4feb
       queryClient.invalidateQueries({ queryKey: materialIssueKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: materialIssueKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: materialIssueKeys.detail(variables.id),
+      });
     },
   });
 };

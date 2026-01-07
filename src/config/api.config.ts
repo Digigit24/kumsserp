@@ -129,6 +129,12 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/accounts/roles/${id}/`,
     patch: (id: number) => `/api/v1/accounts/roles/${id}/`,
     delete: (id: number) => `/api/v1/accounts/roles/${id}/`,
+    tree: "/api/v1/accounts/roles/tree/",
+    addChild: (id: number) => `/api/v1/accounts/roles/${id}/add_child/`,
+    teamMembers: (id: number) => `/api/v1/accounts/roles/${id}/team_members/`,
+    hierarchyPath: (id: number) =>
+      `/api/v1/accounts/roles/${id}/hierarchy_path/`,
+    descendants: (id: number) => `/api/v1/accounts/roles/${id}/descendants/`,
   },
 
   // Accounts Module - User Roles
@@ -999,6 +1005,10 @@ export const API_ENDPOINTS = {
       `/api/v1/store/procurement/requirements/${id}/compare_quotations/`,
     selectQuotation: (id: number) =>
       `/api/v1/store/procurement/requirements/${id}/select_quotation/`,
+    approve: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/approve/`,
+    reject: (id: number) =>
+      `/api/v1/store/procurement/requirements/${id}/reject/`,
   },
 
   // Store Module - Supplier Quotations
@@ -1096,7 +1106,7 @@ export const API_ENDPOINTS = {
     markReceived: (id: number) =>
       `/api/v1/store/material-issues/${id}/confirm_receipt/`,
     generateGatePass: (id: number) =>
-      `/api/v1/store/material-issues/${id}/generate_gate_pass/`,
+      `/api/v1/store/material-issues/${id}/generate_pdf/`,
   },
 };
 

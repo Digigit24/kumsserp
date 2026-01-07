@@ -1,6 +1,5 @@
-import { WS_CHAT_URL } from '@/config/api.config';
+import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/hooks/useAuth';
-import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChats, useCreateChat } from '@/hooks/useCommunication';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -9,7 +8,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { NewChatDialog } from './components/NewChatDialog';
 
 export const RealTimeChat = () => {
-    const { user, token } = useAuth();
+    const { user } = useAuth();
     const { data: chatsData, refetch } = useChats({ page: 1, page_size: 100 });
     const createMutation = useCreateChat();
     const [activeChatId, setActiveChatId] = useState<number | null>(null);
@@ -18,8 +17,10 @@ export const RealTimeChat = () => {
     const [isNewChatOpen, setIsNewChatOpen] = useState(false);
     const [draftReceiver, setDraftReceiver] = useState<any | null>(null);
 
-    // WebSocket Integration (For receiving updates)
-    const { status, lastMessage } = useChatSocket(WS_CHAT_URL, token);
+    // WebSocket Integration via Context
+    const { isConnected, messages: contextMessages } = useChat();
+    const status = isConnected ? 'open' : 'closed';
+    const lastContextMsg = contextMessages[contextMessages.length - 1];
 
     // Derived state for conversations...
     const rawConversations = chatsData?.results || [];
@@ -41,7 +42,7 @@ export const RealTimeChat = () => {
             // Check existing
             const existing = groups.get(groupKey);
             if (!existing || new Date(msg.created_at) > new Date(existing.created_at)) {
-                groups.set(groupKey, msg);
+                groups.set(groupKey, { ...msg, display_name: partnerName });
             }
         });
 
@@ -53,12 +54,7 @@ export const RealTimeChat = () => {
     // Determine Active Chat Object
     // Check existing or draft
     // We look in rawConversations to find the specific message if activeChatId is set
-    let activeChatObj = rawConversations.find(c => c.id === activeChatId);
-
-    // If not found in raw list (maybe it was from a grouped item that is stale?), 
-    // try finding it in grouped list? No, grouped list items ARE from raw list.
-    // However, if we selected a "Group" leader, it is a message ID.
-    // Theoretically fine.
+    let activeChatObj = rawConversations.find((c: any) => c.id === activeChatId);
 
     if (!activeChatObj && draftReceiver) {
         activeChatObj = {
@@ -79,7 +75,7 @@ export const RealTimeChat = () => {
     // Filter messages...
     // We filter by Partner Name to ensure we capture messages with different ID formats (UUID vs Username)
     const activeMessages = activeChatObj && activeChatObj.id !== -1
-        ? rawConversations.filter(c => {
+        ? rawConversations.filter((c: any) => {
             const isMeSender = c.sender === user?.username || c.sender === (user as any)?.id;
             const cPartnerName = isMeSender ? c.receiver_name : c.sender_name;
             const cPartnerId = isMeSender ? c.receiver : c.sender;
@@ -93,15 +89,15 @@ export const RealTimeChat = () => {
                 return activePartnerName === cPartnerName;
             }
             return activePartnerId === cPartnerId;
-        }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        }).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
         : [];
 
     // Real-time updates listener
     useEffect(() => {
-        if (lastMessage) {
+        if (lastContextMsg) {
             refetch();
         }
-    }, [lastMessage, refetch]);
+    }, [lastContextMsg, refetch]);
 
     const handleSendMessage = async (text: string) => {
         if (!activeChatObj) return;
@@ -146,7 +142,7 @@ export const RealTimeChat = () => {
 
     const handleUserSelect = (selectedUser: any) => {
         // logic to check existing
-        const existingMsg = rawConversations.find(c =>
+        const existingMsg = rawConversations.find((c: any) =>
             (c.sender === user?.username && c.receiver === selectedUser.id) ||
             (c.sender === (user as any)?.id && c.receiver === selectedUser.id) ||
             (c.sender === selectedUser.id && c.receiver === user?.username) ||

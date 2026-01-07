@@ -8,6 +8,7 @@ import {
     buildApiUrl,
     getDefaultHeaders,
 } from "../config/api.config";
+import { approvalsApi } from "./approvals.service";
 import type { PaginatedResponse } from "../types/core.types";
 import type {
     StockReceipt,
@@ -993,6 +994,68 @@ export const procurementRequirementsApi = {
         method: "POST",
         body: JSON.stringify(data),
       }
+    );
+  },
+
+  approve: async (id: number, data: any): Promise<any> => {
+    try {
+      return await fetchApi<any>(
+        buildApiUrl(API_ENDPOINTS.procurementRequirements.approve(id)),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    } catch (error: any) {
+      // Fallback: If endpoint 404s, try using Approvals API
+      if (error.status === 404) {
+        try {
+          const detail = await procurementRequirementsApi.get(id);
+          if (detail?.approval_request) {
+            return await approvalsApi.review(detail.approval_request, {
+              action: "approve",
+              comment: data?.comment,
+            });
+          }
+        } catch (innerError) {
+          console.error("Fallback approval failed", innerError);
+        }
+      }
+      throw error;
+    }
+  },
+
+  reject: async (id: number, data: any): Promise<any> => {
+    try {
+      return await fetchApi<any>(
+        buildApiUrl(API_ENDPOINTS.procurementRequirements.reject(id)),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    } catch (error: any) {
+      // Fallback: If endpoint 404s, try using Approvals API
+      if (error.status === 404) {
+        try {
+          const detail = await procurementRequirementsApi.get(id);
+          if (detail?.approval_request) {
+            return await approvalsApi.review(detail.approval_request, {
+              action: "reject",
+              comment: data?.rejection_reason || data?.comment,
+            });
+          }
+        } catch (innerError) {
+          console.error("Fallback rejection failed", innerError);
+        }
+      }
+      throw error;
+    }
+  },
+
+  compareQuotations: async (id: number): Promise<any> => {
+    return fetchApi<any>(
+      buildApiUrl(API_ENDPOINTS.procurementRequirements.compareQuotations(id))
     );
   },
 };

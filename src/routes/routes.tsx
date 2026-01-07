@@ -46,6 +46,7 @@ const RolesPage = lazy(() => import("../pages/accounts/RolesPage"));
 const UserRolesPage = lazy(() => import("../pages/accounts/UserRolesPage"));
 const DepartmentsPage = lazy(() => import("../pages/accounts/DepartmentsPage"));
 const UserProfilesPage = lazy(() => import("../pages/accounts/UserProfilesPage"));
+const RoleHierarchyPage = lazy(() => import("../pages/accounts/RoleHierarchyPage").then(m => ({ default: m.RoleHierarchyPage })));
 
 // Academic Module
 const FacultiesPage = lazy(() => import("../pages/academic").then(m => ({ default: m.FacultiesPage })));
@@ -256,6 +257,7 @@ export default function AppRoutes() {
                     <Route path="accounts/user-roles" element={<LazyRoute component={UserRolesPage} />} />
                     <Route path="accounts/departments" element={<LazyRoute component={DepartmentsPage} />} />
                     <Route path="accounts/user-profiles" element={<LazyRoute component={UserProfilesPage} />} />
+                    <Route path="accounts/hierarchy" element={<LazyRoute component={RoleHierarchyPage} />} />
 
                     {/* Students Module */}
                     <Route path="students/list" element={<LazyRoute component={StudentsPage} />} />

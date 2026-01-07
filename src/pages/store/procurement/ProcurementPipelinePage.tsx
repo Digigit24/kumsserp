@@ -4,15 +4,27 @@
  */
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, FileText, DollarSign, ShoppingCart, Package, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../../components/workflow/KanbanBoard';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { useRequirements } from '../../../hooks/useProcurement';
+import { useRequirements, requirementKeys } from '../../../hooks/useProcurement';
 import { CreateRequirementDialog } from './CreateRequirementDialog';
 import { RequirementDetailDialog } from './RequirementDetailDialog';
 import { ProcurementRequirement } from '../../../types/store.types';
+import { procurementRequirementsApi } from '../../../services/store.service';
+import { approvalsApi } from '../../../services/approvals.service';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../../components/ui/dialog';
 
 // Kanban columns for procurement workflow
 const PROCUREMENT_COLUMNS: KanbanColumn[] = [
@@ -24,8 +36,14 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
   },
   {
     id: 'submitted',
-    title: 'Submitted / Pending',
-    status: ['submitted', 'pending_approval'],
+    title: 'Submitted',
+    status: 'submitted',
+    color: 'bg-blue-50',
+  },
+  {
+    id: 'pending_approval',
+    title: 'Pending Approval',
+    status: 'pending_approval',
     color: 'bg-blue-100',
   },
   {
@@ -36,7 +54,7 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
   },
   {
     id: 'quotations',
-    title: 'Quotations',
+    title: 'Quotations Received',
     status: 'quotations_received',
     color: 'bg-purple-100',
   },
@@ -48,26 +66,108 @@ const PROCUREMENT_COLUMNS: KanbanColumn[] = [
   },
   {
     id: 'fulfilled',
-    title: 'Fulfilled',
-    status: 'fulfilled',
+    title: 'Fulfilled / Cancelled',
+    status: ['fulfilled', 'cancelled'],
     color: 'bg-emerald-100',
-  },
-  {
-    id: 'rejected',
-    title: 'Rejected / Cancelled',
-    status: ['rejected', 'cancelled'],
-    color: 'bg-red-100',
   },
 ];
 
 export const ProcurementPipelinePage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<number | null>(null);
 
+  // Confirmation Dialog State
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    action: 'submit' | 'approve' | 'reject' | null;
+    id: number | null;
+    endpointFn: ((id: number, data?: any) => Promise<any>) | null;
+  }>({
+    isOpen: false,
+    action: null,
+    id: null,
+    endpointFn: null,
+  });
+
   const { data, isLoading, refetch } = useRequirements(filters);
+
+  // Trigger confirmation dialog
+  const handleStatusChange = (
+    id: number,
+    action: 'submit' | 'approve' | 'reject',
+    endpointFn: ((id: number, data?: any) => Promise<any>) | null
+  ) => {
+    setConfirmState({
+      isOpen: true,
+      action,
+      id,
+      endpointFn,
+    });
+  };
+
+  // Execute action after confirmation
+  const executeStatusChange = async () => {
+    const { id, action, endpointFn } = confirmState;
+    if (!id) return;
+
+    try {
+      if (endpointFn) {
+        // Handle actions with direct endpoints (like submit)
+        await endpointFn(id, {});
+      } else if (action === 'approve' || action === 'reject') {
+        // Handle actions requiring the Approvals API
+        // First, fetch the latest requirement details to get the approval_request ID
+        const detail = await procurementRequirementsApi.get(id);
+        
+        if (!detail?.approval_request) {
+           // If no approval request ID, we can't use the generic approvals API.
+           // Check if we can use the direct endpoint as a fallback (though typically direct logic is inside the service)
+           // If we are here, it means we probably wanted to use the generic review endpoint.
+           throw new Error("No active approval request found for this requirement. It may have been deleted or the requirement is not in a pending state.");
+        }
+        
+        console.log(`Attempting to ${action} approval request #${detail.approval_request}`);
+        
+        try {
+            await approvalsApi.review(detail.approval_request, { action });
+        } catch (approvalError: any) {
+            console.error("Approval API Error:", approvalError);
+            if (approvalError.message?.includes("No ApprovalRequest matches")) {
+                throw new Error(`The approval request (ID: ${detail.approval_request}) was not found in the system. Please verify the request status.`);
+            }
+            throw approvalError;
+        }
+      }
+      
+      // Add a small delay for backend signals to propagate
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Invalidate queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.detail(id) });
+      
+      refetch();
+      toast.success(`Requirement ${action}d successfully`);
+
+    } catch (error: any) {
+      console.error(`Error ${action}ing requirement:`, error);
+      
+      let errorMessage = `Failed to ${action} requirement.`;
+      if (error && typeof error === 'object') {
+          errorMessage += ` ${error.message || error.detail || JSON.stringify(error)}`;
+      } else {
+          errorMessage += ` ${String(error)}`;
+      }
+      toast.error(errorMessage);
+    } finally {
+      // Close dialog
+      setConfirmState({ isOpen: false, action: null, id: null, endpointFn: null });
+    }
+  };
 
   // Convert requirements to Kanban cards
   const kanbanCards: KanbanCard[] = (data?.results || [])
@@ -83,50 +183,62 @@ export const ProcurementPipelinePage = () => {
         status: req.status,
         title: req.requirement_number,
         subtitle: `Due: ${new Date(req.required_by_date).toLocaleDateString()}`,
+        // ... (keep existing properties)
         badges: [
-          {
-            label: req.urgency,
-            variant:
-              req.urgency === 'urgent'
-                ? 'destructive'
-                : req.urgency === 'high'
-                ? 'outline'
-                : 'secondary',
-          },
-        ],
-        indicators: [
-          {
-            icon: Package,
-            label: `${req.items?.length || 0} items`,
-            color: 'text-blue-500',
-          },
-          {
-            icon: FileText,
-            label: `Store #${req.central_store}`, // Using Store ID as name is not directly available
-            color: 'text-muted-foreground',
-          },
-        ],
-        onCardClick: () => setSelectedRequirementId(req.id),
-        secondaryActions: [
-          {
-            label: 'View',
-            icon: Eye,
-            onClick: () => setSelectedRequirementId(req.id),
-          },
-        ],
+            {
+              label: req.urgency,
+              variant:
+                req.urgency === 'urgent'
+                  ? 'destructive'
+                  : req.urgency === 'high'
+                  ? 'outline'
+                  : 'secondary',
+            },
+          ],
+          indicators: [
+            {
+              icon: Package,
+              label: `${req.items?.length || 0} items`,
+              color: 'text-blue-500',
+            },
+            {
+              icon: FileText,
+              label: `Store #${req.central_store}`,
+              color: 'text-muted-foreground',
+            },
+          ],
+          onCardClick: () => setSelectedRequirementId(req.id),
+          secondaryActions: [
+            {
+              label: 'View',
+              icon: Eye,
+              onClick: () => setSelectedRequirementId(req.id),
+            },
+          ],
       };
 
       // Add status-specific actions
       if (req.status === 'draft') {
         card.primaryAction = {
           label: 'Submit',
-          onClick: () => setSelectedRequirementId(req.id),
+          onClick: () => {
+            handleStatusChange(req.id, 'submit', procurementRequirementsApi.submitForApproval);
+          },
         };
-      } else if (req.status === 'submitted') {
+      } else if (req.status === 'submitted' || req.status === 'pending_approval') {
         card.primaryAction = {
           label: 'Approve',
-          onClick: () => setSelectedRequirementId(req.id),
+          onClick: () => {
+            handleStatusChange(req.id, 'approve', null);
+          },
         };
+        card.secondaryActions?.push({
+            label: 'Reject',
+            icon: FileText, 
+            onClick: () => {
+                handleStatusChange(req.id, 'reject', null);
+            }
+        })
       } else if (req.status === 'approved') {
         card.primaryAction = {
           label: 'Add Quotations',
@@ -255,6 +367,38 @@ export const ProcurementPipelinePage = () => {
           setSelectedRequirementId(null);
         }}
       />
+
+      {/* Confirmation Dialog */}
+      <Dialog 
+        open={confirmState.isOpen} 
+        onOpenChange={(open) => !open && setConfirmState(prev => ({ ...prev, isOpen: false }))}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Action</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to <strong>{confirmState.action}</strong> this requirement?
+              {confirmState.action === 'reject' && (
+                <span className="block mt-2 text-red-500">This action cannot be undone.</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={confirmState.action === 'reject' ? 'destructive' : 'default'}
+              onClick={executeStatusChange}
+            >
+              Confirm {confirmState.action && confirmState.action.charAt(0).toUpperCase() + confirmState.action.slice(1)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

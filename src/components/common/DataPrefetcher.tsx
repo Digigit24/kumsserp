@@ -12,9 +12,11 @@ export const DataPrefetcher = () => {
 
   useEffect(() => {
     const prefetchCommonData = async () => {
-      // Check for token first
+      // Don't prefetch if not authenticated or on login page
       const token = localStorage.getItem('kumss_auth_token');
-      if (!token) return;
+      const isLoginPage = window.location.pathname.includes('/login');
+      
+      if (!token || isLoginPage) return;
 
       // Prefetch Colleges (Dropdowns everywhere)
       await queryClient.prefetchQuery({
