@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import {
   useConfirmReceipt,
@@ -59,6 +60,7 @@ export const TransfersWorkflowPage = () => {
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
 
   // Fetch all material issues for the Kanban board (Prepared, Dispatched, etc.)
   const { data, isLoading, refetch } = useMaterialIssues({
@@ -179,7 +181,7 @@ export const TransfersWorkflowPage = () => {
           {
             label: 'View',
             icon: Eye,
-            onClick: () => navigate('/store/material-issues'),
+            onClick: () => setSelectedIssue(min),
           },
         ],
       };
@@ -336,7 +338,7 @@ export const TransfersWorkflowPage = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => console.log('View indent', indent)}
+                        onClick={() => setSelectedIssue(indent)}
                       >
                         <Eye className="h-3 w-3 mr-1" />
                         View
@@ -377,6 +379,101 @@ export const TransfersWorkflowPage = () => {
           setDispatchIndentId(null);
         }}
       />
+
+      {/* Detail dialog for Material Issue / Indent */}
+      {selectedIssue && (
+        <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between gap-3">
+                <span>{selectedIssue.min_number ? `Material Issue #${selectedIssue.min_number}` : `Indent #${selectedIssue.indent_number}`}</span>
+                <Badge className="capitalize">{(selectedIssue.status || '').replace(/_/g, ' ') || '—'}</Badge>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Issue Date</Label>
+                  <p className="font-semibold">
+                    {selectedIssue.issue_date
+                      ? new Date(selectedIssue.issue_date).toLocaleDateString()
+                      : selectedIssue.required_by_date
+                        ? new Date(selectedIssue.required_by_date).toLocaleDateString()
+                        : '—'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Priority</Label>
+                  <Badge variant="secondary" className="capitalize">
+                    {selectedIssue.priority || 'normal'}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">From Store</Label>
+                  <p>{selectedIssue.central_store_name || `Store #${selectedIssue.central_store || '—'}`}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">To College</Label>
+                  <p>{selectedIssue.receiving_college_name || selectedIssue.college_name || `College #${selectedIssue.receiving_college || selectedIssue.college || '—'}`}</p>
+                </div>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="p-2 text-left">#</th>
+                          <th className="p-2 text-left">Item</th>
+                          <th className="p-2 text-right">Quantity</th>
+                          <th className="p-2 text-left">Unit</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedIssue.items?.length ? (
+                          selectedIssue.items.map((item: any, idx: number) => (
+                            <tr key={idx} className="border-t">
+                              <td className="p-2">{idx + 1}</td>
+                              <td className="p-2">
+                                <p className="font-medium">
+                                  {item.item_name || item.item_display || `Item #${item.central_store_item || item.item}`}
+                                </p>
+                              </td>
+                              <td className="p-2 text-right">
+                                {item.quantity || item.requested_quantity || item.issued_quantity || '-'}
+                              </td>
+                              <td className="p-2">{item.unit || item.unit_name || '-'}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td className="p-3 text-center text-muted-foreground" colSpan={4}>
+                              No items available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setSelectedIssue(null)}>
+                  Close
+                </Button>
+                {selectedIssue.status === 'prepared' && (
+                  <Button onClick={() => handleDispatch(selectedIssue)} disabled={dispatchMutation.isPending}>
+                    Dispatch
+                  </Button>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

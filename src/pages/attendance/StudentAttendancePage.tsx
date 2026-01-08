@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useStudentAttendance, useBulkMarkAttendance, useMarkStudentAttendance } from '../../hooks/useAttendance';
 import { useStudents } from '../../hooks/useStudents';
+import { useSubjects } from '../../hooks/useAcademic';
 import { StudentAttendanceForm } from '../../components/attendance/StudentAttendanceForm';
 import { BulkAttendanceForm } from '../../components/attendance/BulkAttendanceForm';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
@@ -34,6 +35,7 @@ const StudentAttendancePage = () => {
 
   // Attendance form fields
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
 
   // Track attendance status for each student
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceStatus>>({});
@@ -64,10 +66,18 @@ const StudentAttendancePage = () => {
     section: selectedSection || undefined,
   });
 
+  // Fetch subjects for the chosen class (optional filter)
+  const { data: subjectsData } = useSubjects({
+    page_size: 100,
+    is_active: true,
+    class_obj: selectedClass || undefined,
+  });
+
   // Fetch existing attendance for the selected date
   const { data: existingAttendanceData, refetch: refetchAttendance } = useStudentAttendance({
     class_obj: selectedClass || undefined,
     section: selectedSection || undefined,
+    subject: selectedSubject || undefined,
     date: selectedDate,
     page_size: 200,
   });
@@ -152,8 +162,8 @@ const StudentAttendancePage = () => {
             class_obj: selectedClass!,
             section: selectedSection || null,
             date: selectedDate,
+            subject: selectedSubject,
             status: status as 'present' | 'absent' | 'late' | 'excused' | 'half_day',
-            subject: null,
             period: null,
             remarks: null,
           });
@@ -165,7 +175,7 @@ const StudentAttendancePage = () => {
             section: selectedSection || null,
             date: selectedDate,
             status: status as 'present' | 'absent' | 'late' | 'excused' | 'half_day',
-            subject: null,
+            subject: selectedSubject,
             remarks: null,
           });
         }
@@ -339,14 +349,35 @@ const StudentAttendancePage = () => {
       {/* Date Selector */}
       <Card>
         <CardContent className="pt-6">
-          <div className="space-y-2 max-w-sm">
-            <Label htmlFor="date">Date *</Label>
-            <Input
-              id="date"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
+          <div className="flex flex-wrap gap-4">
+            <div className="space-y-2 max-w-sm">
+              <Label htmlFor="date">Date *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2 min-w-[220px]">
+              <Label htmlFor="subject">Subject</Label>
+              <Select
+                value={selectedSubject?.toString() || ''}
+                onValueChange={(value) => setSelectedSubject(value ? Number(value) : null)}
+              >
+                <SelectTrigger id="subject" className="w-[240px]">
+                  <SelectValue placeholder="Select subject (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Subjects</SelectItem>
+                  {subjectsData?.results?.map((subj) => (
+                    <SelectItem key={subj.id} value={subj.id.toString()}>
+                      {subj.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>

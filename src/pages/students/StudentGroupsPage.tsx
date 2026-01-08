@@ -7,16 +7,27 @@ import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
+import { CollegeField } from '../../components/common/CollegeField';
 import { Badge } from '../../components/ui/badge';
 import { useAuth } from '../../hooks/useAuth';
 import { useColleges } from '../../hooks/useCore';
 import { useDeleteStudentGroup, useStudentGroup, useStudentGroups } from '../../hooks/useStudents';
 import type { StudentGroupFilters, StudentGroupListItem } from '../../types/students.types';
-import { isSuperAdmin } from '../../utils/auth.utils';
+import { getCurrentUserCollege, isSuperAdmin } from '../../utils/auth.utils';
 import { StudentGroupForm } from './components/StudentGroupForm';
 
 export const StudentGroupsPage = () => {
-  const [filters, setFilters] = useState<StudentGroupFilters>({ page: 1, page_size: 20 });
+  const { user } = useAuth();
+  const isSuper = isSuperAdmin(user as any);
+  const defaultCollege = getCurrentUserCollege(user as any);
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(
+    isSuper ? null : defaultCollege
+  );
+  const [filters, setFilters] = useState<StudentGroupFilters>({
+    page: 1,
+    page_size: 20,
+    ...(isSuper ? {} : defaultCollege ? { college: defaultCollege } : {}),
+  });
   const { data, isLoading, error, refetch } = useStudentGroups(filters);
   const deleteMutation = useDeleteStudentGroup();
 
@@ -27,8 +38,18 @@ export const StudentGroupsPage = () => {
   const [groupToDelete, setGroupToDelete] = useState<StudentGroupListItem | null>(null);
 
   const { data: selectedGroup } = useStudentGroup(selectedGroupId);
-  const { user } = useAuth();
   const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
+  const handleCollegeChange = (collegeId: number | string) => {
+    const parsed = collegeId === '' ? null : Number(collegeId);
+    const normalized = Number.isFinite(parsed) ? (parsed as number) : null;
+    setSelectedCollegeId(normalized);
+    setFilters(prev => {
+      const next = { ...prev, page: 1 };
+      if (normalized) return { ...next, college: normalized };
+      const { college, ...rest } = next as any;
+      return rest;
+    });
+  };
 
   // Define table columns
   const columns: Column<StudentGroupListItem>[] = [
@@ -60,7 +81,7 @@ export const StudentGroupsPage = () => {
 
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
-    ...(isSuperAdmin(user as any) ? [{
+    ...(isSuper ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -123,6 +144,15 @@ export const StudentGroupsPage = () => {
 
   return (
     <div className="p-6">
+      {isSuper && (
+        <div className="mb-4">
+          <CollegeField
+            value={selectedCollegeId}
+            onChange={handleCollegeChange}
+            placeholder="Filter by college"
+          />
+        </div>
+      )}
       <DataTable
         title="Student Groups"
         description="Manage student groups such as Morning Batch, Evening Batch, Hostel Students, etc."

@@ -4,7 +4,7 @@
  */
 
 import { AlertCircle, Eye, Package, Plus, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
@@ -12,6 +12,7 @@ import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { KanbanBoard, KanbanCard, KanbanColumn } from '../../components/workflow/KanbanBoard';
 import { useAuth } from '../../hooks/useAuth';
+import { useStoreIndent } from '../../hooks/useStoreIndents';
 import {
   useCollegeAdminApprove,
   useCollegeAdminReject,
@@ -22,6 +23,7 @@ import {
   useSuperAdminReject,
 } from '../../hooks/useStoreIndents';
 import { isSuperAdmin } from '../../utils/auth.utils';
+import { IndentDetailView } from './IndentDetailView';
 import { StoreIndentPipeline } from './forms/StoreIndentPipeline';
 import { PrepareDispatchDialog } from './PrepareDispatchDialog';
 
@@ -75,7 +77,7 @@ export const IndentsPipelinePage = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedIndent, setSelectedIndent] = useState<any>(null);
+  const [selectedIndentId, setSelectedIndentId] = useState<number | null>(null);
   const [dispatchIndentId, setDispatchIndentId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -89,6 +91,20 @@ export const IndentsPipelinePage = () => {
   const collegeRejectMutation = useCollegeAdminReject();
   const superAdminApproveMutation = useSuperAdminApprove();
   const superAdminRejectMutation = useSuperAdminReject();
+  const { data: selectedIndentData, isLoading: isDetailLoading } = useStoreIndent(selectedIndentId || 0);
+
+  const userRoleForDetail = useMemo(() => {
+    switch (user?.user_type) {
+      case 'college_admin':
+        return 'college_admin';
+      case 'super_admin':
+        return 'super_admin';
+      case 'central_manager':
+        return 'central_store';
+      default:
+        return 'store_manager';
+    }
+  }, [user]);
 
   const handleCreate = () => {
     setIsCreateDialogOpen(true);
@@ -130,15 +146,15 @@ export const IndentsPipelinePage = () => {
     }
   };
 
-  const handleReject = async (indent: any) => {
-    const reason = prompt('Please provide a rejection reason:');
-    if (!reason) return;
+  const handleReject = async (indent: any, reason?: string) => {
+    const rejectionReason = reason ?? prompt('Please provide a rejection reason:');
+    if (!rejectionReason) return;
 
     try {
       if (indent.status === 'pending_college_approval') {
-        await collegeRejectMutation.mutateAsync({ id: indent.id, data: { rejection_reason: reason } });
+        await collegeRejectMutation.mutateAsync({ id: indent.id, data: { rejection_reason: rejectionReason } });
       } else if (indent.status === 'pending_super_admin') {
-        await superAdminRejectMutation.mutateAsync({ id: indent.id, data: { rejection_reason: reason } });
+        await superAdminRejectMutation.mutateAsync({ id: indent.id, data: { rejection_reason: rejectionReason } });
       }
       toast.success('Indent rejected');
       refetch();
@@ -196,7 +212,7 @@ export const IndentsPipelinePage = () => {
             color: 'text-muted-foreground',
           },
         ],
-        onCardClick: () => setSelectedIndent(indent),
+        onCardClick: () => setSelectedIndentId(indent.id),
       };
 
       // Add status-specific actions
@@ -209,7 +225,7 @@ export const IndentsPipelinePage = () => {
           {
             label: 'View',
             icon: Eye,
-            onClick: () => setSelectedIndent(indent),
+            onClick: () => setSelectedIndentId(indent.id),
           },
         ];
       } else if (indent.status === 'pending_college_approval') {
@@ -317,20 +333,21 @@ export const IndentsPipelinePage = () => {
       </Dialog>
 
       {/* Detail View Dialog - To be implemented */}
-      {selectedIndent && (
-        <Dialog open={!!selectedIndent} onOpenChange={() => setSelectedIndent(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Indent Details: {selectedIndent.indent_number}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Detail view with Stepper to be implemented...
-              </p>
-              <pre className="text-xs bg-muted p-4 rounded overflow-auto">
-                {JSON.stringify(selectedIndent, null, 2)}
-              </pre>
-            </div>
+      {selectedIndentId && (
+        <Dialog open={!!selectedIndentId} onOpenChange={() => setSelectedIndentId(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+            {isDetailLoading || !selectedIndentData ? (
+              <div className="p-6 text-sm text-muted-foreground">Loading indent details...</div>
+            ) : (
+              <IndentDetailView
+                indent={selectedIndentData}
+                onClose={() => setSelectedIndentId(null)}
+                onApprove={() => handleApprove(selectedIndentData)}
+                onReject={(reason) => handleReject(selectedIndentData, reason)}
+                onPrepareDispatch={() => setDispatchIndentId(selectedIndentData.id)}
+                userRole={userRoleForDetail as any}
+              />
+            )}
           </DialogContent>
         </Dialog>
       )}

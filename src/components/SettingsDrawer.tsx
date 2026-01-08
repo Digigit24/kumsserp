@@ -1,6 +1,6 @@
 import SettingsPanel from "@/settings/drawer/SettingsPanel";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MIN_WIDTH = 360;
 const MAX_WIDTH = 720;
@@ -12,6 +12,7 @@ interface SettingsDrawerProps {
 }
 
 const SettingsDrawer = ({ open, onClose }: SettingsDrawerProps) => {
+    const [isMobile, setIsMobile] = useState(false);
     /* ---------------- MOTION WIDTH (ULTRA SMOOTH) ---------------- */
     const widthMotion = useMotionValue<number>(DEFAULT_WIDTH);
     const smoothWidth = useSpring(widthMotion, {
@@ -24,6 +25,14 @@ const SettingsDrawer = ({ open, onClose }: SettingsDrawerProps) => {
     const startXRef = useRef<number>(0);
     const startWidthRef = useRef<number>(DEFAULT_WIDTH);
 
+    /* ---------------- HANDLE RESPONSIVE ---------------- */
+    useEffect(() => {
+        const updateIsMobile = () => setIsMobile(window.innerWidth < 640);
+        updateIsMobile();
+        window.addEventListener("resize", updateIsMobile);
+        return () => window.removeEventListener("resize", updateIsMobile);
+    }, []);
+
     /* ---------------- RESET WIDTH ON CLOSE ---------------- */
     useEffect(() => {
         if (!open) {
@@ -35,6 +44,7 @@ const SettingsDrawer = ({ open, onClose }: SettingsDrawerProps) => {
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
             if (!isResizingRef.current) return;
+            if (isMobile) return;
 
             const delta = startXRef.current - e.clientX;
             const next = Math.min(
@@ -81,26 +91,28 @@ const SettingsDrawer = ({ open, onClose }: SettingsDrawerProps) => {
               border-l border-white/10
               shadow-[0_0_40px_rgba(0,0,0,0.35)]
             "
-                        style={{ width: smoothWidth }}
-                        initial={{ x: DEFAULT_WIDTH }}
+                        style={{ width: isMobile ? "100vw" : smoothWidth }}
+                        initial={{ x: isMobile ? "100%" : DEFAULT_WIDTH }}
                         animate={{ x: 0 }}
-                        exit={{ x: DEFAULT_WIDTH }}
+                        exit={{ x: isMobile ? "100%" : DEFAULT_WIDTH }}
                         transition={{ type: "spring", stiffness: 260, damping: 30 }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* ---------------- RESIZE HANDLE ---------------- */}
-                        <div
-                            className="
-                absolute left-0 top-0 z-50 h-full w-2 cursor-ew-resize
-                hover:bg-primary/20 transition-colors
-              "
-                            onMouseDown={(e) => {
-                                isResizingRef.current = true;
-                                startXRef.current = e.clientX;
-                                startWidthRef.current = widthMotion.get();
-                                document.body.style.cursor = "ew-resize";
-                            }}
-                        />
+                        {!isMobile && (
+                            <div
+                                className="
+                    absolute left-0 top-0 z-50 h-full w-2 cursor-ew-resize
+                    hover:bg-primary/20 transition-colors
+                  "
+                                onMouseDown={(e) => {
+                                    isResizingRef.current = true;
+                                    startXRef.current = e.clientX;
+                                    startWidthRef.current = widthMotion.get();
+                                    document.body.style.cursor = "ew-resize";
+                                }}
+                            />
+                        )}
 
                         {/* ---------------- HEADER ---------------- */}
                         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-background/60 backdrop-blur-xl p-4">
