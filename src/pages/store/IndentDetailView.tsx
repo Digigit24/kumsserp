@@ -231,143 +231,150 @@ export const IndentDetailView = ({
     <div className="flex flex-col h-full">
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Stepper */}
-        <Stepper steps={steps} orientation="vertical" />
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Stepper */}
+          <div className="lg:w-1/3 xl:w-1/4">
+            <Stepper steps={steps} orientation="vertical" />
+          </div>
 
-        {/* Request Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Request Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground">Indent Number</Label>
-                <p className="font-semibold">{indent.indent_number}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Required By</Label>
-                <p className="font-semibold">
-                  {new Date(indent.required_by_date).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Priority</Label>
-                <Badge variant={getPriorityVariant(indent.priority)} className="capitalize">
-                  {indent.priority}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Status</Label>
-                <Badge className="capitalize">{indent.status.replace(/_/g, ' ')}</Badge>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-muted-foreground">College</Label>
-              <p>{indent.college_name || `College #${indent.college}`}</p>
-            </div>
-
-            <div>
-              <Label className="text-muted-foreground">Central Store</Label>
-              <p>{indent.central_store_name || `Store #${indent.central_store}`}</p>
-            </div>
-
-            <div>
-              <Label className="text-muted-foreground">Justification</Label>
-              <p className="text-sm">{indent.justification}</p>
-            </div>
-
-            {indent.remarks && (
-              <div>
-                <Label className="text-muted-foreground">Remarks</Label>
-                <p className="text-sm">{indent.remarks}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Items Requested ({indent.items?.length || 0})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="border rounded-md">
-              <table className="w-full">
-                <thead className="bg-muted">
-                  <tr>
-                    <th className="p-2 text-left">#</th>
-                    <th className="p-2 text-left">Item</th>
-                    <th className="p-2 text-right">Requested</th>
-                    <th className="p-2 text-right">Approved</th>
-                    <th className="p-2 text-right">Issued</th>
-                    <th className="p-2 text-right">Pending</th>
-                    <th className="p-2 text-left">Unit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {indent.items?.map((item: any, index: number) => (
-                    <tr key={index} className="border-t">
-                      <td className="p-2">{index + 1}</td>
-                      <td className="p-2">
-                        <div>
-                          <p className="font-medium">Item #{item.central_store_item}</p>
-                          {item.justification && (
-                            <p className="text-xs text-muted-foreground">{item.justification}</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-2 text-right">{item.requested_quantity}</td>
-                      <td className="p-2 text-right">{item.approved_quantity || '-'}</td>
-                      <td className="p-2 text-right">{item.issued_quantity || 0}</td>
-                      <td className="p-2 text-right font-semibold">
-                        {item.pending_quantity || item.requested_quantity}
-                      </td>
-                      <td className="p-2">{item.unit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Rejection Form */}
-        {showRejectForm && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="space-y-2 mt-2">
-                <Label>Rejection Reason *</Label>
-                <Textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="Enter reason for rejection..."
-                  rows={3}
-                />
-                <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-sm"
-                    onClick={handleRejectSubmit}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Rejecting...' : 'Confirm Reject'}
-                  </button>
-                  <button
-                    className="px-3 py-1 bg-muted rounded text-sm"
-                    onClick={() => {
-                      setShowRejectForm(false);
-                      setRejectionReason('');
-                    }}
-                  >
-                    Cancel
-                  </button>
+          {/* Details column */}
+          <div className="flex-1 space-y-4">
+            {/* Request Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Request Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Indent Number</Label>
+                    <p className="font-semibold">{indent.indent_number}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Required By</Label>
+                    <p className="font-semibold">
+                      {new Date(indent.required_by_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Priority</Label>
+                    <Badge variant={getPriorityVariant(indent.priority)} className="capitalize">
+                      {indent.priority}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <Badge className="capitalize">{indent.status.replace(/_/g, ' ')}</Badge>
+                  </div>
                 </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+
+                <div>
+                  <Label className="text-muted-foreground">College</Label>
+                  <p>{indent.college_name || `College #${indent.college}`}</p>
+                </div>
+
+                <div>
+                  <Label className="text-muted-foreground">Central Store</Label>
+                  <p>{indent.central_store_name || `Store #${indent.central_store}`}</p>
+                </div>
+
+                <div>
+                  <Label className="text-muted-foreground">Justification</Label>
+                  <p className="text-sm">{indent.justification}</p>
+                </div>
+
+                {indent.remarks && (
+                  <div>
+                    <Label className="text-muted-foreground">Remarks</Label>
+                    <p className="text-sm">{indent.remarks}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Items */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Items Requested ({indent.items?.length || 0})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-md">
+                  <table className="w-full">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="p-2 text-left">#</th>
+                        <th className="p-2 text-left">Item</th>
+                        <th className="p-2 text-right">Requested</th>
+                        <th className="p-2 text-right">Approved</th>
+                        <th className="p-2 text-right">Issued</th>
+                        <th className="p-2 text-right">Pending</th>
+                        <th className="p-2 text-left">Unit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {indent.items?.map((item: any, index: number) => (
+                        <tr key={index} className="border-t">
+                          <td className="p-2">{index + 1}</td>
+                          <td className="p-2">
+                            <div>
+                              <p className="font-medium">Item #{item.central_store_item}</p>
+                              {item.justification && (
+                                <p className="text-xs text-muted-foreground">{item.justification}</p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-2 text-right">{item.requested_quantity}</td>
+                          <td className="p-2 text-right">{item.approved_quantity || '-'}</td>
+                          <td className="p-2 text-right">{item.issued_quantity || 0}</td>
+                          <td className="p-2 text-right font-semibold">
+                            {item.pending_quantity || item.requested_quantity}
+                          </td>
+                          <td className="p-2">{item.unit}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Rejection Form */}
+            {showRejectForm && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2 mt-2">
+                    <Label>Rejection Reason *</Label>
+                    <Textarea
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      placeholder="Enter reason for rejection..."
+                      rows={3}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-sm"
+                        onClick={handleRejectSubmit}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? 'Rejecting...' : 'Confirm Reject'}
+                      </button>
+                      <button
+                        className="px-3 py-1 bg-muted rounded text-sm"
+                        onClick={() => {
+                          setShowRejectForm(false);
+                          setRejectionReason('');
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Smart Action Bar */}

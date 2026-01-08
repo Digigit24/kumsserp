@@ -34,8 +34,10 @@ import { Label } from '../../../components/ui/label';
 import { SearchableSelect } from '../../../components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Textarea } from '../../../components/ui/textarea';
+import { useAuth } from '../../../hooks/useAuth';
 import { useCreateStoreItem } from '../../../hooks/useStore';
 import { categoriesApi } from '../../../services/store.service';
+import { getCurrentUserCollege, isSuperAdmin } from '../../../utils/auth.utils';
 
 interface StoreIndentPipelineProps {
   onSubmit: (data: any) => void;
@@ -165,6 +167,15 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
   const centralStoreId = watch('central_store');
   const collegeId = watch('college');
   const allItems = watch('items');
+  const { user } = useAuth();
+
+  // Auto-select user's college for non-super-admins
+  useEffect(() => {
+    const userCollege = getCurrentUserCollege(user as any);
+    if (!isSuperAdmin(user as any) && userCollege) {
+      setValue('college', userCollege, { shouldValidate: true });
+    }
+  }, [user, setValue]);
 
   // Step validation
   const validateStep1 = async () => {

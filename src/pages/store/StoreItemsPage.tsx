@@ -88,6 +88,23 @@ export const StoreItemsPage: React.FC = () => {
     label: `${category.name} (${category.code})`,
   })) || [];
 
+  // Quick lookup for rendering category names in list
+  const categoryLookup = useMemo(() => {
+    const map: Record<number, string> = {};
+    (categoriesData?.results || []).forEach((category: any) => {
+      map[category.id] = category.name || category.code || `Category #${category.id}`;
+    });
+    return map;
+  }, [categoriesData]);
+
+  const categoryFilterOptions = useMemo(() => [
+    { value: 'all', label: 'All Categories' },
+    ...(categoriesData?.results?.map((category: any) => ({
+      value: String(category.id),
+      label: `${category.name} (${category.code})`,
+    })) || []),
+  ], [categoriesData]);
+
   // Form state
   const [itemForm, setItemForm] = useState({
     code: '',
@@ -119,7 +136,11 @@ export const StoreItemsPage: React.FC = () => {
       item.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = categoryFilter === 'all' || String(item.category) === categoryFilter || item.category_name === categoryFilter;
+    const itemCategoryName = categoryLookup[item.category] || item.category_name;
+    const matchesCategory =
+      categoryFilter === 'all' ||
+      String(item.category) === categoryFilter ||
+      itemCategoryName?.toLowerCase() === categoryFilter.toLowerCase();
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
 
     return matchesSearch && matchesCategory && matchesStatus;
@@ -524,14 +545,11 @@ export const StoreItemsPage: React.FC = () => {
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="stationery">Stationery</SelectItem>
-                  <SelectItem value="equipment">Equipment</SelectItem>
-                  <SelectItem value="consumables">Consumables</SelectItem>
-                  <SelectItem value="books">Books</SelectItem>
-                  <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="furniture">Furniture</SelectItem>
-                  <SelectItem value="printing">Printing Supplies</SelectItem>
+                  {categoryFilterOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -586,7 +604,7 @@ export const StoreItemsPage: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 hidden md:table-cell">
                         <Badge variant="outline" className="capitalize">
-                          {item.category_name || `Category #${item.category}`}
+                          {categoryLookup[item.category] || item.category_name || `Category #${item.category}`}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">

@@ -3,7 +3,7 @@
  * No CRUD focus - just search, view, and quick actions
  */
 
-import { AlertCircle, Eye, History, Package, Search, TrendingDown } from 'lucide-react';
+import { AlertCircle, Eye, History, Package, Plus, Search, TrendingDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -13,9 +13,11 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { useCentralInventory } from '../../hooks/useCentralInventory';
+import { CentralInventoryForm } from './forms/CentralInventoryForm';
+import { useCentralInventory, useCreateCentralInventory } from '../../hooks/useCentralInventory';
 import { useCentralStores } from '../../hooks/useCentralStores';
 import { useStoreItems } from '../../hooks/useStoreItems';
+import { toast } from 'sonner';
 
 export const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +26,7 @@ export const InventoryPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 50 });
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showLedger, setShowLedger] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const { data: storesData } = useCentralStores();
   const stores = storesData?.results || [];
@@ -38,11 +41,12 @@ export const InventoryPage = () => {
   // Update filters when store changes
   useEffect(() => {
     if (selectedStoreId) {
-      setFilters({ ...filters, central_store: selectedStoreId });
+      setFilters((prev) => ({ ...prev, central_store: selectedStoreId }));
     }
   }, [selectedStoreId]);
 
-  const { data, isLoading } = useCentralInventory(filters);
+  const { data, isLoading, refetch } = useCentralInventory(filters);
+  const createInventory = useCreateCentralInventory();
   const { data: storeItemsData } = useStoreItems();
 
   const inventoryItems = data?.results || [];
@@ -97,30 +101,47 @@ export const InventoryPage = () => {
   ).length;
   const outOfStockCount = inventoryItems.filter((item: any) => item.quantity_on_hand === 0).length;
 
+  const handleCreateInventory = async (formData: any) => {
+    try {
+      await createInventory.mutateAsync(formData);
+      toast.success('Inventory item added');
+      setIsCreateOpen(false);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to add inventory');
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold">Inventory</h1>
           <p className="text-muted-foreground">
             Search and manage central store inventory
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Label className="text-sm font-medium">Store:</Label>
-          <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
-            <SelectTrigger className="w-[280px]">
-              <SelectValue placeholder="Select store..." />
-            </SelectTrigger>
-            <SelectContent>
-              {stores.map((store: any) => (
-                <SelectItem key={store.id} value={store.id.toString()}>
-                  {store.name || `Store #${store.id}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">Store:</Label>
+            <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
+              <SelectTrigger className="w-[240px]">
+                <SelectValue placeholder="Select store..." />
+              </SelectTrigger>
+              <SelectContent>
+                {stores.map((store: any) => (
+                  <SelectItem key={store.id} value={store.id.toString()}>
+                    {store.name || `Store #${store.id}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Inventory
+          </Button>
         </div>
       </div>
 
@@ -369,6 +390,20 @@ export const InventoryPage = () => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Create Inventory Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Inventory</DialogTitle>
+          </DialogHeader>
+          <CentralInventoryForm
+            inventory={selectedStoreId ? { central_store: Number(selectedStoreId) } : undefined}
+            onSubmit={handleCreateInventory}
+            onCancel={() => setIsCreateOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
