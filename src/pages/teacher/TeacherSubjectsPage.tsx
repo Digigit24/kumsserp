@@ -177,7 +177,7 @@ export const TeacherSubjectsPage: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium mb-1">Classes:</p>
                     <div className="flex flex-wrap gap-2">
-                      {subject.classes.map((cls, idx) => (
+                      {subject.classes.map((cls: string, idx: number) => (
                         <span
                           key={idx}
                           className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary"

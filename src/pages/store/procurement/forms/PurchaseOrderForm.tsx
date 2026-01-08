@@ -86,7 +86,7 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                 id="po_number"
                 {...register('po_number', { required: 'PO number is required' })}
               />
-              {errors.po_number && <p className="text-sm text-red-500">{errors.po_number.message}</p>}
+              {errors.po_number && <p className="text-sm text-red-500">{String(errors.po_number.message)}</p>}
             </div>
 
             <div>
@@ -96,7 +96,7 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                 type="date"
                 {...register('po_date', { required: 'PO date is required' })}
               />
-              {errors.po_date && <p className="text-sm text-red-500">{errors.po_date.message}</p>}
+              {errors.po_date && <p className="text-sm text-red-500">{String(errors.po_date.message)}</p>}
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.supplier?.message}
+                    error={errors.supplier?.message ? String(errors.supplier.message) : undefined}
                   />
                 )}
               />
@@ -127,7 +127,7 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.central_store?.message}
+                    error={errors.central_store?.message ? String(errors.central_store.message) : undefined}
                   />
                 )}
               />
@@ -301,8 +301,10 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                     id={`items.${index}.item_description`}
                     {...register(`items.${index}.item_description`, { required: 'Item description is required' })}
                   />
-                  {errors.items?.[index]?.item_description && (
-                    <p className="text-sm text-red-500">{errors.items[index].item_description.message}</p>
+                  {Array.isArray(errors.items) && errors.items[index]?.item_description && (
+                    <p className="text-sm text-red-500">
+                      {String(errors.items[index]?.item_description?.message)}
+                    </p>
                   )}
                 </div>
 
@@ -512,7 +514,7 @@ export const PurchaseOrderForm = ({ purchaseOrder, onSubmit, onCancel }: Purchas
                 {...register('grand_total', { required: 'Grand total is required' })}
                 placeholder="0.00"
               />
-              {errors.grand_total && <p className="text-sm text-red-500">{errors.grand_total.message}</p>}
+              {errors.grand_total && <p className="text-sm text-red-500">{String(errors.grand_total.message)}</p>}
             </div>
           </div>
 

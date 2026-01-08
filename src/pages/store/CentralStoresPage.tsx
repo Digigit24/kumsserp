@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCentralStores, useDeleteCentralStore, useCreateCentralStore, useUpdateCentralStore } from '@/hooks/useCentralStores';
-import { DataTable } from '@/components/common/DataTable';
+import { Column, DataTable } from '@/components/common/DataTable';
 import { DetailSidebar } from '@/components/common/DetailSidebar';
 import { CentralStoreForm } from './forms/CentralStoreForm';
 import type { CentralStore } from '@/types/store.types';
@@ -21,7 +21,7 @@ export const CentralStoresPage: React.FC = () => {
   const createMutation = useCreateCentralStore();
   const updateMutation = useUpdateCentralStore();
 
-  const columns = [
+  const columns: Column<CentralStore>[] = [
     { key: 'code', label: 'Code', sortable: true },
     { key: 'name', label: 'Name', sortable: true },
     {
@@ -105,10 +105,10 @@ export const CentralStoresPage: React.FC = () => {
         columns={columns}
         data={data}
         isLoading={isLoading}
-        onView={handleView}
+        onRowClick={handleView}
         onEdit={handleEdit}
-        onDelete={handleDelete}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        onDelete={(store) => handleDelete(store.id)}
+        onPageChange={(page: number) => setFilters({ ...filters, page })}
       />
 
       <DetailSidebar

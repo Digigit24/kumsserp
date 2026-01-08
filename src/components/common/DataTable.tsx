@@ -30,22 +30,24 @@ export interface FilterConfig {
   label: string;
   type: 'select' | 'text' | 'checkbox' | 'date';
   options?: { value: string; label: string }[];
+  placeholder?: string;
 }
 
 interface DataTableProps<T> {
-  title: string;
+  title?: string;
   description?: string;
-  data: PaginatedResponse<T> | null;
+  data: PaginatedResponse<T> | null | undefined;
   columns: Column<T>[];
   isLoading: boolean;
-  error: string | null;
-  onRefresh: () => void;
+  error?: string | null;
+  onRefresh?: () => void;
   onAdd?: () => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   onRowClick?: (item: T) => void;
   filters?: Record<string, any>;
   onFiltersChange?: (filters: Record<string, any>) => void;
+  onPageChange?: (page: number) => void;
   filterConfig?: FilterConfig[];
   searchPlaceholder?: string;
   addButtonLabel?: string;
@@ -66,6 +68,7 @@ export function DataTable<T extends Record<string, any>>({
   onRowClick,
   filters = {},
   onFiltersChange,
+  onPageChange,
   filterConfig = [],
   searchPlaceholder = 'Search...',
   addButtonLabel = 'Add New',
@@ -107,42 +110,56 @@ export function DataTable<T extends Record<string, any>>({
   const handlePageChange = (newPage: number) => {
     if (onFiltersChange) {
       onFiltersChange({ ...filters, page: newPage });
+      return;
+    }
+    if (onPageChange) {
+      onPageChange(newPage);
     }
   };
 
   const handlePageSizeChange = (pageSize: number) => {
     if (onFiltersChange) {
       onFiltersChange({ ...filters, page_size: pageSize, page: 1 });
+      return;
+    }
+    if (onPageChange) {
+      onPageChange(1);
     }
   };
+
+  const showHeader = Boolean(title || description || onAdd || onRefresh);
 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-muted-foreground mt-1">{description}</p>
-          )}
+      {showHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            {title && <h1 className="text-3xl font-bold tracking-tight">{title}</h1>}
+            {description && (
+              <p className="text-muted-foreground mt-1">{description}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {onRefresh && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={onRefresh}
+                disabled={isLoading}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            )}
+            {onAdd && (
+              <Button onClick={onAdd}>
+                <Plus className="h-4 w-4 mr-2" />
+                {addButtonLabel}
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-          {onAdd && (
-            <Button onClick={onAdd}>
-              <Plus className="h-4 w-4 mr-2" />
-              {addButtonLabel}
-            </Button>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Search and Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -199,7 +216,11 @@ export function DataTable<T extends Record<string, any>>({
                     type={filter.type}
                     value={filters[filter.name] || ''}
                     onChange={(e) => handleFilterChange(filter.name, e.target.value)}
-                    placeholder={filter.type === 'date' ? undefined : `Filter by ${filter.label.toLowerCase()}...`}
+                    placeholder={
+                      filter.type === 'date'
+                        ? undefined
+                        : filter.placeholder || `Filter by ${filter.label.toLowerCase()}...`
+                    }
                   />
                 )}
               </div>

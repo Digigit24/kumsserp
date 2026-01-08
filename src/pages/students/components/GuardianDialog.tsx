@@ -10,13 +10,13 @@ import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Checkbox } from '../../../components/ui/checkbox';
 import { useCreateStudentGuardian, useUpdateStudentGuardian } from '../../../hooks/useStudentGuardians';
-import type { StudentGuardian } from '../../../types/students.types';
+import type { StudentGuardian, StudentGuardianListItem } from '../../../types/students.types';
 
 interface GuardianDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     studentId: number;
-    guardian?: StudentGuardian;
+    guardian?: StudentGuardian | StudentGuardianListItem;
     onSuccess?: () => void;
 }
 
@@ -31,11 +31,22 @@ export const GuardianDialog: React.FC<GuardianDialogProps> = ({
     const createMutation = useCreateStudentGuardian();
     const updateMutation = useUpdateStudentGuardian();
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        first_name: string;
+        middle_name: string;
+        last_name: string;
+        relation: string;
+        phone: string;
+        email: string;
+        occupation: string;
+        annual_income: string;
+        is_primary: boolean;
+        is_emergency_contact: boolean;
+    }>({
         first_name: '',
         middle_name: '',
         last_name: '',
-        relation: 'father' as const,
+        relation: 'father',
         phone: '',
         email: '',
         occupation: '',

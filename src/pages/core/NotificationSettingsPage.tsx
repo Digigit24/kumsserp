@@ -129,18 +129,14 @@ const NotificationSettingsPage = () => {
         data={data}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
         filters={filters}
         onFiltersChange={setFilters}
         searchPlaceholder="Search settings..."
-        actions={
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Setting
-          </Button>
-        }
+        onAdd={handleCreate}
+        addButtonLabel="Add Setting"
       />
 
       <DetailSidebar
@@ -328,7 +324,7 @@ const NotificationSettingsPage = () => {
           {editMode === 'create' || selected ? (
             <NotificationSettingForm
               mode={editMode}
-              notificationSetting={editMode === 'edit' ? selected : undefined}
+              notificationSetting={editMode === 'edit' ? selected || undefined : undefined}
               collegeId={user?.college || 1}
               onSuccess={() => setIsFormOpen(false)}
               onCancel={() => setIsFormOpen(false)}

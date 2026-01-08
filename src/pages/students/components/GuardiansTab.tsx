@@ -14,7 +14,7 @@ import { EmptyState } from '../../../components/common/EmptyState';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 import { GuardianDialog } from './GuardianDialog';
 import { useStudentGuardians, useDeleteStudentGuardian } from '../../../hooks/useStudentGuardians';
-import type { StudentGuardian } from '../../../types/students.types';
+import type { StudentGuardianListItem } from '../../../types/students.types';
 
 interface GuardiansTabProps {
     studentId: number;
@@ -25,9 +25,9 @@ export const GuardiansTab: React.FC<GuardiansTabProps> = ({ studentId }) => {
     const deleteMutation = useDeleteStudentGuardian();
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [selectedGuardian, setSelectedGuardian] = useState<StudentGuardian | null>(null);
+    const [selectedGuardian, setSelectedGuardian] = useState<StudentGuardianListItem | null>(null);
     const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
-    const [editingGuardian, setEditingGuardian] = useState<StudentGuardian | undefined>();
+    const [editingGuardian, setEditingGuardian] = useState<StudentGuardianListItem | undefined>();
 
     const guardians = data?.results || [];
 
@@ -119,6 +119,9 @@ export const GuardiansTab: React.FC<GuardiansTabProps> = ({ studentId }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {guardians.map((sg, index) => {
                         const guardian = sg.guardian_details;
+                        if (!guardian) {
+                            return null;
+                        }
                         return (
                             <Card
                                 key={sg.id}
@@ -214,7 +217,7 @@ export const GuardiansTab: React.FC<GuardiansTabProps> = ({ studentId }) => {
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
                 title="Remove Guardian"
-                description={`Are you sure you want to remove ${selectedGuardian?.guardian_details.full_name} as a guardian? This action cannot be undone.`}
+                description={`Are you sure you want to remove ${selectedGuardian?.guardian_details?.full_name || 'this guardian'} as a guardian? This action cannot be undone.`}
                 confirmLabel="Remove"
                 onConfirm={handleDelete}
                 loading={deleteMutation.isPending}

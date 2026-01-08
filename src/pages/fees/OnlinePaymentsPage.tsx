@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
-import { Badge } from '../../components/ui/badge';
+import { Badge, type BadgeProps } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useOnlinePayments, useCreateOnlinePayment, useUpdateOnlinePayment, useDeleteOnlinePayment } from '../../hooks/useFees';
 import { OnlinePaymentForm } from './forms';
@@ -59,7 +59,7 @@ const OnlinePaymentsPage = () => {
       key: 'status',
       label: 'Status',
       render: (payment) => {
-        const statusColors: Record<string, string> = {
+        const statusColors: Record<string, BadgeProps['variant']> = {
           pending: 'secondary',
           success: 'success',
           failed: 'destructive',

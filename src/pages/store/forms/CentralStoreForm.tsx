@@ -41,7 +41,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="name"
             {...register('name', { required: 'Store name is required' })}
           />
-          {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+          {errors.name && <p className="text-sm text-red-500">{String(errors.name.message)}</p>}
         </div>
 
         <div>
@@ -50,7 +50,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="code"
             {...register('code', { required: 'Store code is required' })}
           />
-          {errors.code && <p className="text-sm text-red-500">{errors.code.message}</p>}
+          {errors.code && <p className="text-sm text-red-500">{String(errors.code.message)}</p>}
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
           id="address_line1"
           {...register('address_line1', { required: 'Address is required' })}
         />
-        {errors.address_line1 && <p className="text-sm text-red-500">{errors.address_line1.message}</p>}
+        {errors.address_line1 && <p className="text-sm text-red-500">{String(errors.address_line1.message)}</p>}
       </div>
 
       <div>
@@ -78,7 +78,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="city"
             {...register('city', { required: 'City is required' })}
           />
-          {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
+          {errors.city && <p className="text-sm text-red-500">{String(errors.city.message)}</p>}
         </div>
 
         <div>
@@ -87,7 +87,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="state"
             {...register('state', { required: 'State is required' })}
           />
-          {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
+          {errors.state && <p className="text-sm text-red-500">{String(errors.state.message)}</p>}
         </div>
 
         <div>
@@ -96,7 +96,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="pincode"
             {...register('pincode', { required: 'Pincode is required' })}
           />
-          {errors.pincode && <p className="text-sm text-red-500">{errors.pincode.message}</p>}
+          {errors.pincode && <p className="text-sm text-red-500">{String(errors.pincode.message)}</p>}
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             id="contact_phone"
             {...register('contact_phone', { required: 'Phone is required' })}
           />
-          {errors.contact_phone && <p className="text-sm text-red-500">{errors.contact_phone.message}</p>}
+          {errors.contact_phone && <p className="text-sm text-red-500">{String(errors.contact_phone.message)}</p>}
         </div>
 
         <div>
@@ -117,7 +117,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
             type="email"
             {...register('contact_email', { required: 'Email is required' })}
           />
-          {errors.contact_email && <p className="text-sm text-red-500">{errors.contact_email.message}</p>}
+          {errors.contact_email && <p className="text-sm text-red-500">{String(errors.contact_email.message)}</p>}
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export const CentralStoreForm = ({ store, onSubmit, onCancel }: CentralStoreForm
               required
               label="Store Manager"
               placeholder="Search and select manager..."
-              error={errors.manager?.message}
+              error={errors.manager?.message ? String(errors.manager.message) : undefined}
             />
           )}
         />

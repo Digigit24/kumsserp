@@ -234,7 +234,7 @@ export const StoreIndentsPage = () => {
         columns={columns}
         data={data || null}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        onPageChange={(page: number) => setFilters({ ...filters, page })}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

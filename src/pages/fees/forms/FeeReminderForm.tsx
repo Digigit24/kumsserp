@@ -175,7 +175,7 @@ export const FeeReminderForm = ({ feeReminder, onSubmit, onCancel }: FeeReminder
           <Input
             id="sent_at"
             type="datetime-local"
-            value={formData.sent_at}
+            value={formData.sent_at ?? ''}
             onChange={(e) => setFormData({ ...formData, sent_at: e.target.value })}
           />
         </div>
@@ -185,7 +185,7 @@ export const FeeReminderForm = ({ feeReminder, onSubmit, onCancel }: FeeReminder
         <Label htmlFor="message">Message *</Label>
         <Textarea
           id="message"
-          value={formData.message}
+          value={formData.message ?? ''}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           placeholder="Enter reminder message"
           rows={4}

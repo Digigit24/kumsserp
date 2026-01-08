@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentDocumentApi } from '../services/students.service';
 import type {
     StudentDocument,
+    StudentDocumentListItem,
     StudentDocumentFilters,
     StudentDocumentCreateInput,
     StudentDocumentUpdateInput,
@@ -13,7 +14,7 @@ import type {
 import type { PaginatedResponse } from '../types/core.types';
 
 export const useStudentDocuments = (filters?: StudentDocumentFilters) => {
-    return useQuery<PaginatedResponse<StudentDocument>>({
+    return useQuery<PaginatedResponse<StudentDocumentListItem>>({
         queryKey: ['student-documents', filters],
         queryFn: () => studentDocumentApi.list(filters),
         staleTime: 5 * 60 * 1000, // 5 minutes

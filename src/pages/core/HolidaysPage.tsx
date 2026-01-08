@@ -107,7 +107,7 @@ const HolidaysPage = () => {
         data={data}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
         onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import {
   Award,
   BookOpen,
+  Building,
   Calendar,
   Download,
   Edit,

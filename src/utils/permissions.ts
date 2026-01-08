@@ -9,7 +9,13 @@ import type { UserPermissions, ModulePermissions } from '@/types/auth.types';
 /**
  * Get the current user from localStorage
  */
-export const getCurrentUser = (): { user_type?: UserType; userType?: UserType; roles?: string[]; permissions?: Record<string, any> } | null => {
+export const getCurrentUser = (): {
+  user_type?: UserType;
+  userType?: UserType;
+  roles?: string[];
+  permissions?: Record<string, any>;
+  user_permissions?: UserPermissions;
+} | null => {
   try {
     const user = JSON.parse(localStorage.getItem('kumss_user') || '{}');
     return user;

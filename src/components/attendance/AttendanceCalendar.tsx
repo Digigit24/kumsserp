@@ -86,6 +86,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
     absent: attendanceRecords.filter(r => r.status === 'absent').length,
     late: attendanceRecords.filter(r => r.status === 'late').length,
     halfDay: attendanceRecords.filter(r => r.status === 'half_day').length,
+    percentage: '0',
   };
   stats.percentage = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : '0';
 

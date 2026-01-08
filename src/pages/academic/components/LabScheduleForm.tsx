@@ -175,7 +175,7 @@ export function LabScheduleForm({ mode, labScheduleId, onSuccess, onCancel }: La
             )}
 
             <CollegeField
-                value={formData.college}
+                value={formData.college ?? null}
                 onChange={(val: number | string) => {
                     setFormData({
                         ...formData,

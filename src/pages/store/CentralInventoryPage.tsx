@@ -150,8 +150,8 @@ export const CentralInventoryPage = () => {
             data={data}
             isLoading={isLoading}
             onEdit={handleEdit}
-            onDelete={handleDelete}
-            onPageChange={(page) => setFilters({ ...filters, page })}
+            onDelete={(item) => handleDelete(item.id)}
+            onPageChange={(page: number) => setFilters({ ...filters, page })}
           />
         </CardContent>
       </Card>

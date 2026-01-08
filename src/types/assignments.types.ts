@@ -17,6 +17,7 @@ export interface Assignment {
   due_date: string; // ISO date string
   max_marks: number;
   assignment_file?: string; // File URL
+  attachments?: string[] | null;
   allow_late_submission?: boolean;
   late_submission_penalty?: number;
   is_active: boolean;

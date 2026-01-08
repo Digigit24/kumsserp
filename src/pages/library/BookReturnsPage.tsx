@@ -35,10 +35,10 @@ const BookReturnsPage = () => {
     }
 
     // Create lookup maps for available data
-    const issuesMap = issuesData?.results ? new Map(issuesData.results.map(i => [i.id, i])) : new Map();
-    const booksMap = booksData?.results ? new Map(booksData.results.map(b => [b.id, b])) : new Map();
-    const membersMap = membersData?.results ? new Map(membersData.results.map(m => [m.id, m])) : new Map();
-    const usersMap = usersData?.results ? new Map(usersData.results.map(u => [u.id, u])) : new Map();
+    const issuesMap = issuesData?.results ? new Map(issuesData.results.map((i: any) => [i.id, i])) : new Map();
+    const booksMap = booksData?.results ? new Map(booksData.results.map((b: any) => [b.id, b])) : new Map();
+    const membersMap = membersData?.results ? new Map(membersData.results.map((m: any) => [m.id, m])) : new Map();
+    const usersMap = usersData?.results ? new Map(usersData.results.map((u: any) => [u.id, u])) : new Map();
 
     const enrichedResults = data.results.map(returnRecord => {
       const issueId = typeof returnRecord.issue === 'number' ? returnRecord.issue : returnRecord.issue?.id;

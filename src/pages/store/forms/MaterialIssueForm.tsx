@@ -115,7 +115,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                 {...register('min_number', { required: 'MIN number is required' })}
                 placeholder="Material Issue Number"
               />
-              {errors.min_number && <p className="text-sm text-red-500">{errors.min_number.message}</p>}
+              {errors.min_number && <p className="text-sm text-red-500">{String(errors.min_number.message)}</p>}
             </div>
 
             <div>
@@ -125,7 +125,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                 type="date"
                 {...register('issue_date', { required: 'Issue date is required' })}
               />
-              {errors.issue_date && <p className="text-sm text-red-500">{errors.issue_date.message}</p>}
+              {errors.issue_date && <p className="text-sm text-red-500">{String(errors.issue_date.message)}</p>}
             </div>
           </div>
 
@@ -177,7 +177,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                     onChange={field.onChange}
                     status="approved"
                     required
-                    error={errors.indent?.message}
+                    error={errors.indent?.message ? String(errors.indent.message) : undefined}
                     label="Store Indent"
                   />
                 )}
@@ -194,7 +194,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.central_store?.message}
+                    error={errors.central_store?.message ? String(errors.central_store.message) : undefined}
                   />
                 )}
               />
@@ -212,7 +212,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.receiving_college?.message}
+                    error={errors.receiving_college?.message ? String(errors.receiving_college.message) : undefined}
                     label="Receiving College"
                   />
                 )}
@@ -229,7 +229,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                     onChange={field.onChange}
                     label="Issued By"
                     required={false}
-                    error={errors.issued_by?.message}
+                    error={errors.issued_by?.message ? String(errors.issued_by.message) : undefined}
                   />
                 )}
               />
@@ -246,7 +246,7 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                   onChange={field.onChange}
                   label="Received By"
                   required={false}
-                  error={errors.received_by?.message}
+                  error={errors.received_by?.message ? String(errors.received_by.message) : undefined}
                 />
               )}
             />
@@ -391,7 +391,11 @@ export const MaterialIssueForm = ({ materialIssue, onSubmit, onCancel, isSubmitt
                             }
                           }}
                           required
-                          error={errors.items?.[index]?.item?.message}
+                          error={
+                            Array.isArray(errors.items)
+                              ? errors.items[index]?.item?.message
+                              : undefined
+                          }
                         />
                       )}
                     />

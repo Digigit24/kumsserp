@@ -12,6 +12,7 @@ import { useStudentMarks, useCreateStudentMarks, useUpdateStudentMarks, useDelet
 import { useStudents } from '../../hooks/useStudents';
 import { StudentMarksForm } from './forms';
 import { toast } from 'sonner';
+import type { StudentMarks } from '../../types/examination.types';
 
 const MarksEntryPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });

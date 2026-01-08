@@ -133,7 +133,7 @@ export const FeeRefundForm = ({ feeRefund, onSubmit, onCancel }: FeeRefundFormPr
         <Label htmlFor="transaction_id">Transaction ID</Label>
         <Input
           id="transaction_id"
-          value={formData.transaction_id}
+          value={formData.transaction_id ?? ''}
           onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
           placeholder="Enter transaction ID (optional)"
         />
@@ -143,7 +143,7 @@ export const FeeRefundForm = ({ feeRefund, onSubmit, onCancel }: FeeRefundFormPr
         <Label htmlFor="processed_by">Processed By</Label>
         <Input
           id="processed_by"
-          value={formData.processed_by}
+          value={formData.processed_by ?? ''}
           onChange={(e) => setFormData({ ...formData, processed_by: e.target.value })}
           placeholder="Name of person who processed the refund"
         />
@@ -153,7 +153,7 @@ export const FeeRefundForm = ({ feeRefund, onSubmit, onCancel }: FeeRefundFormPr
         <Label htmlFor="reason">Reason</Label>
         <Textarea
           id="reason"
-          value={formData.reason}
+          value={formData.reason ?? ''}
           onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
           placeholder="Enter reason for refund (optional)"
           rows={3}

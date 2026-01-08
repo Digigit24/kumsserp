@@ -138,7 +138,7 @@ export const GuardiansPage = () => {
         width="lg"
       >
         <GuardianForm
-          mode={sidebarMode}
+          mode={sidebarMode === 'view' ? 'edit' : sidebarMode}
           // Cast to any because Form might expect full object, but will fetch or handle partial
           guardian={selectedGuardian as any}
           onSuccess={handleFormSuccess}

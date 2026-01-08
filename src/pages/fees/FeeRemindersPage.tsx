@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeReminders, useCreateFeeReminder, useUpdateFeeReminder, useDeleteFeeReminder } from '../../hooks/useFees';
-import { FeeReminder } from '../../types/fees.types';
+import type { FeeReminder, FeeReminderCreateInput } from '../../types/fees.types';
 import { FeeReminderForm } from './forms/FeeReminderForm';
 import { toast } from 'sonner';
 
@@ -95,7 +95,7 @@ const FeeRemindersPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeReminder>) => {
+  const handleFormSubmit = async (data: Partial<FeeReminderCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeReminder.mutateAsync(data);

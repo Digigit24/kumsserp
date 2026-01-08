@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeStructures, useCreateFeeStructure, useUpdateFeeStructure, useDeleteFeeStructure } from '../../hooks/useFees';
-import { FeeStructure } from '../../types/fees.types';
+import type { FeeStructure, FeeStructureCreateInput } from '../../types/fees.types';
 import { FeeStructureForm } from './forms';
 import { toast } from 'sonner';
 
@@ -89,7 +89,7 @@ const FeeStructuresPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeStructure>) => {
+  const handleFormSubmit = async (data: Partial<FeeStructureCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeStructure.mutateAsync(data);

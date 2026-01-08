@@ -13,7 +13,7 @@ import { EmptyState } from '../../../components/common/EmptyState';
 import { SideDrawer, SideDrawerContent } from '../../../components/common/SideDrawer';
 import { StudentPromotionForm } from './StudentPromotionForm';
 import { useStudentPromotions } from '../../../hooks/useStudentPromotions';
-import type { StudentPromotion } from '../../../types/students.types';
+import type { StudentPromotionListItem } from '../../../types/students.types';
 
 interface PromotionsTabProps {
     studentId: number;
@@ -23,7 +23,7 @@ export const PromotionsTab: React.FC<PromotionsTabProps> = ({ studentId }) => {
     const { data, isLoading, error, refetch } = useStudentPromotions({ student: studentId });
 
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [selectedPromotion, setSelectedPromotion] = useState<StudentPromotion | undefined>();
+    const [selectedPromotion, setSelectedPromotion] = useState<StudentPromotionListItem | undefined>();
     const [drawerMode, setDrawerMode] = useState<'view' | 'create' | 'edit'>('create');
 
     const promotions = data?.results || [];

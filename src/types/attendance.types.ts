@@ -32,6 +32,8 @@ export interface StudentAttendance extends AuditFields {
   section_name: string;
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
+  check_in_time?: string | null;
+  check_out_time?: string | null;
   subject: number | null;
   subject_details: SubjectListItem | null;
   period: number | null;
@@ -60,7 +62,7 @@ export interface StudentAttendanceListItem {
 export interface StudentAttendanceCreateInput {
   student: number;
   class_obj: number;
-  section: number;
+  section: number | null;
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused' | 'half_day';
   check_in_time?: string | null;
@@ -77,7 +79,7 @@ export interface StudentAttendanceUpdateInput extends Partial<StudentAttendanceC
 export interface BulkAttendanceCreateInput {
   student_ids: number[];
   class_obj: number;
-  section: number;
+  section: number | null;
   date: string;
   subject?: number | null;
   period?: number | null;

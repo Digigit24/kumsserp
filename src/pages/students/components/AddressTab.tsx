@@ -14,7 +14,7 @@ import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 import { SideDrawer, SideDrawerContent } from '../../../components/common/SideDrawer';
 import { StudentAddressForm } from './StudentAddressForm';
 import { useStudentAddresses, useDeleteStudentAddress } from '../../../hooks/useStudentAddresses';
-import type { StudentAddress } from '../../../types/students.types';
+import type { StudentAddressListItem } from '../../../types/students.types';
 
 interface AddressTabProps {
     studentId: number;
@@ -25,9 +25,9 @@ export const AddressTab: React.FC<AddressTabProps> = ({ studentId }) => {
     const deleteMutation = useDeleteStudentAddress();
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [selectedAddress, setSelectedAddress] = useState<StudentAddress | null>(null);
+    const [selectedAddress, setSelectedAddress] = useState<StudentAddressListItem | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [editingAddress, setEditingAddress] = useState<StudentAddress | undefined>();
+    const [editingAddress, setEditingAddress] = useState<StudentAddressListItem | undefined>();
 
     const addresses = data?.results || [];
 

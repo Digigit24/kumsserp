@@ -168,7 +168,7 @@ export function normalizePermissions(
 
   // Context selectors visibility
   const canChooseCollege =
-    isSuperAdmin || (accessible_colleges && accessible_colleges.length > 1);
+    isSuperAdmin || !!(accessible_colleges && accessible_colleges.length > 1);
   const canChooseClass =
     !isStudent &&
     (isSuperAdmin ||

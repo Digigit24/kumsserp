@@ -36,7 +36,7 @@ export const VendorForm = ({ vendor, onSubmit, onCancel }: VendorFormProps) => {
           id="name"
           {...register('name', { required: 'Vendor name is required' })}
         />
-        {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+        {errors.name && <p className="text-sm text-red-500">{String(errors.name.message)}</p>}
       </div>
 
       <div>
@@ -45,7 +45,7 @@ export const VendorForm = ({ vendor, onSubmit, onCancel }: VendorFormProps) => {
           id="contact_person"
           {...register('contact_person', { required: 'Contact person is required' })}
         />
-        {errors.contact_person && <p className="text-sm text-red-500">{errors.contact_person.message}</p>}
+        {errors.contact_person && <p className="text-sm text-red-500">{String(errors.contact_person.message)}</p>}
       </div>
 
       <div>
@@ -55,7 +55,7 @@ export const VendorForm = ({ vendor, onSubmit, onCancel }: VendorFormProps) => {
           type="email"
           {...register('email', { required: 'Email is required' })}
         />
-        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+        {errors.email && <p className="text-sm text-red-500">{String(errors.email.message)}</p>}
       </div>
 
       <div>
@@ -64,7 +64,7 @@ export const VendorForm = ({ vendor, onSubmit, onCancel }: VendorFormProps) => {
           id="phone"
           {...register('phone', { required: 'Phone is required' })}
         />
-        {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+        {errors.phone && <p className="text-sm text-red-500">{String(errors.phone.message)}</p>}
       </div>
 
       <div>
@@ -73,7 +73,7 @@ export const VendorForm = ({ vendor, onSubmit, onCancel }: VendorFormProps) => {
           id="address"
           {...register('address', { required: 'Address is required' })}
         />
-        {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+        {errors.address && <p className="text-sm text-red-500">{String(errors.address.message)}</p>}
       </div>
 
       <div>

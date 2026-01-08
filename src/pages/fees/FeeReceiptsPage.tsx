@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeReceipts, useCreateFeeReceipt, useUpdateFeeReceipt, useDeleteFeeReceipt } from '../../hooks/useFees';
-import { FeeReceipt } from '../../types/fees.types';
+import type { FeeReceipt, FeeReceiptCreateInput } from '../../types/fees.types';
 import { FeeReceiptForm } from './forms/FeeReceiptForm';
 import { toast } from 'sonner';
 
@@ -81,7 +81,7 @@ const FeeReceiptsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeReceipt>) => {
+  const handleFormSubmit = async (data: Partial<FeeReceiptCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeReceipt.mutateAsync(data);

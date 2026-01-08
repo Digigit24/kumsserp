@@ -100,6 +100,7 @@ export const AttendanceMarkingPage: React.FC = () => {
     present: students.filter((s) => s.attendance_status === 'present').length,
     absent: students.filter((s) => s.attendance_status === 'absent').length,
     unmarked: students.filter((s) => !s.attendance_status).length,
+    percentage: '0',
   };
 
   stats.percentage = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(2) : '0';

@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeGroups, useCreateFeeGroup, useUpdateFeeGroup, useDeleteFeeGroup } from '../../hooks/useFees';
-import { FeeGroup } from '../../types/fees.types';
+import type { FeeGroup, FeeGroupCreateInput } from '../../types/fees.types';
 import { FeeGroupForm } from './forms/FeeGroupForm';
 import { toast } from 'sonner';
 
@@ -67,7 +67,7 @@ const FeeGroupsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeGroup>) => {
+  const handleFormSubmit = async (data: Partial<FeeGroupCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeGroup.mutateAsync(data);

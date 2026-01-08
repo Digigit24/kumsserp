@@ -6,7 +6,7 @@
 import { isSuperAdmin } from '@/utils/auth.utils';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Column, DataTable } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { useAuth } from '../../hooks/useAuth';

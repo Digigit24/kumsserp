@@ -8,6 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeDiscounts, useCreateFeeDiscount, useUpdateFeeDiscount, useDeleteFeeDiscount } from '../../hooks/useFees';
+import type { FeeDiscount } from '../../types/fees.types';
 import { FeeDiscountForm } from './forms';
 import { toast } from 'sonner';
 

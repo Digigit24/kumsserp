@@ -51,7 +51,7 @@ const SystemSettingsPage = () => {
         data={data}
         columns={columns}
         isLoading={isLoading}
-        error={error as string}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
         filters={filters}

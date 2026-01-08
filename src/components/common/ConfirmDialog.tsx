@@ -17,7 +17,8 @@ import { Button } from '../ui/button';
 
 interface ConfirmDialogProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange?: (open: boolean) => void;
+    onClose?: () => void;
     title: string;
     description: string;
     confirmLabel?: string;
@@ -30,6 +31,7 @@ interface ConfirmDialogProps {
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     open,
     onOpenChange,
+    onClose,
     title,
     description,
     confirmLabel = 'Confirm',
@@ -38,8 +40,18 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     variant = 'destructive',
     loading = false,
 }) => {
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (onOpenChange) {
+            onOpenChange(nextOpen);
+            return;
+        }
+        if (!nextOpen) {
+            onClose?.();
+        }
+    };
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
@@ -55,7 +67,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 <DialogFooter className="flex gap-2">
                     <Button
                         variant="outline"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => handleOpenChange(false)}
                         disabled={loading}
                     >
                         {cancelLabel}
@@ -64,7 +76,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         variant={variant}
                         onClick={() => {
                             onConfirm();
-                            onOpenChange(false);
+                            handleOpenChange(false);
                         }}
                         loading={loading}
                     >

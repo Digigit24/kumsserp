@@ -46,7 +46,13 @@ export const setupFetchInterceptor = () => {
 
       // Check for 401 Unauthorized
       if (response.status === 401) {
-        const url = typeof args[0] === "string" ? args[0] : args[0].url;
+        const requestInfo = args[0];
+        const url =
+          typeof requestInfo === "string"
+            ? requestInfo
+            : requestInfo instanceof URL
+            ? requestInfo.toString()
+            : requestInfo.url;
 
         // Don't logout on login endpoint failures
         if (!url.includes("/auth/login/")) {

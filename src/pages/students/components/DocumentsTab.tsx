@@ -13,7 +13,7 @@ import { EmptyState } from '../../../components/common/EmptyState';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 import { UploadDocumentDialog } from './UploadDocumentDialog';
 import { useStudentDocuments, useDeleteStudentDocument } from '../../../hooks/useStudentDocuments';
-import type { StudentDocument } from '../../../types/students.types';
+import type { StudentDocumentListItem } from '../../../types/students.types';
 
 interface DocumentsTabProps {
     studentId: number;
@@ -26,7 +26,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({ studentId }) => {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedDocId, setSelectedDocId] = useState<number | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [editingDocument, setEditingDocument] = useState<StudentDocument | null>(null);
+    const [editingDocument, setEditingDocument] = useState<StudentDocumentListItem | null>(null);
 
     const documents = data?.results || [];
 

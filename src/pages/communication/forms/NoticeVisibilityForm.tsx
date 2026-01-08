@@ -111,7 +111,7 @@ export const NoticeVisibilityForm = ({
               render={({ field }) => (
                 <ClassSearchableDropdown
                   value={field.value}
-                  onChange={field.value}
+                  onChange={field.onChange}
                   required={targetType === 'class' || targetType === 'section'}
                   label="Class"
                   placeholder="Search and select class..."

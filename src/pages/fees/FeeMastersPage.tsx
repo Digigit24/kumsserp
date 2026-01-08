@@ -10,7 +10,7 @@ import { Button } from '../../components/ui/button';
 import { useFeeMasters, useCreateFeeMaster, useUpdateFeeMaster, useDeleteFeeMaster, useFeeTypes } from '../../hooks/useFees';
 import { usePrograms } from '../../hooks/useAcademic';
 import { useAcademicYears } from '../../hooks/useCore';
-import { FeeMaster } from '../../types/fees.types';
+import type { FeeMaster, FeeMasterCreateInput } from '../../types/fees.types';
 import { FeeMasterForm } from './forms';
 import { toast } from 'sonner';
 
@@ -113,7 +113,7 @@ const FeeMastersPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeMaster>) => {
+  const handleFormSubmit = async (data: Partial<FeeMasterCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeMaster.mutateAsync(data);

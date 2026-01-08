@@ -182,7 +182,7 @@ export function SubjectAssignmentForm({ mode, subjectAssignmentId, onSuccess, on
 
             {/* College Selection */}
             <CollegeField
-                value={formData.college}
+                value={formData.college ?? null}
                 onChange={(val: number | string) => {
                     setFormData({ ...formData, college: Number(val), class_obj: 0, section: null });
                 }}

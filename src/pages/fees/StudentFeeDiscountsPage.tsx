@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useStudentFeeDiscounts, useCreateStudentFeeDiscount, useUpdateStudentFeeDiscount, useDeleteStudentFeeDiscount } from '../../hooks/useFees';
-import { StudentFeeDiscount } from '../../types/fees.types';
+import type { StudentFeeDiscount, StudentFeeDiscountCreateInput } from '../../types/fees.types';
 import { StudentFeeDiscountForm } from './forms/StudentFeeDiscountForm';
 import { toast } from 'sonner';
 
@@ -68,7 +68,7 @@ const StudentFeeDiscountsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<StudentFeeDiscount>) => {
+  const handleFormSubmit = async (data: Partial<StudentFeeDiscountCreateInput>) => {
     console.log('handleFormSubmit called with data:', data);
     try {
       if (sidebarMode === 'create') {

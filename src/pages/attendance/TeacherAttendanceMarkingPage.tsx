@@ -218,7 +218,7 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
             class_obj: selectedClass,
             section: selectedSection,
             date: selectedDate,
-            status: status,
+            status: status as 'present' | 'absent' | 'late' | 'excused',
             subject: selectedSubject || null,
             remarks: null,
           });
@@ -428,7 +428,6 @@ export const TeacherAttendanceMarkingPage: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="max-w-sm"
-                    icon={<Search className="h-4 w-4" />}
                   />
                 </div>
                 <Button variant="outline" onClick={handleMarkAllPresent}>

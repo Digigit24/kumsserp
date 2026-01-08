@@ -119,7 +119,7 @@ const TetrisLoader: React.FC<TetrisLoaderProps> = ({
     // Game Loop
     // --------------------------------------------------------------------------
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout;
+        let timeoutId: ReturnType<typeof setTimeout>;
 
         const tick = () => {
             setGrid((prevGrid) => {

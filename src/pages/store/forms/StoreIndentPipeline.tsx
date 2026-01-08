@@ -101,8 +101,8 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
       required_by_date: '',
       priority: 'medium',
       justification: '',
-      college: '',
-      central_store: '',
+      college: null,
+      central_store: null,
       requesting_store_manager: '',
       attachments: '',
       remarks: '',
@@ -110,7 +110,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
       is_active: true,
       items: [
         {
-          central_store_item: '',
+          central_store_item: null,
           requested_quantity: 1,
           unit: '',
           justification: '',
@@ -492,7 +492,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                       size="sm"
                       onClick={() =>
                         append({
-                          central_store_item: '',
+                          central_store_item: null,
                           requested_quantity: 1,
                           unit: '',
                           justification: '',
@@ -539,16 +539,20 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                             control={control}
                             rules={{ required: 'Item is required' }}
                             render={({ field }) => (
-                              <CentralStoreItemDropdown
-                                value={field.value}
-                                onChange={field.onChange}
-                                centralStoreId={centralStoreId}
-                                required
-                                error={errors.items?.[index]?.central_store_item?.message}
-                                label="Central Store Item"
-                              />
-                            )}
-                          />
+                            <CentralStoreItemDropdown
+                              value={field.value}
+                              onChange={field.onChange}
+                              centralStoreId={centralStoreId}
+                              required
+                              error={
+                                Array.isArray(errors.items)
+                                  ? errors.items[index]?.central_store_item?.message
+                                  : undefined
+                              }
+                              label="Central Store Item"
+                            />
+                          )}
+                        />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -566,9 +570,9 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                                 min: { value: 1, message: 'Minimum quantity is 1' },
                               })}
                             />
-                            {errors.items?.[index]?.requested_quantity && (
+                            {Array.isArray(errors.items) && errors.items[index]?.requested_quantity && (
                               <p className="text-xs text-destructive mt-1">
-                                {errors.items[index]?.requested_quantity?.message}
+                                {String(errors.items[index]?.requested_quantity?.message)}
                               </p>
                             )}
                           </div>
@@ -582,9 +586,9 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                               {...register(`items.${index}.unit`, { required: 'Unit is required' })}
                               placeholder="e.g., pieces, kg, ltr"
                             />
-                            {errors.items?.[index]?.unit && (
+                            {Array.isArray(errors.items) && errors.items[index]?.unit && (
                               <p className="text-xs text-destructive mt-1">
-                                {errors.items[index]?.unit?.message}
+                                {String(errors.items[index]?.unit?.message)}
                               </p>
                             )}
                           </div>
@@ -760,7 +764,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
                 <SearchableSelect
                   options={categoryOptions}
                   value={newItemForm.category}
-                  onChange={(value) => setNewItemForm({ ...newItemForm, category: value })}
+                  onChange={(value) => setNewItemForm({ ...newItemForm, category: Number(value) || 0 })}
                   placeholder="Select category"
                 />
               </div>

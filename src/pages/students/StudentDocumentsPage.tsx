@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useAuth } from '../../hooks/useAuth';
 import { useColleges } from '../../hooks/useCore';
 import { useDeleteStudentDocument, useStudentDocuments, useStudents } from '../../hooks/useStudents';
-import type { StudentDocument } from '../../types/students.types';
+import type { StudentDocumentListItem } from '../../types/students.types';
 import { UploadDocumentDialog } from './components/UploadDocumentDialog';
 
 export const StudentDocumentsPage = () => {
@@ -30,7 +30,7 @@ export const StudentDocumentsPage = () => {
   const deleteMutation = useDeleteStudentDocument();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<StudentDocument | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<StudentDocumentListItem | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
 
@@ -40,7 +40,7 @@ export const StudentDocumentsPage = () => {
       key: 'document_name',
       label: 'Document Name',
       sortable: true,
-      render: (doc: StudentDocument) => (
+      render: (doc: StudentDocumentListItem) => (
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{doc.document_name}</span>
@@ -50,7 +50,7 @@ export const StudentDocumentsPage = () => {
     {
       key: 'document_type',
       label: 'Type',
-      render: (doc: StudentDocument) => (
+      render: (doc: StudentDocumentListItem) => (
         <Badge variant="outline" className="capitalize">
           {doc.document_type.replace(/_/g, ' ')}
         </Badge>
@@ -59,12 +59,12 @@ export const StudentDocumentsPage = () => {
     {
       key: 'student_name',
       label: 'Student',
-      render: (doc: StudentDocument) => doc.student_name || `Student #${doc.student}`,
+      render: (doc: StudentDocumentListItem) => doc.student_name || `Student #${doc.student}`,
     },
     {
       key: 'is_verified',
       label: 'Status',
-      render: (doc: StudentDocument) => (
+      render: (doc: StudentDocumentListItem) => (
         <div className="flex gap-2">
           {doc.is_verified && <Badge variant="success">Verified</Badge>}
           {doc.is_active ? (
@@ -78,7 +78,7 @@ export const StudentDocumentsPage = () => {
     {
       key: 'uploaded_date',
       label: 'Uploaded',
-      render: (doc: StudentDocument) => new Date(doc.uploaded_date || doc.created_at).toLocaleDateString(),
+      render: (doc: StudentDocumentListItem) => new Date(doc.uploaded_date).toLocaleDateString(),
     },
   ];
 
@@ -88,7 +88,7 @@ export const StudentDocumentsPage = () => {
     setUploadDialogOpen(true);
   };
 
-  const handleDelete = (document: StudentDocument) => {
+  const handleDelete = (document: StudentDocumentListItem) => {
     setSelectedDocument(document);
     setDeleteDialogOpen(true);
   };

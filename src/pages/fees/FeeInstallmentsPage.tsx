@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeInstallments, useCreateFeeInstallment, useUpdateFeeInstallment, useDeleteFeeInstallment } from '../../hooks/useFees';
-import { FeeInstallment } from '../../types/fees.types';
+import type { FeeInstallment, FeeInstallmentCreateInput } from '../../types/fees.types';
 import { FeeInstallmentForm } from './forms/FeeInstallmentForm';
 import { toast } from 'sonner';
 
@@ -69,7 +69,7 @@ const FeeInstallmentsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeInstallment>) => {
+  const handleFormSubmit = async (data: Partial<FeeInstallmentCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createInstallment.mutateAsync(data);

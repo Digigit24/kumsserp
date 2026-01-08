@@ -11,7 +11,7 @@ export class ReconnectingWebSocket {
   private reconnectDecay: number = 1.5;
   private listeners: Record<string, WebSocketEventListener[]> = {};
   private forcedClose: boolean = false;
-  private reconnectTimeoutId: NodeJS.Timeout | null = null;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(url: string, protocols?: string | string[]) {
     this.url = url;

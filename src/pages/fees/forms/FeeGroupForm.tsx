@@ -96,7 +96,7 @@ export const FeeGroupForm = ({ feeGroup, onSubmit, onCancel }: FeeGroupFormProps
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
-          value={formData.description}
+          value={formData.description ?? ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="Enter description (optional)"
           rows={3}

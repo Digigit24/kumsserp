@@ -7,7 +7,7 @@ import { isSuperAdmin } from '@/utils/auth.utils';
 import { MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Column, DataTable } from '../../components/common/DataTable';
+import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
 import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useAuth } from '../../hooks/useAuth';
 import { useColleges } from '../../hooks/useCore';
 import { useDeleteStudentAddress, useStudentAddresses, useStudents } from '../../hooks/useStudents';
-import type { StudentAddress } from '../../types/students.types';
+import type { StudentAddressListItem } from '../../types/students.types';
 import { StudentAddressForm } from './components/StudentAddressForm';
 
 export const StudentAddressesPage = () => {
@@ -29,7 +29,7 @@ export const StudentAddressesPage = () => {
   const deleteMutation = useDeleteStudentAddress();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<StudentAddress | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<StudentAddressListItem | null>(null);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
 

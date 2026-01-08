@@ -349,7 +349,13 @@ export interface BookReturn extends AuditFields {
   damage_charges: string;
   fine_amount: string;
   remarks: string | null;
-  issue: number;
+  issue:
+    | number
+    | {
+        id: number;
+        book?: number | { id: number };
+        member?: number | { id: number };
+      };
   received_by: string;
   book_title?: string;
   member_name?: string;

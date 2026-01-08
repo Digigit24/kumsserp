@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeRefunds, useCreateFeeRefund, useUpdateFeeRefund, useDeleteFeeRefund } from '../../hooks/useFees';
-import { FeeRefund } from '../../types/fees.types';
+import type { FeeRefund, FeeRefundCreateInput } from '../../types/fees.types';
 import { FeeRefundForm } from './forms/FeeRefundForm';
 import { toast } from 'sonner';
 
@@ -70,7 +70,7 @@ const FeeRefundsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeRefund>) => {
+  const handleFormSubmit = async (data: Partial<FeeRefundCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeRefund.mutateAsync(data);

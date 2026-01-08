@@ -217,7 +217,7 @@ export const IndentsPipelinePage = () => {
 
         card.primaryAction = {
           label: canApprove ? 'Approve' : 'Waiting for Approval',
-          onClick: canApprove ? () => handleApprove(indent) : undefined,
+          onClick: canApprove ? () => handleApprove(indent) : () => {},
           disabled: !canApprove,
         };
 
@@ -236,7 +236,7 @@ export const IndentsPipelinePage = () => {
 
         card.primaryAction = {
           label: canApprove ? 'Approve' : 'Waiting for Approval',
-          onClick: canApprove ? () => handleApprove(indent) : undefined,
+          onClick: canApprove ? () => handleApprove(indent) : () => {},
           disabled: !canApprove,
         };
 

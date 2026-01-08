@@ -88,6 +88,7 @@ export interface User {
   user_type?: string;
   user_type_display?: string;
   college?: number | null; // College ID for non-super_admin users
+  college_id?: number | null;
   college_name?: string;
   collegeName?: string;
   teacher_id?: number | null; // Teacher model ID for teacher users

@@ -12,7 +12,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { Upload } from 'lucide-react';
 import { useCreateStudentDocument, useUpdateStudentDocument } from '../../../hooks/useStudentDocuments';
 import { userApi } from '../../../services/accounts.service';
-import type { StudentDocument } from '../../../types/students.types';
+import type { StudentDocument, StudentDocumentListItem } from '../../../types/students.types';
 import type { UserListItem } from '../../../types/accounts.types';
 import { Checkbox } from '../../../components/ui/checkbox';
 
@@ -21,7 +21,7 @@ interface UploadDocumentDialogProps {
     onOpenChange: (open: boolean) => void;
     studentId: number;
     onSuccess?: () => void;
-    document?: StudentDocument;
+    document?: StudentDocument | StudentDocumentListItem;
 }
 
 export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
@@ -88,7 +88,7 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                 document_name: document.document_name || '',
                 notes: document.notes || '',
                 is_verified: document.is_verified || false,
-                verified_by: document.verified_by || '',
+                verified_by: document.verified_by ? String(document.verified_by) : '',
                 verified_date: document.verified_date || '',
                 is_active: document.is_active !== undefined ? document.is_active : true,
             });
@@ -117,7 +117,7 @@ export const UploadDocumentDialog: React.FC<UploadDocumentDialogProps> = ({
                         document_name: formData.document_name,
                         notes: formData.notes,
                         is_verified: formData.is_verified,
-                        verified_by: formData.verified_by || null,
+                        verified_by: formData.verified_by ? Number(formData.verified_by) : null,
                         verified_date: formData.verified_date || null,
                         is_active: formData.is_active,
                     },

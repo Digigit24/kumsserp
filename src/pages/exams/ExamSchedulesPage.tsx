@@ -12,6 +12,7 @@ import { useExamSchedules, useCreateExamSchedule, useUpdateExamSchedule, useDele
 import { ExamScheduleForm } from './forms';
 import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
+import type { ExamSchedule } from '../../types/examination.types';
 
 const ExamSchedulesPage = () => {
   const { user } = useAuth();

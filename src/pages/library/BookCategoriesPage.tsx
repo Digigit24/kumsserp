@@ -101,7 +101,7 @@ export const BookCategoriesPage = () => {
         data={data}
         columns={columns}
         isLoading={isLoading}
-        error={error}
+        error={error instanceof Error ? error.message : error ? String(error) : null}
         onRefresh={refetch}
         onAdd={handleAdd}
         onRowClick={handleRowClick}

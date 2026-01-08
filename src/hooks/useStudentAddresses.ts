@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentAddressApi } from '../services/students.service';
 import type {
     StudentAddress,
+    StudentAddressListItem,
     StudentAddressFilters,
     StudentAddressCreateInput,
     StudentAddressUpdateInput,
@@ -13,7 +14,7 @@ import type {
 import type { PaginatedResponse } from '../types/core.types';
 
 export const useStudentAddresses = (filters?: StudentAddressFilters) => {
-    return useQuery<PaginatedResponse<StudentAddress>>({
+    return useQuery<PaginatedResponse<StudentAddressListItem>>({
         queryKey: ['student-addresses', filters],
         queryFn: () => studentAddressApi.list(filters),
         staleTime: 5 * 60 * 1000, // 5 minutes

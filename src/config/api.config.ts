@@ -708,6 +708,9 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
     patch: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
     delete: (id: number) => `/api/v1/fees/fee-collections/${id}/`,
+    cancel: (id: number) => `/api/v1/fees/fee-collections/${id}/cancel/`,
+    studentStatus: (studentId: number) =>
+      `/api/v1/fees/fee-collections/student_status/${studentId}/`,
   },
 
   // Fees Module - Fee Receipts
@@ -768,6 +771,16 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/api/v1/library/books/${id}/`,
     patch: (id: number) => `/api/v1/library/books/${id}/`,
     delete: (id: number) => `/api/v1/library/books/${id}/`,
+  },
+
+  // Library Module - Book Categories
+  bookCategories: {
+    list: "/api/v1/library/book-categories/",
+    create: "/api/v1/library/book-categories/",
+    detail: (id: number) => `/api/v1/library/book-categories/${id}/`,
+    update: (id: number) => `/api/v1/library/book-categories/${id}/`,
+    patch: (id: number) => `/api/v1/library/book-categories/${id}/`,
+    delete: (id: number) => `/api/v1/library/book-categories/${id}/`,
   },
 
   // Library Module - Members

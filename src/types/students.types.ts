@@ -167,6 +167,9 @@ export interface StudentListItem {
   id: number;
   admission_number: string;
   registration_number: string;
+  roll_number?: string | null;
+  first_name?: string;
+  last_name?: string;
   full_name: string;
   email: string;
   phone: string | null;
@@ -176,6 +179,9 @@ export interface StudentListItem {
   program_name: string;
   current_class: number | null;
   current_class_name: string | null;
+  current_section?: number | null;
+  current_section_name?: string | null;
+  date_of_birth?: string | null;
   is_active: boolean;
   is_alumni: boolean;
 }
@@ -222,6 +228,8 @@ export interface StudentFilters {
   college?: number;
   program?: number;
   current_class?: number;
+  class_obj?: number;
+  section?: number;
   current_section?: number;
   category?: number;
   group?: number;
@@ -311,8 +319,11 @@ export interface StudentGuardianListItem {
   student: number;
   student_name: string;
   guardian: number;
+  guardian_details?: Guardian;
   is_primary: boolean;
   is_emergency_contact: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StudentGuardianCreateInput {
@@ -358,8 +369,12 @@ export interface StudentAddressListItem {
   student: number;
   student_name: string;
   address_type: string;
+  address_line1?: string;
+  address_line2?: string | null;
   city: string;
   state: string;
+  pincode?: string;
+  country?: string;
 }
 
 export interface StudentAddressCreateInput {
@@ -412,8 +427,13 @@ export interface StudentDocumentListItem {
   student_name: string;
   document_type: string;
   document_name: string;
+  document_file?: string;
   uploaded_date: string;
   is_verified: boolean;
+  verified_by?: number | null;
+  verified_by_details?: UserBasic | null;
+  verified_date?: string | null;
+  notes?: string | null;
   is_active: boolean;
 }
 
@@ -430,6 +450,7 @@ export interface StudentDocumentUpdateInput extends Partial<Omit<StudentDocument
   is_verified?: boolean;
   verified_by?: number | null;
   verified_date?: string | null;
+  is_active?: boolean;
 }
 
 export interface StudentDocumentFilters {
@@ -576,9 +597,19 @@ export interface StudentPromotionListItem {
   id: number;
   student: number;
   student_name: string;
+  from_class?: number;
   from_class_name: string;
+  to_class?: number;
   to_class_name: string;
+  from_section?: number | null;
+  from_section_name?: string | null;
+  to_section?: number | null;
+  to_section_name?: string | null;
   promotion_date: string;
+  academic_year?: number;
+  academic_year_name?: string | null;
+  remarks?: string | null;
+  is_active?: boolean;
 }
 
 export interface StudentPromotionCreateInput {
@@ -590,6 +621,7 @@ export interface StudentPromotionCreateInput {
   promotion_date: string;
   academic_year: number;
   remarks?: string | null;
+  is_active?: boolean;
 }
 
 export interface StudentPromotionUpdateInput extends Partial<StudentPromotionCreateInput> {}

@@ -8,6 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeFines, useCreateFeeFine, useUpdateFeeFine, useDeleteFeeFine } from '../../hooks/useFees';
+import type { FeeFine } from '../../types/fees.types';
 import { FeeFineForm } from './forms';
 import { toast } from 'sonner';
 

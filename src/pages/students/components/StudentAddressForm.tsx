@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { studentAddressApi } from '../../../services/students.service';
-import type { StudentAddress, StudentAddressCreateInput, StudentAddressUpdateInput } from '../../../types/students.types';
+import type { StudentAddress, StudentAddressCreateInput, StudentAddressListItem, StudentAddressUpdateInput } from '../../../types/students.types';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 interface StudentAddressFormProps {
   mode: 'create' | 'edit';
   studentId: number;
-  address?: StudentAddress;
+  address?: StudentAddress | StudentAddressListItem;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -43,12 +43,12 @@ export const StudentAddressForm = ({ mode, studentId, address, onSuccess, onCanc
       setFormData({
         student: address.student,
         address_type: address.address_type,
-        address_line1: address.address_line1,
+        address_line1: address.address_line1 || '',
         address_line2: address.address_line2 || '',
         city: address.city,
         state: address.state,
-        pincode: address.pincode,
-        country: address.country,
+        pincode: address.pincode || '',
+        country: address.country || 'India',
       });
     }
   }, [mode, address]);

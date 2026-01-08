@@ -11,6 +11,7 @@ import { useMarksRegisters, useCreateMarksRegister, useUpdateMarksRegister, useD
 import { useSubjects, useSections } from '../../hooks/useAcademic';
 import { MarksRegisterForm } from './forms';
 import { toast } from 'sonner';
+import type { MarksRegister } from '../../types/examination.types';
 
 const MarksRegistersPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });

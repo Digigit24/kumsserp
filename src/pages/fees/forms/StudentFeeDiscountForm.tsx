@@ -137,7 +137,7 @@ export const StudentFeeDiscountForm = ({ studentFeeDiscount, onSubmit, onCancel 
         <Label htmlFor="remarks">Remarks</Label>
         <Textarea
           id="remarks"
-          value={formData.remarks}
+          value={formData.remarks ?? ''}
           onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
           placeholder="Enter any additional remarks (optional)"
           rows={3}

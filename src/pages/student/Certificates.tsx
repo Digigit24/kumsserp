@@ -176,7 +176,11 @@ export const Certificates: React.FC = () => {
                     {request.status === 'processing' && (
                       <div>
                         <p className="text-sm text-muted-foreground">Estimated Completion</p>
-                        <p className="font-medium">{new Date(request.estimatedDate).toLocaleDateString()}</p>
+                        <p className="font-medium">
+                          {request.estimatedDate
+                            ? new Date(request.estimatedDate).toLocaleDateString()
+                            : 'TBD'}
+                        </p>
                       </div>
                     )}
                     {request.status === 'ready' && (

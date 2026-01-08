@@ -56,8 +56,8 @@ export const BookIssueForm = ({ issue, onSubmit, onCancel }: BookIssueFormProps)
   useEffect(() => {
     if (issue) {
       setFormData({
-        book: issue.book,
-        member: issue.member,
+        book: typeof issue.book === 'number' ? issue.book : issue.book.id,
+        member: typeof issue.member === 'number' ? issue.member : issue.member.id,
         issue_date: issue.issue_date,
         due_date: issue.due_date,
         return_date: issue.return_date || undefined,

@@ -149,10 +149,10 @@ const StudentAttendancePage = () => {
         if (studentIds.length === 1) {
           return await markSingleMutation.mutateAsync({
             student: studentIds[0],
-            class_obj: selectedClass,
+            class_obj: selectedClass!,
             section: selectedSection || null,
             date: selectedDate,
-            status: status as 'present' | 'absent',
+            status: status as 'present' | 'absent' | 'late' | 'excused' | 'half_day',
             subject: null,
             period: null,
             remarks: null,
@@ -161,10 +161,10 @@ const StudentAttendancePage = () => {
           // Multiple students with same status, use bulk API
           return await bulkMarkMutation.mutateAsync({
             student_ids: studentIds,
-            class_obj: selectedClass,
+            class_obj: selectedClass!,
             section: selectedSection || null,
             date: selectedDate,
-            status: status,
+            status: status as 'present' | 'absent' | 'late' | 'excused' | 'half_day',
             subject: null,
             remarks: null,
           });
@@ -365,11 +365,12 @@ const StudentAttendancePage = () => {
       />
 
       <DataTable
+        title="Students"
         columns={columns}
         data={data || { count: 0, next: null, previous: null, results: [] }}
         isLoading={isLoading}
-        error={error?.message || null}
-        onRefresh={() => refetch()}
+        error={typeof error === 'string' ? error : error ? String(error) : null}
+        onRefresh={refetch}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}

@@ -91,6 +91,7 @@ export interface ProgramListItem {
   faculty: number;
   faculty_name: string;
   program_type: string;
+  department_name?: string | null;
   is_active: boolean;
 }
 
@@ -284,6 +285,8 @@ export interface SubjectAssignmentListItem {
   id: number;
   subject: number;
   subject_name: string;
+  subject_code?: string | null;
+  subject_details?: SubjectListItem | null;
   class_obj: number;
   class_name: string;
   section: number | null;
@@ -334,6 +337,7 @@ export interface ClassroomListItem {
   college: number;
   college_name: string;
   room_type: string;
+  room_number?: string | null;
   capacity: number;
   is_active: boolean;
 }
@@ -414,10 +418,13 @@ export interface TimetableListItem {
   section_name: string;
   subject_assignment: number;
   subject_name: string;
+  subject_code?: string | null;
   teacher_name: string | null;
   day_of_week: number;
   class_time: number;
   time_slot: string;
+  start_time?: string | null;
+  end_time?: string | null;
   classroom: number | null;
   classroom_name: string | null;
   effective_from: string;
@@ -548,6 +555,7 @@ export interface SectionFilters {
   page?: number;
   page_size?: number;
   class_obj?: number;
+  class_id?: number;
   is_active?: boolean;
   search?: string;
   ordering?: string;
@@ -576,6 +584,7 @@ export interface SubjectAssignmentFilters {
   page_size?: number;
   subject?: number;
   class_obj?: number;
+  class_field?: number;
   section?: number;
   teacher?: string;
   is_optional?: boolean;
@@ -609,6 +618,7 @@ export interface TimetableFilters {
   page?: number;
   page_size?: number;
   section?: number;
+  class_field?: number;
   day_of_week?: number;
   class_time?: number;
   classroom?: number;

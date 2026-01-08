@@ -15,6 +15,9 @@ export interface DetailSidebarProps {
   mode: 'view' | 'create' | 'edit';
   children: ReactNode;
   footer?: ReactNode;
+  data?: unknown;
+  onEdit?: () => void;
+  onDelete?: () => void;
   width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 

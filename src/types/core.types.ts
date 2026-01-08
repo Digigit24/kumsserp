@@ -122,6 +122,7 @@ export interface AcademicYear extends BaseEntity {
   college: number;
   college_name: string;
   year: string;
+  description?: string | null;
   start_date: string;
   end_date: string;
   is_current: boolean;
@@ -292,15 +293,26 @@ export interface NotificationSetting extends BaseEntity {
   college_name: string;
   sms_enabled: boolean;
   sms_gateway: string;
+  sms_api_key?: string | null;
   sms_sender_id: string | null;
   email_enabled: boolean;
   email_gateway: string;
   email_from: string | null;
+  email_from_name?: string | null;
+  email_api_key?: string | null;
   whatsapp_enabled: boolean;
+  whatsapp_api_key?: string | null;
   whatsapp_number: string | null;
+  whatsapp_phone_number?: string | null;
   attendance_notif: boolean;
   fee_reminder: boolean;
   fee_days: string;
+  notify_admission?: boolean;
+  notify_fees?: boolean;
+  notify_attendance?: boolean;
+  notify_exam?: boolean;
+  notify_result?: boolean;
+  notify_event?: boolean;
   notif_settings: NotificationSettingsData | null;
 }
 

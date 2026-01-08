@@ -165,7 +165,7 @@ export const MaterialIssuancePage = () => {
         columns={columns}
         data={data}
         isLoading={isLoading}
-        onPageChange={(page) => setFilters({ ...filters, page })}
+        onPageChange={(page: number) => setFilters({ ...filters, page })}
       />
 
       {/* View Details Dialog */}

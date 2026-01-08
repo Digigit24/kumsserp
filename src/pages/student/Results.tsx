@@ -228,7 +228,17 @@ export const Results: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Subject-wise Performance</h3>
               <div className="space-y-3">
-                {semester.results.map((result, index) => (
+                {semester.results.map(
+                  (
+                    result: {
+                      subject: string;
+                      totalMarks: number;
+                      obtainedMarks: number;
+                      grade: string;
+                      credits: number;
+                    },
+                    index: number
+                  ) => (
                   <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/50 transition-colors">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">

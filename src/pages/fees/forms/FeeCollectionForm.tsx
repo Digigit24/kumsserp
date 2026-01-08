@@ -159,7 +159,7 @@ export const FeeCollectionForm = ({ feeCollection, onSubmit, onCancel }: FeeColl
           <Label htmlFor="transaction_id">Transaction ID</Label>
           <Input
             id="transaction_id"
-            value={formData.transaction_id}
+            value={formData.transaction_id ?? ''}
             onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
             placeholder="Enter transaction/reference number"
           />
@@ -170,7 +170,7 @@ export const FeeCollectionForm = ({ feeCollection, onSubmit, onCancel }: FeeColl
         <Label htmlFor="remarks">Remarks</Label>
         <Textarea
           id="remarks"
-          value={formData.remarks}
+          value={formData.remarks ?? ''}
           onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
           placeholder="Any additional notes"
           rows={3}

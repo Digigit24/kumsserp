@@ -26,7 +26,18 @@ export const Subjects: React.FC = () => {
   const subjectAssignments = assignmentsData?.results || [];
 
   // Transform API data to match UI structure
-  const subjects = useMemo(() => {
+  type SubjectSchedule = { day: string; time: string; room: string };
+  type SubjectItem = {
+    id: number;
+    name: string;
+    code: string;
+    teacher: string;
+    credits: number;
+    type: string;
+    schedule: SubjectSchedule[];
+  };
+
+  const subjects = useMemo<SubjectItem[]>(() => {
     return subjectAssignments.map((assignment) => ({
       id: assignment.id,
       name: assignment.subject_name || 'Subject',

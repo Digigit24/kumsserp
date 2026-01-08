@@ -9,27 +9,7 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Checkbox } from '../../../components/ui/checkbox';
 import { Label } from '../../../components/ui/label';
-
-interface NotificationSetting {
-  id: number;
-  college: number;
-  sms_enabled: boolean;
-  sms_gateway: string;
-  sms_api_key?: string;
-  sms_sender_id?: string;
-  email_enabled: boolean;
-  email_gateway: string;
-  email_api_key?: string;
-  email_from?: string;
-  whatsapp_enabled: boolean;
-  whatsapp_api_key?: string;
-  whatsapp_number?: string;
-  attendance_notif: boolean;
-  fee_reminder: boolean;
-  fee_days: string;
-  notif_settings?: string;
-  is_active: boolean;
-}
+import { NotificationSetting } from '../../../types/core.types';
 
 interface NotificationSettingFormData {
   college: number;
@@ -95,6 +75,9 @@ export const NotificationSettingForm = ({
 
   useEffect(() => {
     if (mode === 'edit' && notificationSetting) {
+      const notifSettingsValue = notificationSetting.notif_settings
+        ? JSON.stringify(notificationSetting.notif_settings)
+        : '';
       setFormData({
         college: notificationSetting.college,
         sms_enabled: notificationSetting.sms_enabled,
@@ -111,7 +94,7 @@ export const NotificationSettingForm = ({
         attendance_notif: notificationSetting.attendance_notif,
         fee_reminder: notificationSetting.fee_reminder,
         fee_days: notificationSetting.fee_days,
-        notif_settings: notificationSetting.notif_settings || '',
+        notif_settings: notifSettingsValue,
         is_active: notificationSetting.is_active,
       });
     }

@@ -98,13 +98,13 @@ export const NotificationRulesPage = () => {
     const icons = [];
 
     if (channelList.includes('email')) {
-      icons.push(<Mail key="email" className="w-4 h-4" title="Email" />);
+      icons.push(<Mail key="email" className="w-4 h-4" aria-label="Email" />);
     }
     if (channelList.includes('sms')) {
-      icons.push(<MessageSquare key="sms" className="w-4 h-4" title="SMS" />);
+      icons.push(<MessageSquare key="sms" className="w-4 h-4" aria-label="SMS" />);
     }
     if (channelList.includes('push')) {
-      icons.push(<Smartphone key="push" className="w-4 h-4" title="Push" />);
+      icons.push(<Smartphone key="push" className="w-4 h-4" aria-label="Push" />);
     }
 
     return icons;

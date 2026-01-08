@@ -21,6 +21,12 @@ interface GuardianFormProps {
   onCancel: () => void;
 }
 
+type GuardianFormData = Omit<GuardianCreateInput, 'user' | 'photo' | 'annual_income'> & {
+  user: string;
+  photo: string;
+  annual_income: string;
+};
+
 export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFormProps) => {
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +34,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const [formData, setFormData] = useState<GuardianCreateInput>({
+  const [formData, setFormData] = useState<GuardianFormData>({
     user: '',
     first_name: '',
     last_name: '',
@@ -67,7 +73,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   useEffect(() => {
     if (mode === 'edit' && guardian) {
       setFormData({
-        user: guardian.user || '',
+        user: guardian.user ? String(guardian.user) : '',
         first_name: guardian.first_name,
         last_name: guardian.last_name,
         middle_name: guardian.middle_name || '',
@@ -116,7 +122,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field: keyof GuardianCreateInput, value: any) => {
+  const handleChange = (field: keyof GuardianFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
@@ -140,9 +146,9 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
 
     try {
       // Clean up empty strings to null
-      const cleanedData = {
+      const cleanedData: GuardianCreateInput = {
         ...formData,
-        user: formData.user || null,
+        user: formData.user ? Number(formData.user) : null,
         middle_name: formData.middle_name || null,
         email: formData.email || null,
         alternate_phone: formData.alternate_phone || null,
@@ -221,7 +227,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
               </SelectTrigger>
               <SelectContent>
                 {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
+                  <SelectItem key={user.id} value={String(user.id)}>
                     {user.full_name || user.username} {user.email && `(${user.email})`}
                   </SelectItem>
                 ))}

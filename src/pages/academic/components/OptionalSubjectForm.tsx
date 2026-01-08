@@ -108,15 +108,18 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
             setError('Please select at least one subject');
             return;
         }
-        if (formData.min_selection < 1) {
+        const minSelection = formData.min_selection ?? 0;
+        const maxSelection = formData.max_selection ?? 0;
+
+        if (minSelection < 1) {
             setError('Minimum selection must be at least 1');
             return;
         }
-        if (formData.max_selection < formData.min_selection) {
+        if (maxSelection < minSelection) {
             setError('Maximum selection cannot be less than minimum selection');
             return;
         }
-        if (formData.max_selection > formData.subjects.length) {
+        if (maxSelection > formData.subjects.length) {
             setError('Maximum selection cannot exceed number of subjects');
             return;
         }
@@ -175,7 +178,7 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
             )}
 
             <CollegeField
-                value={formData.college}
+                value={formData.college ?? null}
                 onChange={(val: number | string) => {
                     setFormData({ ...formData, college: Number(val), class_obj: 0 });
                 }}
@@ -283,7 +286,7 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
                         type="number"
                         min="1"
                         max={formData.subjects.length}
-                        value={formData.min_selection}
+                        value={formData.min_selection ?? ''}
                         onChange={(e) => setFormData({ ...formData, min_selection: parseInt(e.target.value) || 1 })}
                         disabled={isViewMode}
                         required
@@ -299,9 +302,9 @@ export function OptionalSubjectForm({ mode, optionalSubjectId, onSuccess, onCanc
                     <Input
                         id="max_selection"
                         type="number"
-                        min={formData.min_selection}
+                        min={formData.min_selection ?? 1}
                         max={formData.subjects.length}
-                        value={formData.max_selection}
+                        value={formData.max_selection ?? ''}
                         onChange={(e) => setFormData({ ...formData, max_selection: parseInt(e.target.value) || 1 })}
                         disabled={isViewMode}
                         required

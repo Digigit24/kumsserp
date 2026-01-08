@@ -77,8 +77,9 @@ export const BookReturnForm = ({ bookReturn, onSubmit, onCancel }: BookReturnFor
 
   useEffect(() => {
     if (bookReturn) {
+      const issueId = typeof bookReturn.issue === 'number' ? bookReturn.issue : bookReturn.issue?.id || 0;
       setFormData({
-        issue: bookReturn.issue,
+        issue: issueId,
         return_date: bookReturn.return_date,
         is_damaged: bookReturn.is_damaged,
         damage_charges: bookReturn.damage_charges,

@@ -3,7 +3,7 @@
  * Mock data for the attendance marking feature
  */
 
-import { PaginatedResponse } from '@/types/api.types';
+import { PaginatedResponse } from '@/types/core.types';
 
 // ============================================================================
 // CLASS SESSION INTERFACE

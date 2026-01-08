@@ -8,7 +8,7 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useFeeCollections, useCreateFeeCollection, useUpdateFeeCollection, useDeleteFeeCollection } from '../../hooks/useFees';
-import { FeeCollection } from '../../types/fees.types';
+import type { FeeCollection, FeeCollectionCreateInput } from '../../types/fees.types';
 import { FeeCollectionForm } from './forms';
 import { toast } from 'sonner';
 
@@ -38,7 +38,7 @@ const FeeCollectionsPage = () => {
       label: 'Payment Method',
       render: (collection) => (
         <Badge variant="secondary">
-          {collection.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {collection.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
         </Badge>
       ),
     },
@@ -47,7 +47,7 @@ const FeeCollectionsPage = () => {
       label: 'Status',
       render: (collection) => (
         <Badge variant={collection.status === 'completed' ? 'success' : collection.status === 'pending' ? 'secondary' : 'destructive'}>
-          {collection.status.replace(/\b\w/g, l => l.toUpperCase())}
+          {collection.status.replace(/\b\w/g, (l: string) => l.toUpperCase())}
         </Badge>
       ),
     },
@@ -116,7 +116,7 @@ const FeeCollectionsPage = () => {
     setSidebarMode('edit');
   };
 
-  const handleFormSubmit = async (data: Partial<FeeCollection>) => {
+  const handleFormSubmit = async (data: Partial<FeeCollectionCreateInput>) => {
     try {
       if (sidebarMode === 'create') {
         await createFeeCollection.mutateAsync(data);
@@ -202,7 +202,7 @@ const FeeCollectionsPage = () => {
                 <h3 className="text-sm font-medium text-muted-foreground">Payment Method</h3>
                 <p className="mt-1">
                   <Badge variant="secondary">
-                    {selectedCollection.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {selectedCollection.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </Badge>
                 </p>
               </div>
@@ -210,7 +210,7 @@ const FeeCollectionsPage = () => {
                 <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
                 <p className="mt-1">
                   <Badge variant={selectedCollection.status === 'completed' ? 'success' : selectedCollection.status === 'pending' ? 'secondary' : 'destructive'}>
-                    {selectedCollection.status.replace(/\b\w/g, l => l.toUpperCase())}
+                    {selectedCollection.status.replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </Badge>
                 </p>
               </div>

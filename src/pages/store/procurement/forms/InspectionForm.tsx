@@ -77,7 +77,7 @@ export const InspectionForm = ({ inspection, onSubmit, onCancel }: InspectionFor
                 {...register('grn', { required: 'GRN is required', valueAsNumber: true })}
                 placeholder="Goods Receipt Note ID"
               />
-              {errors.grn && <p className="text-sm text-red-500">{errors.grn.message}</p>}
+              {errors.grn && <p className="text-sm text-red-500">{String(errors.grn.message)}</p>}
             </div>
 
             <div>
@@ -87,7 +87,7 @@ export const InspectionForm = ({ inspection, onSubmit, onCancel }: InspectionFor
                 type="date"
                 {...register('inspection_date', { required: 'Inspection date is required' })}
               />
-              {errors.inspection_date && <p className="text-sm text-red-500">{errors.inspection_date.message}</p>}
+              {errors.inspection_date && <p className="text-sm text-red-500">{String(errors.inspection_date.message)}</p>}
             </div>
           </div>
 
@@ -294,8 +294,10 @@ export const InspectionForm = ({ inspection, onSubmit, onCancel }: InspectionFor
                     id={`items.${index}.item_description`}
                     {...register(`items.${index}.item_description`, { required: 'Item description is required' })}
                   />
-                  {errors.items?.[index]?.item_description && (
-                    <p className="text-sm text-red-500">{errors.items[index].item_description.message}</p>
+                  {Array.isArray(errors.items) && errors.items[index]?.item_description && (
+                    <p className="text-sm text-red-500">
+                      {String(errors.items[index]?.item_description?.message)}
+                    </p>
                   )}
                 </div>
 

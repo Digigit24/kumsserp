@@ -3,12 +3,13 @@
  */
 
 import { useAuth } from '@/hooks/useAuth';
-import { getCurrentUserCollege } from '@/utils/auth.utils';
+import { getCurrentUserCollege, isSuperAdmin } from '@/utils/auth.utils';
 import { AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { CentralStoreDropdown } from '../../../components/common/CentralStoreDropdown';
 import { CentralStoreItemDropdown } from '../../../components/common/CentralStoreItemDropdown';
+import { CollegeField } from '../../../components/common/CollegeField';
 import { UserSearchableDropdown } from '../../../components/common/UserSearchableDropdown';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Button } from '../../../components/ui/button';
@@ -106,7 +107,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                 id="indent_number"
                 {...register('indent_number', { required: 'Indent number is required' })}
               />
-              {errors.indent_number && <p className="text-sm text-red-500">{errors.indent_number.message}</p>}
+              {errors.indent_number && <p className="text-sm text-red-500">{String(errors.indent_number.message)}</p>}
             </div>
 
             <div>
@@ -116,7 +117,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                 type="date"
                 {...register('required_by_date', { required: 'Required by date is required' })}
               />
-              {errors.required_by_date && <p className="text-sm text-red-500">{errors.required_by_date.message}</p>}
+              {errors.required_by_date && <p className="text-sm text-red-500">{String(errors.required_by_date.message)}</p>}
             </div>
           </div>
 
@@ -170,7 +171,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
               {...register('justification', { required: 'Justification is required' })}
               rows={3}
             />
-            {errors.justification && <p className="text-sm text-red-500">{errors.justification.message}</p>}
+            {errors.justification && <p className="text-sm text-red-500">{String(errors.justification.message)}</p>}
           </div>
 
           <div>
@@ -201,7 +202,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.college?.message as string}
+                    error={errors.college?.message ? String(errors.college.message) : undefined}
                   />
                 )}
               />
@@ -217,7 +218,7 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.central_store?.message}
+                    error={errors.central_store?.message ? String(errors.central_store.message) : undefined}
                   />
                 )}
               />
@@ -229,15 +230,15 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
               name="requesting_store_manager"
               control={control}
               render={({ field }) => (
-                <UserSearchableDropdown
-                  value={field.value}
-                  onChange={field.onChange}
-                  userType="store_manager"
-                  college={watch('college')}
-                  label="Requesting Store Manager"
-                  required={false}
-                  error={errors.requesting_store_manager?.message}
-                />
+                  <UserSearchableDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    userType="store_manager"
+                    college={watch('college')}
+                    label="Requesting Store Manager"
+                    required={false}
+                    error={errors.requesting_store_manager?.message ? String(errors.requesting_store_manager.message) : undefined}
+                  />
               )}
             />
           </div>
@@ -308,7 +309,11 @@ export const StoreIndentForm = ({ indent, onSubmit, onCancel }: StoreIndentFormP
                         onChange={field.onChange}
                         centralStoreId={watch('central_store')}
                         required
-                        error={errors.items?.[index]?.central_store_item?.message}
+                        error={
+                          Array.isArray(errors.items)
+                            ? errors.items[index]?.central_store_item?.message
+                            : undefined
+                        }
                         label="Central Store Item"
                       />
                     )}

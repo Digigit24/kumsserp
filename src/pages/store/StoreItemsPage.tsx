@@ -280,7 +280,7 @@ export const StoreItemsPage: React.FC = () => {
                   <SearchableSelect
                     options={categoryOptions}
                     value={itemForm.category}
-                    onChange={(value) => setItemForm({ ...itemForm, category: value })}
+                    onChange={(value) => setItemForm({ ...itemForm, category: Number(value) })}
                     placeholder="Select category"
                   />
                 </div>
@@ -649,7 +649,7 @@ export const StoreItemsPage: React.FC = () => {
                   <SearchableSelect
                     options={categoryOptions}
                     value={itemForm.category}
-                    onChange={(value) => setItemForm({ ...itemForm, category: value })}
+                    onChange={(value) => setItemForm({ ...itemForm, category: Number(value) })}
                     placeholder="Select category"
                   />
                 </div>

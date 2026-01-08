@@ -86,6 +86,7 @@ export interface FeeMaster extends AuditFields {
   program_name?: string;
   academic_year: number;
   academic_year_name?: string;
+  academic_year_label?: string;
   fee_type: number;
   fee_type_name?: string;
 }

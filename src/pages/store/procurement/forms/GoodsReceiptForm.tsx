@@ -82,7 +82,7 @@ export const GoodsReceiptForm = ({ goodsReceipt, onSubmit, onCancel }: GoodsRece
                 id="grn_number"
                 {...register('grn_number', { required: 'GRN number is required' })}
               />
-              {errors.grn_number && <p className="text-sm text-red-500">{errors.grn_number.message}</p>}
+              {errors.grn_number && <p className="text-sm text-red-500">{String(errors.grn_number.message)}</p>}
             </div>
 
             <div>
@@ -92,7 +92,7 @@ export const GoodsReceiptForm = ({ goodsReceipt, onSubmit, onCancel }: GoodsRece
                 type="date"
                 {...register('receipt_date', { required: 'Receipt date is required' })}
               />
-              {errors.receipt_date && <p className="text-sm text-red-500">{errors.receipt_date.message}</p>}
+              {errors.receipt_date && <p className="text-sm text-red-500">{String(errors.receipt_date.message)}</p>}
             </div>
           </div>
 
@@ -107,7 +107,7 @@ export const GoodsReceiptForm = ({ goodsReceipt, onSubmit, onCancel }: GoodsRece
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.supplier?.message}
+                    error={errors.supplier?.message ? String(errors.supplier.message) : undefined}
                   />
                 )}
               />
@@ -123,7 +123,7 @@ export const GoodsReceiptForm = ({ goodsReceipt, onSubmit, onCancel }: GoodsRece
                     value={field.value}
                     onChange={field.onChange}
                     required
-                    error={errors.central_store?.message}
+                    error={errors.central_store?.message ? String(errors.central_store.message) : undefined}
                   />
                 )}
               />
@@ -324,8 +324,10 @@ export const GoodsReceiptForm = ({ goodsReceipt, onSubmit, onCancel }: GoodsRece
                     id={`items.${index}.item_description`}
                     {...register(`items.${index}.item_description`, { required: 'Item description is required' })}
                   />
-                  {errors.items?.[index]?.item_description && (
-                    <p className="text-sm text-red-500">{errors.items[index].item_description.message}</p>
+                  {Array.isArray(errors.items) && errors.items[index]?.item_description && (
+                    <p className="text-sm text-red-500">
+                      {String(errors.items[index]?.item_description?.message)}
+                    </p>
                   )}
                 </div>
 

@@ -39,6 +39,7 @@ export interface ExamTypeListItem {
   code: string;
   college: number;
   college_name: string;
+  description?: string | null;
   weightage: number;
   is_active: boolean;
 }
@@ -482,4 +483,58 @@ export interface TestPaperFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+}
+
+// ============================================================================
+// MARKS REGISTERS
+// ============================================================================
+
+export interface MarksRegister {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  max_marks: number;
+  pass_marks: number;
+  exam: number;
+  subject: number;
+  section: number | null;
+  created_by: string;
+  updated_by: string;
+  class_name: string;
+  subject_name: string;
+  total_students: number;
+  students_appeared: number;
+  students_passed: number;
+  pass_percentage: number;
+  highest_marks: number;
+  lowest_marks: number;
+  average_marks: number;
+  is_verified: boolean;
+  verified_by: string | null;
+  remarks: string | null;
+}
+
+// ============================================================================
+// STUDENT MARKS
+// ============================================================================
+
+export interface StudentMarks {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  theory_marks: number | null;
+  practical_marks: number | null;
+  internal_marks: number | null;
+  total_marks: number;
+  grade: string | null;
+  is_absent: boolean;
+  register: number;
+  student: number;
+  created_by: string;
+  updated_by: string;
+  student_name: string;
+  student_roll_number: string;
+  remarks: string | null;
 }
