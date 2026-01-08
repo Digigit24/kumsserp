@@ -3,7 +3,7 @@
  * All types matching Django backend models
  */
 
-import { UserBasic } from './accounts.types';
+import { UserBasic } from "./accounts.types";
 
 // ============================================================================
 // COMMON TYPES
@@ -259,7 +259,8 @@ export interface OptionalSubjectCreateInput {
   college?: number;
 }
 
-export interface OptionalSubjectUpdateInput extends Partial<OptionalSubjectCreateInput> {}
+export interface OptionalSubjectUpdateInput
+  extends Partial<OptionalSubjectCreateInput> {}
 
 // ============================================================================
 // SUBJECT ASSIGNMENT TYPES
@@ -308,7 +309,8 @@ export interface SubjectAssignmentCreateInput {
   college?: number;
 }
 
-export interface SubjectAssignmentUpdateInput extends Partial<SubjectAssignmentCreateInput> {}
+export interface SubjectAssignmentUpdateInput
+  extends Partial<SubjectAssignmentCreateInput> {}
 
 // ============================================================================
 // CLASSROOM TYPES
@@ -482,7 +484,8 @@ export interface LabScheduleCreateInput {
   college?: number;
 }
 
-export interface LabScheduleUpdateInput extends Partial<LabScheduleCreateInput> {}
+export interface LabScheduleUpdateInput
+  extends Partial<LabScheduleCreateInput> {}
 
 // ============================================================================
 // CLASS TEACHER TYPES
@@ -514,7 +517,8 @@ export interface ClassTeacherCreateInput {
   college?: number;
 }
 
-export interface ClassTeacherUpdateInput extends Partial<ClassTeacherCreateInput> {}
+export interface ClassTeacherUpdateInput
+  extends Partial<ClassTeacherCreateInput> {}
 
 // ============================================================================
 // FILTER TYPES
@@ -549,6 +553,7 @@ export interface ClassFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface SectionFilters {
@@ -559,6 +564,7 @@ export interface SectionFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface SubjectFilters {
@@ -568,6 +574,7 @@ export interface SubjectFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface OptionalSubjectFilters {
@@ -577,6 +584,7 @@ export interface OptionalSubjectFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface SubjectAssignmentFilters {
@@ -591,6 +599,7 @@ export interface SubjectAssignmentFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface ClassroomFilters {
@@ -604,6 +613,7 @@ export interface ClassroomFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  college?: number;
 }
 
 export interface ClassTimeFilters {
@@ -612,6 +622,7 @@ export interface ClassTimeFilters {
   is_break?: boolean;
   is_active?: boolean;
   ordering?: string;
+  college?: number;
 }
 
 export interface TimetableFilters {
@@ -619,11 +630,13 @@ export interface TimetableFilters {
   page_size?: number;
   section?: number;
   class_field?: number;
+  class_obj?: number;
   day_of_week?: number;
   class_time?: number;
   classroom?: number;
   is_active?: boolean;
   ordering?: string;
+  college?: number;
 }
 
 export interface LabScheduleFilters {

@@ -21,6 +21,7 @@ interface CollegeFieldProps {
     required?: boolean;
     className?: string;
     placeholder?: string;
+    disabled?: boolean;
 }
 
 export const CollegeField: React.FC<CollegeFieldProps> = ({
@@ -30,7 +31,8 @@ export const CollegeField: React.FC<CollegeFieldProps> = ({
     label = "College",
     required = true,
     className,
-    placeholder = "Select college"
+    placeholder = "Select college",
+    disabled
 }) => {
     const { user } = useAuth();
     const isSuper = isSuperAdmin(user);
@@ -60,6 +62,7 @@ export const CollegeField: React.FC<CollegeFieldProps> = ({
             <Select
                 value={value?.toString()}
                 onValueChange={(v) => onChange(Number(v))}
+                disabled={disabled}
             >
                 <SelectTrigger className={error ? "border-destructive" : ""}>
                     <SelectValue placeholder={isLoading ? "Loading colleges..." : placeholder} />

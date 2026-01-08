@@ -19,8 +19,10 @@ import type { TimetableCreateInput } from '../../../types/academic.types';
 interface TimetableFormProps {
     mode: 'view' | 'create' | 'edit';
     timetableId?: number;
+    prefilledData?: Partial<TimetableCreateInput>; // re-added
     onSuccess: () => void;
     onCancel: () => void;
+    lockContextFields?: boolean;
 }
 
 const DAYS_OF_WEEK = [
@@ -33,7 +35,7 @@ const DAYS_OF_WEEK = [
     { value: 6, label: 'Sunday' },
 ];
 
-export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: TimetableFormProps) {
+export function TimetableForm({ mode, timetableId, prefilledData, onSuccess, onCancel, lockContextFields }: TimetableFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -59,13 +61,23 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
         effective_from: new Date().toISOString().split('T')[0],
         effective_to: undefined,
         is_active: true,
+        ...prefilledData, // Merge prefilled data
     });
 
     useEffect(() => {
-        fetchClasses();
-        fetchClassTimes();
         fetchClassrooms();
     }, []);
+
+    // Fetch classes and times when college changes
+    useEffect(() => {
+        if (formData.college) {
+            fetchClasses(formData.college);
+            fetchClassTimes(formData.college);
+        } else {
+            setClasses([]);
+            setClassTimes([]);
+        }
+    }, [formData.college]);
 
     useEffect(() => {
         if ((mode === 'edit' || mode === 'view') && timetableId) {
@@ -93,9 +105,13 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
         }
     }, [formData.section]);
 
-    const fetchClasses = async () => {
+    const fetchClasses = async (collegeId?: number) => {
         try {
-            const data = await classApi.list({ page_size: 100, is_active: true });
+            const data = await classApi.list({ 
+                page_size: 100, 
+                is_active: true,
+                college: collegeId
+            });
             setClasses(data.results);
         } catch (err) {
             console.error('Failed to fetch classes:', err);
@@ -136,9 +152,13 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
         }
     };
 
-    const fetchClassTimes = async () => {
+    const fetchClassTimes = async (collegeId?: number) => {
         try {
-            const data = await classTimeApi.list({ page_size: 100, is_active: true });
+            const data = await classTimeApi.list({ 
+                page_size: 100, 
+                is_active: true, 
+                college: collegeId 
+            });
             setClassTimes(data.results);
         } catch (err) {
             console.error('Failed to fetch class times:', err);
@@ -261,6 +281,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                     setFormData({ ...formData, college: Number(val), class_obj: 0, section: 0, subject_assignment: 0 });
                 }}
                 className="mb-4"
+                disabled={isViewMode || lockContextFields}
             />
 
             {/* Class Selection */}
@@ -271,7 +292,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                 <Select
                     value={formData.class_obj?.toString()}
                     onValueChange={(v) => setFormData({ ...formData, class_obj: parseInt(v), section: 0, subject_assignment: 0 })}
-                    disabled={isViewMode}
+                    disabled={isViewMode || lockContextFields}
                 >
                     <SelectTrigger id="class">
                         <SelectValue placeholder="Select class" />
@@ -299,7 +320,7 @@ export function TimetableForm({ mode, timetableId, onSuccess, onCancel }: Timeta
                 <Select
                     value={formData.section?.toString()}
                     onValueChange={(v) => setFormData({ ...formData, section: parseInt(v), subject_assignment: 0 })}
-                    disabled={isViewMode || !formData.class_obj || loadingSections}
+                    disabled={isViewMode || !formData.class_obj || loadingSections || lockContextFields}
                 >
                     <SelectTrigger id="section">
                         <SelectValue placeholder={
