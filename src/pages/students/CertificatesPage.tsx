@@ -3,9 +3,10 @@
  * Manages student certificates with CRUD operations
  */
 
-import { isSuperAdmin } from '@/utils/auth.utils';
+import { isSuperAdmin, getCurrentUserCollege } from '@/utils/auth.utils';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { CollegeField } from '../../components/common/CollegeField';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
@@ -17,9 +18,18 @@ import { CertificateForm } from './components/CertificateForm';
 
 export const CertificatesPage = () => {
   const { user } = useAuth();
+  const isSuper = isSuperAdmin(user as any);
+  const defaultCollegeId = getCurrentUserCollege(user as any);
   const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
-  const [filters, setFilters] = useState<CertificateFilters>({ page: 1, page_size: 20 });
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(
+    isSuper ? null : defaultCollegeId
+  );
+  const [filters, setFilters] = useState<CertificateFilters>({
+    page: 1,
+    page_size: 20,
+    ...(isSuper ? {} : defaultCollegeId ? { college: defaultCollegeId } : {}),
+  });
   const { data, isLoading, error, refetch } = useCertificates(filters);
   const deleteMutation = useDeleteCertificate();
 
@@ -76,12 +86,20 @@ export const CertificatesPage = () => {
   };
 
   const handleAdd = () => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before issuing certificates.');
+      return;
+    }
     setSelectedCertificate(null);
     setSidebarMode('create');
     setIsSidebarOpen(true);
   };
 
   const handleDelete = (certificate: CertificateListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before deleting certificates.');
+      return;
+    }
     setCertificateToDelete(certificate);
     setDeleteDialogOpen(true);
   };
@@ -95,9 +113,45 @@ export const CertificatesPage = () => {
     }
   };
 
+  const normalizeCollegeId = (value: any): number | null => {
+    if (value === '' || value === undefined || value === null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const handleCollegeChange = (collegeId: number | string) => {
+    const parsedId = collegeId === '' ? null : Number(collegeId);
+    const normalized = Number.isFinite(parsedId) ? (parsedId as number) : null;
+    setSelectedCollegeId(normalized);
+    setFilters((prev) => {
+      const next = { ...prev, page: 1 };
+      if (normalized) {
+        return { ...next, college: normalized };
+      }
+      const { college, ...rest } = next as any;
+      return rest;
+    });
+  };
+
+  const handleFiltersChange = (newFilters: Record<string, any>) => {
+    setFilters((prev) => {
+      const next = { ...prev, ...newFilters };
+      if (isSuper && Object.prototype.hasOwnProperty.call(newFilters, 'college')) {
+        const parsed = normalizeCollegeId(newFilters.college);
+        setSelectedCollegeId(parsed);
+        if (parsed) {
+          return { ...next, college: parsed };
+        }
+        const { college, ...rest } = next as any;
+        return rest;
+      }
+      return next;
+    });
+  };
+
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
-    ...(isSuperAdmin(user as any) ? [{
+    ...(isSuper ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -110,6 +164,15 @@ export const CertificatesPage = () => {
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
+      {isSuper && (
+        <div className="mb-4">
+          <CollegeField
+            value={selectedCollegeId}
+            onChange={handleCollegeChange}
+            placeholder="Select college to filter students"
+          />
+        </div>
+      )}
       <DataTable
         title="Student Certificates"
         description="Manage student certificates (Bonafide, TC, Marksheet, Degree). Click on any row to edit."
@@ -122,7 +185,7 @@ export const CertificatesPage = () => {
         onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
-        onFiltersChange={setFilters as any}
+        onFiltersChange={handleFiltersChange as any}
         filterConfig={filterConfig}
         searchPlaceholder="Search certificates..."
         addButtonLabel="Issue Certificate"
@@ -143,6 +206,7 @@ export const CertificatesPage = () => {
         <CertificateForm
           mode={sidebarMode}
           certificateId={selectedCertificate?.id}
+          collegeId={selectedCollegeId}
           onSuccess={() => {
             setIsSidebarOpen(false);
             refetch();

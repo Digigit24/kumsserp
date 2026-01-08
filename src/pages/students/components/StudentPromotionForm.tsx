@@ -18,19 +18,34 @@ import type { StudentPromotion, StudentPromotionCreateInput } from '../../../typ
 interface StudentPromotionFormProps {
     mode: 'view' | 'create' | 'edit';
     promotionId?: number;
+    collegeId?: number | null;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export function StudentPromotionForm({ mode, promotionId, onSuccess, onCancel }: StudentPromotionFormProps) {
+export function StudentPromotionForm({ mode, promotionId, collegeId, onSuccess, onCancel }: StudentPromotionFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [promotion, setPromotion] = useState<StudentPromotion | null>(null);
 
-    const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
+    const studentFilters = {
+        page_size: 100,
+        is_active: true,
+        ...(collegeId ? { college: collegeId } : {}),
+    };
+    const { data: studentsData } = useStudents(studentFilters);
     const { data: classesData } = useClasses({ page_size: 100, is_active: true });
     const { data: yearsData } = useAcademicYears({ page_size: 100 });
+
+    const restrictByCollege = typeof collegeId !== 'undefined';
+    const filteredStudents =
+        studentsData?.results?.filter((student) => {
+            if (!restrictByCollege) return true;
+            if (collegeId === null) return false;
+            return student.college === collegeId;
+        }) || [];
+    const disableStudentSelect = mode === 'view' || (restrictByCollege && collegeId === null);
 
     const [formData, setFormData] = useState<StudentPromotionCreateInput>({
         student: 0,
@@ -74,6 +89,15 @@ export function StudentPromotionForm({ mode, promotionId, onSuccess, onCancel }:
         }
     };
 
+    useEffect(() => {
+        if (restrictByCollege) {
+            const exists = filteredStudents.some((s) => s.id === formData.student);
+            if (!exists && formData.student !== 0) {
+                setFormData((prev) => ({ ...prev, student: 0 }));
+            }
+        }
+    }, [restrictByCollege, collegeId, studentsData, formData.student, filteredStudents]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.student || !formData.from_class || !formData.to_class || !formData.academic_year) {
@@ -107,10 +131,14 @@ export function StudentPromotionForm({ mode, promotionId, onSuccess, onCancel }:
 
             <div className="space-y-2">
                 <Label>Student <span className="text-destructive">*</span></Label>
-                <Select value={formData.student?.toString()} onValueChange={(v) => setFormData({ ...formData, student: parseInt(v) })} disabled={isViewMode}>
-                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                <Select
+                    value={formData.student?.toString()}
+                    onValueChange={(v) => setFormData({ ...formData, student: parseInt(v) })}
+                    disabled={disableStudentSelect}
+                >
+                    <SelectTrigger><SelectValue placeholder={disableStudentSelect ? "Select college to load students" : "Select student"} /></SelectTrigger>
                     <SelectContent>
-                        {studentsData?.results.map((s) => <SelectItem key={s.id} value={s.id.toString()}>{s.full_name} ({s.admission_number})</SelectItem>)}
+                        {filteredStudents.map((s) => <SelectItem key={s.id} value={s.id.toString()}>{s.full_name} ({s.admission_number})</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>

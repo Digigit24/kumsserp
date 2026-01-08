@@ -5,20 +5,30 @@
 
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { CollegeField } from '../../components/common/CollegeField';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { useColleges } from '../../hooks/useCore';
 import { useDeleteGuardian, useGuardians } from '../../hooks/useStudents';
 import type { GuardianListItem } from '../../types/students.types';
-import { isSuperAdmin } from '../../utils/auth.utils';
+import { getCurrentUserCollege, isSuperAdmin } from '../../utils/auth.utils';
 import { GuardianForm } from './components/GuardianForm';
 
 export const GuardiansPage = () => {
   const { user } = useAuth();
+  const isSuper = isSuperAdmin(user as any);
+  const defaultCollegeId = getCurrentUserCollege(user as any);
   const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
-  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(
+    isSuper ? null : defaultCollegeId
+  );
+  const [filters, setFilters] = useState({
+    page: 1,
+    page_size: 20,
+    ...(isSuper ? {} : defaultCollegeId ? { college: defaultCollegeId } : {}),
+  });
   const { data, isLoading, error, refetch } = useGuardians(filters);
   const deleteMutation = useDeleteGuardian();
 
@@ -53,18 +63,30 @@ export const GuardiansPage = () => {
   ];
 
   const handleAdd = () => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before adding guardians.');
+      return;
+    }
     setSelectedGuardian(null);
     setSidebarMode('create');
     setIsSidebarOpen(true);
   };
 
   const handleEdit = (guardian: GuardianListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before editing guardians.');
+      return;
+    }
     setSelectedGuardian(guardian);
     setSidebarMode('edit');
     setIsSidebarOpen(true);
   };
 
   const handleDelete = (guardian: GuardianListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before deleting guardians.');
+      return;
+    }
     setSelectedGuardian(guardian);
     setDeleteDialogOpen(true);
   };
@@ -90,15 +112,25 @@ export const GuardiansPage = () => {
   };
 
   const handleFiltersChange = (newFilters: Record<string, any>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }));
+    setFilters(prev => {
+      const next = { ...prev, ...newFilters };
+      if (isSuper && Object.prototype.hasOwnProperty.call(newFilters, 'college')) {
+        const value = newFilters.college;
+        const parsed = value ? Number(value) : null;
+        setSelectedCollegeId(parsed && !Number.isNaN(parsed) ? parsed : null);
+        if (parsed && !Number.isNaN(parsed)) {
+          return { ...next, college: parsed };
+        }
+        const { college, ...rest } = next as any;
+        return rest;
+      }
+      return next;
+    });
   };
 
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
-    ...(isSuperAdmin(user as any) ? [{
+    ...(isSuper ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -111,6 +143,15 @@ export const GuardiansPage = () => {
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
+      {isSuper && (
+        <div className="mb-4">
+          <CollegeField
+            value={selectedCollegeId}
+            onChange={(collegeId) => handleFiltersChange({ college: collegeId ?? '' })}
+            placeholder="Select college to filter guardians"
+          />
+        </div>
+      )}
       <DataTable
         title="Guardians"
         description="Manage all guardian records for students"

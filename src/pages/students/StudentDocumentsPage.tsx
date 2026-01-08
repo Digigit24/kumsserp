@@ -3,11 +3,11 @@
  * Displays all student documents with CRUD operations
  */
 
-import { isSuperAdmin } from '@/utils/auth.utils';
+import { isSuperAdmin, getCurrentUserCollege } from '@/utils/auth.utils';
 import { FileText, Upload } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { CollegeField } from '../../components/common/CollegeField';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { SideDrawer, SideDrawerContent } from '../../components/common/SideDrawer';
 import { Badge } from '../../components/ui/badge';
@@ -20,19 +20,53 @@ import type { StudentDocumentListItem } from '../../types/students.types';
 import { UploadDocumentDialog } from './components/UploadDocumentDialog';
 
 export const StudentDocumentsPage = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const isSuper = isSuperAdmin(user as any);
+  const defaultCollegeId = getCurrentUserCollege(user as any);
   const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
-  const [filters, setFilters] = useState({ page: 1, page_size: 20 });
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(
+    isSuper ? null : defaultCollegeId
+  );
+  const [filters, setFilters] = useState({
+    page: 1,
+    page_size: 20,
+    ...(isSuper ? {} : defaultCollegeId ? { college: defaultCollegeId } : {}),
+  });
   const { data, isLoading, error, refetch } = useStudentDocuments(filters);
-  const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
+  const studentFilters = {
+    page_size: 100,
+    is_active: true,
+    ...(selectedCollegeId ? { college: selectedCollegeId } : {}),
+  };
+  const { data: studentsData } = useStudents(studentFilters);
   const deleteMutation = useDeleteStudentDocument();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<StudentDocumentListItem | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+
+  const normalizeCollegeId = (value: any): number | null => {
+    if (value === '' || value === undefined || value === null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const handleCollegeChange = (collegeId: number | string) => {
+    const parsedId = collegeId === '' ? null : Number(collegeId);
+    const normalized = Number.isFinite(parsedId) ? (parsedId as number) : null;
+    setSelectedCollegeId(normalized);
+    setSelectedStudentId(null);
+    setFilters((prev) => {
+      const next = { ...prev, page: 1 };
+      if (normalized) {
+        return { ...next, college: normalized };
+      }
+      const { college, ...rest } = next as any;
+      return rest;
+    });
+  };
 
   // Define table columns
   const columns: Column<any>[] = [
@@ -83,12 +117,20 @@ export const StudentDocumentsPage = () => {
   ];
 
   const handleAdd = () => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before uploading documents.');
+      return;
+    }
     setSelectedDocument(null);
     setSelectedStudentId(null);
     setUploadDialogOpen(true);
   };
 
   const handleDelete = (document: StudentDocumentListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before deleting documents.');
+      return;
+    }
     setSelectedDocument(document);
     setDeleteDialogOpen(true);
   };
@@ -108,9 +150,39 @@ export const StudentDocumentsPage = () => {
     setSelectedStudentId(null);
   };
 
+  const handleFiltersChange = (newFilters: Record<string, any>) => {
+    setFilters((prev) => {
+      const next = { ...prev, ...newFilters };
+      if (isSuper && Object.prototype.hasOwnProperty.call(newFilters, 'college')) {
+        const parsed = normalizeCollegeId(newFilters.college);
+        setSelectedCollegeId(parsed);
+        setSelectedStudentId(null);
+        if (parsed) {
+          return { ...next, college: parsed };
+        }
+        const { college, ...rest } = next as any;
+        return rest;
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (!selectedCollegeId) {
+      setSelectedStudentId(null);
+    }
+  }, [selectedCollegeId]);
+
+  const filteredStudents =
+    studentsData?.results?.filter((student) =>
+      selectedCollegeId ? student.college === selectedCollegeId : true
+    ) || [];
+
+  const disableStudentSelection = isSuper && !selectedCollegeId;
+
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
-    ...(isSuperAdmin(user as any) ? [{
+    ...(isSuper ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -123,6 +195,15 @@ export const StudentDocumentsPage = () => {
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
+      {isSuper && (
+        <div className="mb-4">
+          <CollegeField
+            value={selectedCollegeId}
+            onChange={handleCollegeChange}
+            placeholder="Select college to filter students"
+          />
+        </div>
+      )}
       <DataTable
         title="Student Documents"
         description="Manage all student documents across the system"
@@ -134,7 +215,7 @@ export const StudentDocumentsPage = () => {
         onAdd={handleAdd}
         onDelete={handleDelete}
         filters={filters}
-        onFiltersChange={setFilters as any}
+        onFiltersChange={handleFiltersChange}
         filterConfig={filterConfig}
         searchPlaceholder="Search by document name, type, student..."
         addButtonLabel="Upload Document"
@@ -153,13 +234,14 @@ export const StudentDocumentsPage = () => {
               <Label>Select Student <span className="text-destructive">*</span></Label>
               <Select
                 value={selectedStudentId?.toString() || ''}
+                disabled={disableStudentSelection}
                 onValueChange={(value) => setSelectedStudentId(parseInt(value))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a student..." />
+                  <SelectValue placeholder={disableStudentSelection ? "Select college to load students" : "Choose a student..."} />
                 </SelectTrigger>
                 <SelectContent>
-                  {studentsData?.results?.map((student) => (
+                  {filteredStudents.map((student) => (
                     <SelectItem key={student.id} value={student.id.toString()}>
                       {student.full_name} ({student.admission_number})
                     </SelectItem>

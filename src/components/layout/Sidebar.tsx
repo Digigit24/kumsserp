@@ -176,10 +176,27 @@ export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
             {filteredGroups.map((group) => {
               const GroupIcon = group.icon
               const isOpen = openGroup === group.group
+              const isSingleSelfNamed = group.items.length === 1 && group.items[0].name === group.group
 
               return (
                 <div key={group.group}>
-                  {isCollapsed ? (
+                  {isSingleSelfNamed ? (
+                    // Render single self-named item as a simple link (no nested duplicate label)
+                    <Link
+                      to={group.items[0].href}
+                      onClick={() => {
+                        onNavigate?.();
+                      }}
+                      className={cn(
+                        GLASS_STYLES.navLink,
+                        location.pathname === group.items[0].href && GLASS_STYLES.navLinkActive,
+                        isCollapsed ? "justify-center px-0" : ""
+                      )}
+                    >
+                      <GroupIcon className="h-5 w-5 transition-all group-hover:scale-110" />
+                      {!isCollapsed && <span className="truncate">{group.items[0].name}</span>}
+                    </Link>
+                  ) : isCollapsed ? (
                     // Collapsed state - Show popover on click
                     <Popover open={openPopover === group.group} onOpenChange={(open) => setOpenPopover(open ? group.group : null)}>
                       <Tooltip>

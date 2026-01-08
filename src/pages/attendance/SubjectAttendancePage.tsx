@@ -4,9 +4,9 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubjectAttendance } from '../../hooks/useAttendance';
-import { DataTable, Column } from '../../components/common/DataTable';
+import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
+import { useSubjectAttendance } from '../../hooks/useAttendance';
 import type { SubjectAttendanceFilters } from '../../types/attendance.types';
 
 const SubjectAttendancePage = () => {
@@ -58,10 +58,7 @@ const SubjectAttendancePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Subject Attendance</h1>
-        <p className="text-muted-foreground">Period-wise subject attendance tracking</p>
-      </div>
+    
 
       <DataTable
         title="Subject Attendance Records"

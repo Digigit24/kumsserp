@@ -2,14 +2,14 @@
  * Staff Attendance Page
  */
 
+import { Calendar, Edit } from 'lucide-react';
 import { useState } from 'react';
-import { useStaffAttendance } from '../../hooks/useAttendance';
 import { StaffAttendanceForm } from '../../components/attendance/StaffAttendanceForm';
-import { DataTable, Column } from '../../components/common/DataTable';
+import { Column, DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, Edit } from 'lucide-react';
-import type { StaffAttendanceFilters, StaffAttendance } from '../../types/attendance.types';
+import { useStaffAttendance } from '../../hooks/useAttendance';
+import type { StaffAttendance, StaffAttendanceFilters } from '../../types/attendance.types';
 
 const StaffAttendancePage = () => {
   const [filters, setFilters] = useState<StaffAttendanceFilters>({
@@ -72,10 +72,7 @@ const StaffAttendancePage = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Staff Attendance</h1>
-          <p className="text-muted-foreground">Manage staff attendance records</p>
-        </div>
+      
         <Button onClick={handleAdd}>
           <Calendar className="h-4 w-4 mr-2" />
           Mark Attendance

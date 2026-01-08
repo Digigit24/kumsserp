@@ -16,6 +16,7 @@ import { Badge } from '../../../components/ui/badge';
 interface CertificateFormProps {
     mode: 'view' | 'create' | 'edit';
     certificateId?: number;
+    collegeId?: number | null;
     onSuccess: () => void;
     onCancel: () => void;
 }
@@ -29,13 +30,27 @@ const CERTIFICATE_TYPES = [
     { value: 'other', label: 'Other' },
 ];
 
-export function CertificateForm({ mode, certificateId, onSuccess, onCancel }: CertificateFormProps) {
+export function CertificateForm({ mode, certificateId, collegeId, onSuccess, onCancel }: CertificateFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [certificate, setCertificate] = useState<Certificate | null>(null);
 
-    const { data: studentsData } = useStudents({ page_size: 100, is_active: true });
+    const studentFilters = {
+        page_size: 100,
+        is_active: true,
+        ...(collegeId ? { college: collegeId } : {}),
+    };
+    const { data: studentsData } = useStudents(studentFilters);
+
+    const restrictByCollege = typeof collegeId !== 'undefined';
+    const filteredStudents =
+        studentsData?.results?.filter((student) => {
+            if (!restrictByCollege) return true;
+            if (collegeId === null) return false;
+            return student.college === collegeId;
+        }) || [];
+    const disableStudentSelect = mode === 'view' || (restrictByCollege && collegeId === null);
 
     const [formData, setFormData] = useState<CertificateCreateInput>({
         student: 0,
@@ -73,6 +88,15 @@ export function CertificateForm({ mode, certificateId, onSuccess, onCancel }: Ce
         }
     };
 
+    useEffect(() => {
+        if (restrictByCollege) {
+            const exists = filteredStudents.some((s) => s.id === formData.student);
+            if (!exists && formData.student !== 0) {
+                setFormData((prev) => ({ ...prev, student: 0 }));
+            }
+        }
+    }, [restrictByCollege, collegeId, studentsData, formData.student, filteredStudents]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.student) {
@@ -106,10 +130,14 @@ export function CertificateForm({ mode, certificateId, onSuccess, onCancel }: Ce
 
             <div className="space-y-2">
                 <Label>Student <span className="text-destructive">*</span></Label>
-                <Select value={formData.student?.toString()} onValueChange={(v) => setFormData({ ...formData, student: parseInt(v) })} disabled={isViewMode}>
-                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                <Select
+                    value={formData.student?.toString()}
+                    onValueChange={(v) => setFormData({ ...formData, student: parseInt(v) })}
+                    disabled={disableStudentSelect}
+                >
+                    <SelectTrigger><SelectValue placeholder={disableStudentSelect ? "Select college to load students" : "Select student"} /></SelectTrigger>
                     <SelectContent>
-                        {studentsData?.results.map((s) => <SelectItem key={s.id} value={s.id.toString()}>{s.full_name} ({s.admission_number})</SelectItem>)}
+                        {filteredStudents.map((s) => <SelectItem key={s.id} value={s.id.toString()}>{s.full_name} ({s.admission_number})</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>

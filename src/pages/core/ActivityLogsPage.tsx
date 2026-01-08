@@ -11,14 +11,24 @@ import { Badge } from '../../components/ui/badge';
 import { useDebounce } from '../../hooks/useDebounce';
 import { activityLogApi } from '../../services/core.service';
 
+const ACTION_BADGE_VARIANTS: Record<string, string> = {
+  create: 'success',
+  read: 'outline',
+  update: 'warning',
+  delete: 'destructive',
+  login: 'default',
+  logout: 'secondary',
+  download: 'secondary',
+  upload: 'secondary',
+  import: 'secondary',
+  export: 'secondary',
+};
+
 const ActivityLogsPage = () => {
   const [filters, setFilters] = useState<any>({ page: 1, page_size: 20, ordering: '-timestamp' });
 
-  // Destructure search from filters for debouncing only the search term
   const { search, ...restFilters } = filters;
   const debouncedSearch = useDebounce(search, 500);
-
-  // Combine debounced search with other filters for the query
   const queryFilters = { ...restFilters, ...(debouncedSearch ? { search: debouncedSearch } : {}) };
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -31,7 +41,7 @@ const ActivityLogsPage = () => {
 
   const { data: selected } = useQuery({
     queryKey: ['activity-log', selectedId],
-    queryFn: () => selectedId ? activityLogApi.get(selectedId) : null,
+    queryFn: () => (selectedId ? activityLogApi.get(selectedId) : null),
     enabled: !!selectedId,
   });
 
@@ -46,15 +56,8 @@ const ActivityLogsPage = () => {
       key: 'action',
       label: 'Action',
       render: (item) => {
-        const actionColors: Record<string, string> = {
-          create: 'success',
-          read: 'outline',
-          update: 'warning',
-          delete: 'destructive',
-          login: 'default',
-          logout: 'secondary',
-        };
-        return <Badge variant={actionColors[item.action] as any}>{item.action_display}</Badge>;
+        const variant = ACTION_BADGE_VARIANTS[item.action] || 'secondary';
+        return <Badge variant={variant as any}>{item.action_display}</Badge>;
       },
     },
     {
@@ -70,9 +73,7 @@ const ActivityLogsPage = () => {
     {
       key: 'description',
       label: 'Description',
-      render: (item) => (
-        <span className="text-sm truncate max-w-xs block">{item.description}</span>
-      ),
+      render: (item) => <span className="text-sm truncate max-w-xs block">{item.description}</span>,
     },
   ];
 
@@ -91,21 +92,9 @@ const ActivityLogsPage = () => {
         { value: 'logout', label: 'Logout' },
       ],
     },
-    {
-      name: 'model_name',
-      label: 'Model',
-      type: 'text',
-    },
-    {
-      name: 'user_name',
-      label: 'User',
-      type: 'text',
-    },
-    {
-      name: 'timestamp',
-      label: 'Date',
-      type: 'date',
-    },
+    { name: 'model_name', label: 'Model', type: 'text' },
+    { name: 'user_name', label: 'User', type: 'text' },
+    { name: 'timestamp', label: 'Date', type: 'date' },
   ];
 
   return (
@@ -118,7 +107,10 @@ const ActivityLogsPage = () => {
         isLoading={isLoading}
         error={error ? (error as Error).message : null}
         onRefresh={refetch}
-        onRowClick={(item) => { setSelectedId(item.id); setIsSidebarOpen(true); }}
+        onRowClick={(item) => {
+          setSelectedId(item.id);
+          setIsSidebarOpen(true);
+        }}
         filters={filters}
         onFiltersChange={setFilters}
         filterConfig={filterConfig}
@@ -127,67 +119,78 @@ const ActivityLogsPage = () => {
 
       <DetailSidebar
         isOpen={isSidebarOpen}
-        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
+        onClose={() => {
+          setIsSidebarOpen(false);
+          setSelectedId(null);
+        }}
         title="Activity Log Details"
         mode="view"
-        width="xl"
+        width="2xl"
       >
         {selected && (
           <div className="space-y-6">
             <div className="space-y-4">
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3">Log Information</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-muted-foreground">Action</label>
-                    <Badge>{selected.action_display}</Badge>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Model</label>
-                    <p className="font-medium">{selected.model_name}</p>
-                  </div>
-                  {selected.object_id && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">Object ID</label>
-                      <p className="font-medium">#{selected.object_id}</p>
+              <div className="bg-muted/50 p-6 rounded-lg space-y-4 border border-border/50">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Action</p>
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        variant={(ACTION_BADGE_VARIANTS[selected.action] || 'secondary') as any}
+                        className="text-sm px-3 py-1"
+                      >
+                        {selected.action_display}
+                      </Badge>
+                      <span className="text-base text-muted-foreground">{selected.model_name}</span>
                     </div>
-                  )}
-                  <div>
-                    <label className="text-sm text-muted-foreground">User</label>
-                    <p className="font-medium">{selected.user_name || 'System'}</p>
                   </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">College</label>
-                    <p className="font-medium">{selected.college_name || 'N/A'}</p>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">When</p>
+                    <p className="font-semibold text-lg">{new Date(selected.timestamp).toLocaleString()}</p>
                   </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Timestamp</label>
-                    <p className="font-medium">{new Date(selected.timestamp).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Description</label>
-                    <p className="text-sm">{selected.description}</p>
-                  </div>
+                </div>
+
+                <div className="divide-y divide-border/60 rounded-lg border border-border/50 bg-background/60">
+                  {[
+                    { label: 'User', value: selected.user_name || 'System', hint: selected.user || '—' },
+                    { label: 'College', value: selected.college_name || 'N/A', hint: selected.college || undefined },
+                    selected.object_id ? { label: 'Object ID', value: selected.object_id, hint: undefined } : null,
+                    { label: 'IP Address', value: selected.ip_address || '—', hint: undefined },
+                    { label: 'Description', value: selected.description || 'No description', hint: undefined },
+                  ]
+                    .filter(Boolean)
+                    .map((row: any) => (
+                      <div key={row.label} className="flex items-start justify-between gap-4 px-4 py-3">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{row.label}</p>
+                        <div className="text-right max-w-xl">
+                          <p className="font-semibold break-words text-sm md:text-base">{row.value}</p>
+                          {row.hint && <p className="text-xs text-muted-foreground mt-0.5">ID: {row.hint}</p>}
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
 
+              <div className="bg-muted/40 p-5 rounded-lg border border-border/50 space-y-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Session</p>
+                <p className="text-sm text-muted-foreground leading-relaxed break-words">
+                  {selected.user_agent || '—'}
+                </p>
+              </div>
+
               {selected.metadata && Object.keys(selected.metadata).length > 0 && (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Metadata</h3>
-                  <pre className="text-xs bg-background p-4 rounded overflow-auto max-h-96 border">
+                <div className="bg-muted/50 p-5 rounded-lg border border-border/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">Metadata</h3>
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      Additional Context
+                    </Badge>
+                  </div>
+                  <pre className="text-xs bg-background p-4 rounded overflow-auto max-h-80 border">
                     {JSON.stringify(selected.metadata, null, 2)}
                   </pre>
                 </div>
               )}
-
-              <details className="bg-muted/30 p-4 rounded-lg">
-                <summary className="cursor-pointer font-semibold mb-2 text-sm">
-                  Raw API Data
-                </summary>
-                <pre className="text-xs overflow-auto max-h-64 bg-background p-2 rounded mt-2">
-                  {JSON.stringify(selected, null, 2)}
-                </pre>
-              </details>
 
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                 <p className="text-xs text-muted-foreground">

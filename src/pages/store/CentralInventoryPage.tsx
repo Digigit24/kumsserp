@@ -66,7 +66,7 @@ export const CentralInventoryPage = () => {
       key: 'item_name',
       label: 'Item',
       render: (row) => (
-        <span className="font-semibold">{row.item_name || `Item #${row.item}`}</span>
+        <span className="font-semibold">{row.item_display || row.item_name || `Item #${row.item}`}</span>
       ),
       sortable: true,
     },

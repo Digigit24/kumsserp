@@ -3,9 +3,10 @@
  * Manages student promotions with CRUD operations
  */
 
-import { isSuperAdmin } from '@/utils/auth.utils';
+import { isSuperAdmin, getCurrentUserCollege } from '@/utils/auth.utils';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { CollegeField } from '../../components/common/CollegeField';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
@@ -17,9 +18,18 @@ import { StudentPromotionForm } from './components/StudentPromotionForm';
 
 export const StudentPromotionsPage = () => {
   const { user } = useAuth();
+  const isSuper = isSuperAdmin(user as any);
+  const defaultCollegeId = getCurrentUserCollege(user as any);
   const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
 
-  const [filters, setFilters] = useState<StudentPromotionFilters>({ page: 1, page_size: 20 });
+  const [selectedCollegeId, setSelectedCollegeId] = useState<number | null>(
+    isSuper ? null : defaultCollegeId
+  );
+  const [filters, setFilters] = useState<StudentPromotionFilters>({
+    page: 1,
+    page_size: 20,
+    ...(isSuper ? {} : defaultCollegeId ? { college: defaultCollegeId } : {}),
+  });
   const { data, isLoading, error, refetch } = useStudentPromotions(filters);
   const deleteMutation = useDeleteStudentPromotion();
 
@@ -61,18 +71,30 @@ export const StudentPromotionsPage = () => {
   ];
 
   const handleRowClick = (promotion: StudentPromotionListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before editing promotions.');
+      return;
+    }
     setSelectedPromotion(promotion);
     setSidebarMode('edit');
     setIsSidebarOpen(true);
   };
 
   const handleAdd = () => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before promoting students.');
+      return;
+    }
     setSelectedPromotion(null);
     setSidebarMode('create');
     setIsSidebarOpen(true);
   };
 
   const handleDelete = (promotion: StudentPromotionListItem) => {
+    if (isSuper && !selectedCollegeId) {
+      alert('Please select a college before deleting promotions.');
+      return;
+    }
     setPromotionToDelete(promotion);
     setDeleteDialogOpen(true);
   };
@@ -86,9 +108,45 @@ export const StudentPromotionsPage = () => {
     }
   };
 
+  const normalizeCollegeId = (value: any): number | null => {
+    if (value === '' || value === undefined || value === null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const handleCollegeChange = (collegeId: number | string) => {
+    const parsedId = collegeId === '' ? null : Number(collegeId);
+    const normalized = Number.isFinite(parsedId) ? (parsedId as number) : null;
+    setSelectedCollegeId(normalized);
+    setFilters((prev) => {
+      const next = { ...prev, page: 1 };
+      if (normalized) {
+        return { ...next, college: normalized };
+      }
+      const { college, ...rest } = next as any;
+      return rest;
+    });
+  };
+
+  const handleFiltersChange = (newFilters: Record<string, any>) => {
+    setFilters((prev) => {
+      const next = { ...prev, ...newFilters };
+      if (isSuper && Object.prototype.hasOwnProperty.call(newFilters, 'college')) {
+        const parsed = normalizeCollegeId(newFilters.college);
+        setSelectedCollegeId(parsed);
+        if (parsed) {
+          return { ...next, college: parsed };
+        }
+        const { college, ...rest } = next as any;
+        return rest;
+      }
+      return next;
+    });
+  };
+
   // Define filter configuration
   const filterConfig: FilterConfig[] = [
-    ...(isSuperAdmin(user as any) ? [{
+    ...(isSuper ? [{
       name: 'college',
       label: 'College',
       type: 'select' as const,
@@ -101,6 +159,15 @@ export const StudentPromotionsPage = () => {
 
   return (
     <div className="p-4 md:p-6 animate-fade-in">
+      {isSuper && (
+        <div className="mb-4">
+          <CollegeField
+            value={selectedCollegeId}
+            onChange={handleCollegeChange}
+            placeholder="Select college to filter students"
+          />
+        </div>
+      )}
       <DataTable
         title="Student Promotions"
         description="Manage student promotions from one class to another. Click on any row to edit."
@@ -113,7 +180,7 @@ export const StudentPromotionsPage = () => {
         onDelete={handleDelete}
         onRowClick={handleRowClick}
         filters={filters}
-        onFiltersChange={setFilters as any}
+        onFiltersChange={handleFiltersChange as any}
         filterConfig={filterConfig}
         searchPlaceholder="Search promotions..."
         addButtonLabel="Promote Student"
@@ -134,6 +201,7 @@ export const StudentPromotionsPage = () => {
         <StudentPromotionForm
           mode={sidebarMode}
           promotionId={selectedPromotion?.id}
+          collegeId={selectedCollegeId}
           onSuccess={() => {
             setIsSidebarOpen(false);
             refetch();
