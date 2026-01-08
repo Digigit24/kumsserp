@@ -574,6 +574,7 @@ export interface SubjectFilters {
   is_active?: boolean;
   search?: string;
   ordering?: string;
+  class_obj?: number;
   college?: number;
 }
 

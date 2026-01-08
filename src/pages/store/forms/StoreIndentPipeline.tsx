@@ -47,6 +47,27 @@ interface StoreIndentPipelineProps {
 
 type StepType = 1 | 2 | 3;
 
+type StoreIndentFormValues = {
+  indent_number: string;
+  required_by_date: string;
+  priority: string;
+  justification: string;
+  college: number | null;
+  central_store: number | null;
+  requesting_store_manager: string;
+  attachments: string;
+  remarks: string;
+  status: string;
+  is_active: boolean;
+  items: {
+    central_store_item: number | null;
+    requested_quantity: number;
+    unit: string;
+    justification: string;
+    is_active: boolean;
+  }[];
+};
+
 const stepVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 1000 : -1000,
@@ -97,7 +118,7 @@ export const StoreIndentPipeline = ({ onSubmit, onCancel, isSubmitting }: StoreI
     label: `${category.name} (${category.code})`,
   })) || [];
 
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger, reset } = useForm<StoreIndentFormValues>({
     defaultValues: {
       indent_number: '',
       required_by_date: '',

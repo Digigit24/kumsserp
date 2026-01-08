@@ -14,6 +14,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { ContextSelectorToolbar } from '../../components/context';
 import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -363,7 +364,7 @@ const StudentAttendancePage = () => {
               <Label htmlFor="subject">Subject</Label>
               <Select
                 value={selectedSubject?.toString() || ''}
-                onValueChange={(value) => setSelectedSubject(value ? Number(value) : null)}
+                onValueChange={(value: string) => setSelectedSubject(value ? Number(value) : null)}
               >
                 <SelectTrigger id="subject" className="w-[240px]">
                   <SelectValue placeholder="Select subject (optional)" />
