@@ -160,7 +160,12 @@ export const useCreateQuotation = () => {
   return useMutation({
     mutationFn: procurementQuotationsApi.create,
     onSuccess: () => {
+      // Invalidate quotation queries
       queryClient.invalidateQueries({ queryKey: quotationKeys.lists() });
+
+      // Also invalidate requirement queries to update kanban board
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.all });
     },
   });
 };
@@ -191,8 +196,13 @@ export const useMarkQuotationSelected = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => procurementQuotationsApi.markSelected(id, data),
     onSuccess: (_, variables) => {
+      // Invalidate quotation queries
       queryClient.invalidateQueries({ queryKey: quotationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variables.id) });
+
+      // Also invalidate requirement queries to update kanban board
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.all });
     },
   });
 };
@@ -229,7 +239,12 @@ export const useCreatePurchaseOrder = () => {
   return useMutation({
     mutationFn: procurementPurchaseOrdersApi.create,
     onSuccess: () => {
+      // Invalidate purchase order queries
       queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.lists() });
+
+      // Also invalidate requirement queries to update kanban board
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.all });
     },
   });
 };

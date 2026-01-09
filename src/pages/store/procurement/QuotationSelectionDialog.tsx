@@ -5,14 +5,16 @@
  */
 
 import { useState } from 'react';
-import { CheckCircle, DollarSign, Truck, FileText, AlertTriangle, Star, Loader2, Award, Calendar } from 'lucide-react';
+import { CheckCircle, DollarSign, Truck, FileText, AlertTriangle, Star, Loader2, Award, Calendar, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Card, CardContent } from '../../../components/ui/card';
-import { useRequirementQuotations, useMarkQuotationSelected } from '../../../hooks/useProcurement';
+import { useRequirementQuotations, useMarkQuotationSelected, useCreateQuotation, useCreatePurchaseOrder, requirementKeys, purchaseOrderKeys } from '../../../hooks/useProcurement';
+import { QuotationForm } from './forms/QuotationForm';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface QuotationSelectionDialogProps {
   open: boolean;
@@ -28,19 +30,87 @@ export const QuotationSelectionDialog = ({
   onSuccess,
 }: QuotationSelectionDialogProps) => {
   const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
+  const queryClient = useQueryClient();
   const { data: quotations, isLoading } = useRequirementQuotations(requirementId || 0);
   const markSelectedMutation = useMarkQuotationSelected();
+  const createQuotationMutation = useCreateQuotation();
+  const createPOMutation = useCreatePurchaseOrder();
+
+  const handleCreateQuotation = async (data: any) => {
+    try {
+      // Add requirement ID to quotation data
+      const quotationData = {
+        ...data,
+        requirement: requirementId,
+      };
+
+      await createQuotationMutation.mutateAsync(quotationData);
+
+      // Invalidate queries to refresh the list
+      queryClient.invalidateQueries({ queryKey: requirementKeys.quotations(requirementId || 0) });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+
+      toast.success('Quotation created successfully!');
+      setShowCreateForm(false);
+    } catch (error: any) {
+      console.error('Create quotation error:', error);
+      toast.error(error.message || 'Failed to create quotation');
+    }
+  };
 
   const handleSelectQuotation = async (quotationId: number) => {
     try {
+      // Step 1: Mark quotation as selected
       await markSelectedMutation.mutateAsync({ id: quotationId, data: { is_selected: true } });
-      toast.success('Quotation selected! You can now create a Purchase Order.');
+
+      // Step 2: Get the selected quotation details
+      const selectedQuotation = quotations?.find((q: any) => q.id === quotationId);
+
+      if (!selectedQuotation) {
+        throw new Error('Selected quotation not found');
+      }
+
+      // Step 3: Automatically create Purchase Order from selected quotation
+      const poData = {
+        requirement: requirementId,
+        quotation: quotationId,
+        supplier: selectedQuotation.supplier,
+        po_date: new Date().toISOString().split('T')[0],
+        expected_delivery_date: new Date(Date.now() + selectedQuotation.delivery_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        payment_terms: selectedQuotation.payment_terms || '',
+        delivery_terms: `Delivery in ${selectedQuotation.delivery_days} days`,
+        total_amount: selectedQuotation.total_amount,
+        tax_amount: selectedQuotation.tax_amount,
+        grand_total: selectedQuotation.grand_total,
+        status: 'draft',
+        items: selectedQuotation.items?.map((item: any) => ({
+          item_description: item.item_description,
+          quantity: item.quantity,
+          unit: item.unit,
+          unit_price: item.unit_price,
+          tax_rate: item.tax_rate,
+          tax_amount: item.tax_amount,
+          total_amount: item.total_amount,
+          specifications: item.specifications || '',
+        })) || [],
+      };
+
+      await createPOMutation.mutateAsync(poData);
+
+      // Step 4: Invalidate queries to refresh everything
+      queryClient.invalidateQueries({ queryKey: requirementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.detail(requirementId || 0) });
+      queryClient.invalidateQueries({ queryKey: requirementKeys.quotations(requirementId || 0) });
+      queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.lists() });
+
+      toast.success('Quotation selected and Purchase Order created successfully!');
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Select quotation error:', error);
-      toast.error(error.message || 'Failed to select quotation');
+      toast.error(error.message || 'Failed to select quotation and create PO');
     }
   };
 
@@ -88,13 +158,21 @@ export const QuotationSelectionDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl h-[90vh] p-0 flex flex-col">
         <DialogHeader className="p-6 pb-4 shrink-0 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Compare & Select Quotation
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Review quotations from vendors and select the best one to proceed with Purchase Order creation
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Compare & Select Quotation
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Review quotations from vendors and select the best one to proceed with Purchase Order creation
+              </p>
+            </div>
+            <Button onClick={() => setShowCreateForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Quotation
+            </Button>
+          </div>
         </DialogHeader>
 
         {isLoading ? (
@@ -328,6 +406,19 @@ export const QuotationSelectionDialog = ({
           </div>
         </div>
       </DialogContent>
+
+      {/* Create Quotation Dialog */}
+      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+        <DialogContent className="max-w-6xl h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Quotation</DialogTitle>
+          </DialogHeader>
+          <QuotationForm
+            onSubmit={handleCreateQuotation}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
