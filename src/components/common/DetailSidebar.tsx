@@ -101,10 +101,10 @@ export function DetailSidebar({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b bg-muted/30">
-            <div className="flex-1 mr-4">
-              <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
+          <div className="flex items-start justify-between gap-4 px-6 py-5 border-b bg-muted/50 dark:bg-muted/30">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-semibold text-foreground dark:text-foreground truncate">{title}</h2>
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                 {subtitle || getModeLabel()}
               </p>
             </div>
@@ -112,7 +112,8 @@ export function DetailSidebar({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="rounded-full flex-shrink-0"
+              className="rounded-full flex-shrink-0 -mt-1"
+              aria-label="Close"
             >
               <X className="h-5 w-5" />
             </Button>
