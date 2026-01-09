@@ -101,21 +101,23 @@ export function DetailSidebar({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 px-6 py-5 border-b bg-muted/50 dark:bg-muted/30">
+          <div className="flex items-center justify-between gap-4 px-6 py-4 border-b-2 bg-card dark:bg-card shadow-sm">
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-semibold text-foreground dark:text-foreground truncate">{title}</h2>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                {subtitle || getModeLabel()}
-              </p>
+              <h2 className="text-lg font-bold text-card-foreground dark:text-card-foreground truncate">{title}</h2>
+              {(subtitle || getModeLabel()) && (
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-0.5">
+                  {subtitle || getModeLabel()}
+                </p>
+              )}
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="rounded-full flex-shrink-0 -mt-1"
+              className="rounded-full flex-shrink-0 hover:bg-muted"
               aria-label="Close"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
 
