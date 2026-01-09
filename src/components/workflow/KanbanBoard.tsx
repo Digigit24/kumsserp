@@ -97,9 +97,9 @@ export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No item
 
           return (
             <div key={column.id} className="flex-shrink-0 w-80 flex flex-col max-h-[calc(100vh-220px)]">
-              <div className={cn('rounded-t-lg p-3 border-t border-x z-10', column.color)}>
+              <div className={cn('rounded-t-lg p-3 border-t border-x z-10', column.color, 'dark:bg-opacity-20 dark:border-opacity-50')}>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm">{column.title}</h3>
+                  <h3 className="font-semibold text-sm dark:text-foreground">{column.title}</h3>
                   <Badge variant="secondary" className="ml-2">
                     {columnCards.length}
                   </Badge>
