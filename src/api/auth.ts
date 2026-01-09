@@ -99,3 +99,44 @@ export const patchAuthUser = async (data: Partial<AuthUser>): Promise<AuthUser> 
   );
   return response.data;
 };
+
+/**
+ * Helper functions for Chat API
+ */
+
+/**
+ * Get stored auth token
+ */
+export const getAuthToken = (): string | null => {
+  return localStorage.getItem('kumss_auth_token');
+};
+
+/**
+ * Get current user from localStorage
+ */
+export const getCurrentUser = (): any => {
+  try {
+    const userStr = localStorage.getItem('kumss_user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    console.error('Failed to get current user:', error);
+    return null;
+  }
+};
+
+/**
+ * Get college ID
+ */
+export const getCollegeId = (): number | null => {
+  const collegeId = localStorage.getItem('kumss_college_id');
+  return collegeId ? parseInt(collegeId, 10) : null;
+};
+
+/**
+ * Check if user is authenticated
+ */
+export const isAuthenticated = (): boolean => {
+  const token = getAuthToken();
+  const isAuth = localStorage.getItem('kumss_is_authenticated');
+  return !!token && isAuth === 'true';
+};

@@ -59,6 +59,12 @@ apiClient.interceptors.request.use(
       console.warn("[apiClient] No token found in localStorage");
     }
 
+    // Add college ID if available (for chat API)
+    const collegeId = localStorage.getItem('kumss_college_id');
+    if (collegeId) {
+      config.headers['X-College-ID'] = collegeId;
+    }
+
     console.log("[apiClient] Final request headers:", config.headers);
 
     return config;

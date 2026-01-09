@@ -177,6 +177,7 @@ const StudentCommunicationPage = lazy(() => import("../pages/communication/Stude
 const TeacherCommunicationPage = lazy(() => import("../pages/communication/TeacherCommunicationPage"));
 const BulkMessagesPage = lazy(() => import("../pages/communication").then(m => ({ default: m.BulkMessagesPage })));
 const ChatsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.ChatsPage })));
+const ChatPage = lazy(() => import("../pages/ChatPage").then(m => ({ default: m.ChatPage })));
 const EventsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.EventsPage })));
 const EventRegistrationsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.EventRegistrationsPage })));
 const MessageLogsPage = lazy(() => import("../pages/communication").then(m => ({ default: m.MessageLogsPage })));
@@ -387,6 +388,7 @@ export default function AppRoutes() {
                     {/* Communication Module */}
                     <Route path="communication/bulk-messages" element={<LazyRoute component={BulkMessagesPage} />} />
                     <Route path="communication/chats" element={<LazyRoute component={ChatsPage} />} />
+                    <Route path="communication/chat-sse" element={<LazyRoute component={ChatPage} />} />
                     <Route path="communication/events" element={<LazyRoute component={EventsPage} />} />
                     <Route path="communication/event-registrations" element={<LazyRoute component={EventRegistrationsPage} />} />
                     <Route path="communication/message-logs" element={<LazyRoute component={MessageLogsPage} />} />
