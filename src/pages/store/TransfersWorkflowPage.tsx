@@ -274,12 +274,12 @@ export const TransfersWorkflowPage = () => {
       </div>
 
       {/* Info Card for Central Store Managers */}
-      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+          <Truck className="h-5 w-5 text-blue-600 dark:text-blue-300 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Dispatch Workflow</h3>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <h3 className="font-semibold text-blue-900 dark:text-white mb-1">Dispatch Workflow</h3>
+            <ul className="text-sm text-blue-800 dark:text-gray-100 space-y-1">
               <li>• <strong>Prepared:</strong> MIN is ready. Click "Dispatch" to send.</li>
               <li>• <strong>Dispatched:</strong> Material left the store. Click "Mark In Transit" when vehicle leaves.</li>
               <li>• <strong>In Transit:</strong> Material is on the way to the college.</li>
@@ -321,8 +321,8 @@ export const TransfersWorkflowPage = () => {
                     {/* Indent Info */}
                     <div className="col-span-3">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
-                          <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/70 rounded">
+                          <FileText className="h-5 w-5 text-blue-600 dark:text-blue-300" />
                         </div>
                         <div>
                           <p className="font-semibold">{indent.indent_number}</p>
