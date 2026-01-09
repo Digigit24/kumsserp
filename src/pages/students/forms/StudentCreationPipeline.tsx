@@ -541,9 +541,13 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
                         </SelectTrigger>
                         <SelectContent>
                           {isUsersLoading ? (
-                            <SelectItem value="" disabled>Loading users...</SelectItem>
+                            <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                              Loading users...
+                            </div>
                           ) : studentUsers.length === 0 ? (
-                            <SelectItem value="" disabled>No student users available</SelectItem>
+                            <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                              No student users available
+                            </div>
                           ) : (
                             studentUsers.map((user: any) => (
                               <SelectItem key={user.id} value={user.id}>

@@ -11,7 +11,6 @@ import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { ContextSelectorToolbar } from '../../components/context';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -292,23 +291,22 @@ export const StudentsPage = () => {
                 loading={deleteMutation.isLoading}
             />
 
-            {/* Student Creation Wizard Dialog */}
-            <Dialog open={wizardDialogOpen} onOpenChange={setWizardDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle>Create New Student</DialogTitle>
-                        <DialogDescription>
-                            Complete the wizard to create a student account and record in one streamlined process
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-hidden">
-                        <StudentCreationPipeline
-                            onSubmit={handleWizardSubmit}
-                            onCancel={handleWizardCancel}
-                        />
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {/* Student Creation Wizard Sidebar */}
+            {permissions?.canCreateStudents && (
+                <DetailSidebar
+                    isOpen={wizardDialogOpen}
+                    onClose={handleWizardCancel}
+                    title="Create New Student"
+                    subtitle="Complete the wizard to create a student account and record in one streamlined process"
+                    mode="create"
+                    width="3xl"
+                >
+                    <StudentCreationPipeline
+                        onSubmit={handleWizardSubmit}
+                        onCancel={handleWizardCancel}
+                    />
+                </DetailSidebar>
+            )}
         </div>
     );
 };

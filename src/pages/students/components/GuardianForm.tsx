@@ -413,7 +413,9 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
                   </SelectTrigger>
                   <SelectContent>
                     {users.length === 0 ? (
-                      <SelectItem value="" disabled>No parent users available</SelectItem>
+                      <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                        No parent users available
+                      </div>
                     ) : (
                       users.map((user) => (
                         <SelectItem key={user.id} value={String(user.id)}>
