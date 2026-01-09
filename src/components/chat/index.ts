@@ -10,4 +10,4 @@ export { MessageList } from './MessageList';
 export { MessageInput } from './MessageInput';
 export { UnreadBadge } from './UnreadBadge';
 
-export default ChatContainer;
+export { ChatContainer as default } from './ChatContainer';

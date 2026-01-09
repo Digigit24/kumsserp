@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * useSSE Hook - Server-Sent Events Connection
  * Handles real-time communication via SSE
  */
@@ -89,7 +89,7 @@ export const useSSE = (
   const eventSourceRef = useRef<EventSource | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const connect = useCallback(() => {
     if (!enabled) {
@@ -115,13 +115,13 @@ export const useSSE = (
     const eventSource = new EventSource(url);
 
     eventSource.onopen = () => {
-      console.log('[useSSE]  SSE Connected');
+      console.log('[useSSE] SSE Connected');
       setIsConnected(true);
       setError(null);
     };
 
     eventSource.onerror = (err) => {
-      console.error('[useSSE] L SSE Error:', err);
+      console.error('[useSSE] SSE Error:', err);
       setIsConnected(false);
       setError('Connection error');
 
@@ -130,7 +130,7 @@ export const useSSE = (
 
       // Auto-reconnect after 5 seconds
       reconnectTimeoutRef.current = setTimeout(() => {
-        console.log('[useSSE] = Reconnecting to SSE...');
+        console.log('[useSSE] Reconnecting to SSE...');
         connect();
       }, 5000);
     };
@@ -150,7 +150,7 @@ export const useSSE = (
       eventSource.addEventListener(eventType, (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
-          console.log(`[useSSE] =è SSE Event [${eventType}]:`, data);
+          console.log(`[useSSE] SSE Event [${eventType}]:`, data);
           onMessage({ event: eventType as any, data });
         } catch (err) {
           console.error('[useSSE] Failed to parse SSE data:', err, event.data);

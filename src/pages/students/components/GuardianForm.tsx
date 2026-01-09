@@ -8,7 +8,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { guardianApi } from '../../../services/students.service';
 import { userApi } from '../../../services/accounts.service';
 import type { Guardian, GuardianCreateInput, GuardianUpdateInput } from '../../../types/students.types';
-import type { UserListItem } from '../../../types/accounts.types';
+import type { UserCreateInput, UserListItem } from '../../../types/accounts.types';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
@@ -21,14 +21,37 @@ interface GuardianFormProps {
   onCancel: () => void;
 }
 
-type GuardianFormData = Omit<GuardianCreateInput, 'user' | 'photo' | 'annual_income'> & {
+type GuardianFormData = {
   accountMode: 'none' | 'create' | 'existing'; // New: choose account type
   user: string;
   username: string; // For new user creation
   password: string;
   confirmPassword: string;
-  photo: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  relation: string;
+  phone: string;
+  email: string;
+  alternate_phone: string;
+  occupation: string;
   annual_income: string;
+  address: string;
+  photo: string;
+  college: number | null;
+};
+
+const getDefaultCollegeId = (): number | null => {
+  try {
+    const storedUser = localStorage.getItem('kumss_user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      return parsed.college ?? parsed.college_id ?? null;
+    }
+  } catch (err) {
+    console.error('Failed to read default college id', err);
+  }
+  return null;
 };
 
 export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFormProps) => {
@@ -55,6 +78,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
     annual_income: '',
     address: '',
     photo: '',
+    college: getDefaultCollegeId(),
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -80,7 +104,9 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   // Initialize form data for edit mode
   useEffect(() => {
     if (mode === 'edit' && guardian) {
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
+        accountMode: guardian.user ? 'existing' : 'none',
         user: guardian.user ? String(guardian.user) : '',
         first_name: guardian.first_name,
         last_name: guardian.last_name,
@@ -93,7 +119,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
         annual_income: guardian.annual_income || '',
         address: guardian.address || '',
         photo: guardian.photo || '',
-      });
+      }));
     }
   }, [mode, guardian]);
 
@@ -187,9 +213,15 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
       // Step 1: Handle user account creation/linking
       if (formData.accountMode === 'create') {
         // Create new user account
-        const userData = {
+        const collegeId = formData.college ?? getDefaultCollegeId();
+        if (!collegeId) {
+          throw new Error('College is required for user account creation');
+        }
+
+        const userData: UserCreateInput = {
           username: formData.username.toLowerCase().trim(),
           password: formData.password,
+          password_confirm: formData.password,
           email: formData.email,
           first_name: formData.first_name,
           middle_name: formData.middle_name || undefined,
@@ -197,6 +229,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
           user_type: 'parent',
           phone: formData.phone,
           is_active: true,
+          college: collegeId,
         };
 
         const createdUser = await userApi.create(userData);
@@ -211,10 +244,13 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
 
       // Step 2: Create/update guardian record
       const cleanedData: GuardianCreateInput = {
-        ...formData,
         user: userId ? Number(userId) : null,
+        first_name: formData.first_name,
         middle_name: formData.middle_name || null,
+        last_name: formData.last_name,
+        relation: formData.relation,
         email: formData.email || null,
+        phone: formData.phone,
         alternate_phone: formData.alternate_phone || null,
         occupation: formData.occupation || null,
         annual_income: formData.annual_income || null,

@@ -35,6 +35,7 @@ import { useUsers } from '../../../hooks/useAccounts';
 import { useAcademicYears } from '../../../hooks/useCore';
 import { userApi } from '../../../services/accounts.service';
 import { studentApi } from '../../../services/students.service';
+import type { UserCreateInput } from '../../../types/accounts.types';
 import { getCurrentUserCollege, isSuperAdmin } from '../../../utils/auth.utils';
 
 interface StudentCreationPipelineProps {
@@ -320,6 +321,11 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
       setIsSubmitting(true);
 
       let userId: string;
+      const collegeId = data.college ?? getCurrentUserCollege(user as any);
+
+      if (!collegeId) {
+        throw new Error('College is required to create a student');
+      }
 
       if (data.accountMode === 'existing') {
         // Use existing user
@@ -327,18 +333,19 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
         toast.info('Linking to existing user account...');
       } else {
         // Step 1: Create User Account
-        const userData = {
+        const userData: UserCreateInput = {
           username: data.username.toLowerCase().trim(),
           password: data.password,
+          password_confirm: data.password,
           email: data.email,
           first_name: data.first_name,
-          middle_name: data.middle_name,
+          middle_name: data.middle_name || null,
           last_name: data.last_name,
           user_type: 'student',
-          college: data.college,
+          college: Number(collegeId),
           phone: data.phone,
-          gender: data.gender,
-          date_of_birth: data.date_of_birth,
+          gender: data.gender as UserCreateInput['gender'],
+          date_of_birth: data.date_of_birth || null,
           is_active: true,
         };
 
@@ -355,33 +362,33 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
 
       // Step 2: Create Student Record
       const studentData = {
-        user: userId,
-        college: data.college,
+        user: Number(userId),
+        college: Number(collegeId),
         admission_number: data.admission_number,
         admission_date: data.admission_date,
         admission_type: data.admission_type,
         registration_number: data.registration_number,
         roll_number: data.roll_number,
-        program: data.program,
-        current_class: data.current_class,
-        current_section: data.current_section,
-        academic_year: data.academic_year,
+        program: Number(data.program),
+        current_class: data.current_class ? Number(data.current_class) : null,
+        current_section: data.current_section ? Number(data.current_section) : null,
+        academic_year: Number(data.academic_year),
         first_name: data.first_name,
-        middle_name: data.middle_name,
+        middle_name: data.middle_name || null,
         last_name: data.last_name,
         date_of_birth: data.date_of_birth,
         gender: data.gender,
-        blood_group: data.blood_group,
+        blood_group: data.blood_group || null,
         email: data.email,
         phone: data.phone,
-        alternate_phone: data.alternate_phone,
-        photo: data.photo,
+        alternate_phone: data.alternate_phone || null,
+        photo: data.photo || null,
         nationality: data.nationality,
-        religion: data.religion,
-        caste: data.caste,
-        mother_tongue: data.mother_tongue,
-        aadhar_number: data.aadhar_number,
-        pan_number: data.pan_number,
+        religion: data.religion || null,
+        caste: data.caste || null,
+        mother_tongue: data.mother_tongue || null,
+        aadhar_number: data.aadhar_number || null,
+        pan_number: data.pan_number || null,
         is_active: true,
         is_alumni: false,
       };

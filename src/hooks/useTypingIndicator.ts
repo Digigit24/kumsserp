@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useTypingIndicator Hook
  * Handles typing indicator functionality with debouncing
  */
@@ -19,7 +19,7 @@ export interface UseTypingIndicatorReturn {
  * @param receiverId - The ID of the user receiving the typing indicator
  */
 export const useTypingIndicator = (receiverId: number): UseTypingIndicatorReturn => {
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
 
   const sendTyping = useCallback(
