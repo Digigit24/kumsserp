@@ -19,6 +19,7 @@ import { useDeleteStudent, useStudents } from '../../hooks/useStudents';
 import type { StudentFilters, StudentListItem } from '../../types/students.types';
 import { isSuperAdmin } from '../../utils/auth.utils';
 import { StudentForm } from './components/StudentForm';
+import { StudentCreationPipeline } from './forms/StudentCreationPipeline';
 
 export const StudentsPage = () => {
     const navigate = useNavigate();
@@ -49,6 +50,7 @@ export const StudentsPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [wizardDialogOpen, setWizardDialogOpen] = useState(false);
 
     // Update filters when context changes
     useEffect(() => {
@@ -203,8 +205,7 @@ export const StudentsPage = () => {
         if (!permissions?.canCreateStudents) {
             return;
         }
-        setSidebarMode('create');
-        setIsSidebarOpen(true);
+        setWizardDialogOpen(true);
     };
 
     const handleDelete = (student: StudentListItem) => {
@@ -228,6 +229,15 @@ export const StudentsPage = () => {
     const handleFormSuccess = () => {
         setIsSidebarOpen(false);
         refetch();
+    };
+
+    const handleWizardSubmit = () => {
+        setWizardDialogOpen(false);
+        refetch();
+    };
+
+    const handleWizardCancel = () => {
+        setWizardDialogOpen(false);
     };
 
     return (
@@ -280,6 +290,23 @@ export const StudentsPage = () => {
                 onConfirm={confirmDelete}
                 loading={deleteMutation.isLoading}
             />
+
+            {/* Student Creation Wizard Sidebar */}
+            {permissions?.canCreateStudents && (
+                <DetailSidebar
+                    isOpen={wizardDialogOpen}
+                    onClose={handleWizardCancel}
+                    title="Create New Student"
+                    subtitle="Complete the wizard to create a student account and record in one streamlined process"
+                    mode="create"
+                    width="3xl"
+                >
+                    <StudentCreationPipeline
+                        onSubmit={handleWizardSubmit}
+                        onCancel={handleWizardCancel}
+                    />
+                </DetailSidebar>
+            )}
         </div>
     );
 };

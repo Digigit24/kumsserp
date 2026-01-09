@@ -12,13 +12,14 @@ export interface DetailSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   mode: 'view' | 'create' | 'edit';
   children: ReactNode;
   footer?: ReactNode;
   data?: unknown;
   onEdit?: () => void;
   onDelete?: () => void;
-  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
 }
 
 const widthClasses = {
@@ -27,12 +28,17 @@ const widthClasses = {
   lg: 'max-w-lg',
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  'full': 'max-w-full',
 };
 
 export function DetailSidebar({
   isOpen,
   onClose,
   title,
+  subtitle,
   mode,
   children,
   footer,
@@ -96,15 +102,17 @@ export function DetailSidebar({
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b bg-muted/30">
-            <div>
+            <div className="flex-1 mr-4">
               <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">{getModeLabel()}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {subtitle || getModeLabel()}
+              </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="rounded-full"
+              className="rounded-full flex-shrink-0"
             >
               <X className="h-5 w-5" />
             </Button>
