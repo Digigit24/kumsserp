@@ -41,6 +41,7 @@ export interface KanbanCard {
     label: string;
     icon?: LucideIcon;
     onClick: () => void;
+    variant?: 'default' | 'secondary' | 'outline' | 'destructive';
   }>;
   onCardClick?: () => void;
 }
@@ -182,15 +183,15 @@ export const KanbanBoard = ({ columns, cards, isLoading, emptyMessage = 'No item
                                   {card.secondaryActions.map((action, idx) => {
                                     const Icon = action.icon;
                                     return (
-                                      <Button
-                                        key={idx}
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          action.onClick();
-                                        }}
-                                        className="flex-1"
+                                  <Button
+                                    key={idx}
+                                    size="sm"
+                                    variant={action.variant || 'outline'}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      action.onClick();
+                                    }}
+                                    className="flex-1"
                                       >
                                         {Icon && <Icon className="h-3 w-3 mr-1" />}
                                         {action.label}

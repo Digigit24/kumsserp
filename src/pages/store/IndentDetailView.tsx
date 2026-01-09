@@ -317,19 +317,29 @@ export const IndentDetailView = ({
                           <td className="p-2">{index + 1}</td>
                           <td className="p-2">
                             <div>
-                              <p className="font-medium">Item #{item.central_store_item}</p>
+                              <p className="font-medium">
+                                {item.central_store_item_name ||
+                                  item.store_item_name ||
+                                  `Item #${item.central_store_item}`}
+                              </p>
                               {item.justification && (
                                 <p className="text-xs text-muted-foreground">{item.justification}</p>
                               )}
                             </div>
                           </td>
                           <td className="p-2 text-right">{item.requested_quantity}</td>
-                          <td className="p-2 text-right">{item.approved_quantity || '-'}</td>
-                          <td className="p-2 text-right">{item.issued_quantity || 0}</td>
-                          <td className="p-2 text-right font-semibold">
-                            {item.pending_quantity || item.requested_quantity}
+                          <td className="p-2 text-right">
+                            {item.approved_quantity ?? item.requested_quantity ?? 0}
                           </td>
-                          <td className="p-2">{item.unit}</td>
+                          <td className="p-2 text-right">{item.issued_quantity ?? 0}</td>
+                          <td className="p-2 text-right font-semibold">
+                            {item.pending_quantity ?? Math.max(
+                              (item.approved_quantity ?? item.requested_quantity ?? 0) -
+                                (item.issued_quantity ?? 0),
+                              0
+                            )}
+                          </td>
+                          <td className="p-2">{item.unit || item.unit_name || '-'}</td>
                         </tr>
                       ))}
                     </tbody>

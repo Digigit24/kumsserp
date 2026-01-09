@@ -3,7 +3,7 @@
  * Shows fulfillment queue and dispatch tracking
  */
 
-import { CheckCircle, Eye, FileText, Package, Plus, Truck } from 'lucide-react';
+import { CheckCircle, Eye, FileText, Package, Plus, Truck, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -119,6 +119,25 @@ export const TransfersWorkflowPage = () => {
     }
   };
 
+  const handleRejectTransit = async (min: any) => {
+    const reason = window.prompt('Enter reason for rejection/return:', 'Defective items received');
+    if (reason === null) return;
+
+    try {
+      await patchMutation.mutateAsync({
+        id: min.id,
+        data: {
+          status: 'prepared',
+          notes: reason || 'Returned by receiver',
+        },
+      });
+      toast.success('Shipment marked as returned. It can be re-dispatched after review.');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to mark as returned');
+    }
+  };
+
   const handleConfirmReceipt = async (min: any) => {
     if (confirmingId) return; // Prevent multiple clicks
 
@@ -150,9 +169,10 @@ export const TransfersWorkflowPage = () => {
     .map((min: any) => {
       const isDispatching = dispatchMutation.isPending && dispatchMutation.variables?.id === min.id;
       const isConfirming = confirmReceiptMutation.isPending && confirmReceiptMutation.variables?.id === min.id;
-      const isStartingTransit = patchMutation.isPending && patchMutation.variables?.id === min.id;
+      const isStartingTransit = patchMutation.isPending && patchMutation.variables?.id === min.id && patchMutation.variables?.data?.status === 'in_transit';
+      const isRejectingTransit = patchMutation.isPending && patchMutation.variables?.id === min.id && patchMutation.variables?.data?.status === 'prepared';
 
-      const isActionPending = isDispatching || isConfirming || isStartingTransit;
+      const isActionPending = isDispatching || isConfirming || isStartingTransit || isRejectingTransit;
 
       const card: KanbanCard = {
         id: min.id,
@@ -213,6 +233,15 @@ export const TransfersWorkflowPage = () => {
           loading: isConfirming,
           disabled: isActionPending,
         };
+        card.secondaryActions = [
+          {
+            label: isRejectingTransit ? 'Returning...' : 'Reject / Return',
+            icon: XCircle,
+            onClick: () => handleRejectTransit(min),
+            variant: 'destructive',
+          },
+          ...(card.secondaryActions || []),
+        ];
       }
 
       return card;

@@ -22,6 +22,7 @@ import { Calendar, Users, Check, X, Save } from 'lucide-react';
 import type { StudentAttendanceFilters, StudentAttendance } from '../../types/attendance.types';
 import type { StudentListItem, StudentFilters } from '../../types/students.types';
 import { toast } from 'sonner';
+import { useMemo } from 'react';
 
 type AttendanceStatus = 'present' | 'absent' | null;
 
@@ -102,11 +103,18 @@ const StudentAttendancePage = () => {
     }
   }, [existingAttendanceData]);
 
+  // Students that already have attendance submitted for the selected filters/date
+  const lockedStudents = useMemo(
+    () => new Set<number>(existingAttendanceData?.results?.map((r: any) => r.student) || []),
+    [existingAttendanceData]
+  );
+
   // Attendance mutations
   const bulkMarkMutation = useBulkMarkAttendance();
   const markSingleMutation = useMarkStudentAttendance();
 
   const handleMarkPresent = (studentId: number) => {
+    if (lockedStudents.has(studentId)) return;
     setAttendanceMap(prev => ({
       ...prev,
       [studentId]: prev[studentId] === 'present' ? null : 'present'
@@ -114,6 +122,7 @@ const StudentAttendancePage = () => {
   };
 
   const handleMarkAbsent = (studentId: number) => {
+    if (lockedStudents.has(studentId)) return;
     setAttendanceMap(prev => ({
       ...prev,
       [studentId]: prev[studentId] === 'absent' ? null : 'absent'
@@ -201,7 +210,9 @@ const StudentAttendancePage = () => {
     const students = data?.results || [];
     const newMap: Record<number, AttendanceStatus> = {};
     students.forEach(student => {
-      newMap[student.id] = status;
+      if (!lockedStudents.has(student.id)) {
+        newMap[student.id] = status;
+      }
     });
     setAttendanceMap(newMap);
     toast.success(`All students marked as ${status}`);
@@ -250,6 +261,7 @@ const StudentAttendancePage = () => {
       label: 'Actions',
       render: (student) => {
         const status = attendanceMap[student.id];
+        const isLocked = lockedStudents.has(student.id);
         return (
           <div className="flex gap-2">
             <Button
@@ -261,6 +273,7 @@ const StudentAttendancePage = () => {
                   : 'text-green-600 hover:text-green-700 hover:bg-green-50'
               }
               onClick={() => handleMarkPresent(student.id)}
+              disabled={isLocked}
             >
               <Check className="h-4 w-4 mr-1" />
               Present
@@ -274,10 +287,14 @@ const StudentAttendancePage = () => {
                   : 'text-red-600 hover:text-red-700 hover:bg-red-50'
               }
               onClick={() => handleMarkAbsent(student.id)}
+              disabled={isLocked}
             >
               <X className="h-4 w-4 mr-1" />
               Absent
             </Button>
+            {isLocked && (
+              <Badge variant="secondary">Submitted</Badge>
+            )}
           </div>
         );
       },
@@ -344,12 +361,11 @@ const StudentAttendancePage = () => {
         </div>
       </div>
 
-      {/* Context Selectors - Permission-driven */}
-      <ContextSelectorToolbar />
-
-      {/* Date Selector */}
+      {/* Context + Date/Subject merged into one card */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-6">
+          <ContextSelectorToolbar />
+
           <div className="flex flex-wrap gap-4">
             <div className="space-y-2 max-w-sm">
               <Label htmlFor="date">Date *</Label>
@@ -363,14 +379,16 @@ const StudentAttendancePage = () => {
             <div className="space-y-2 min-w-[220px]">
               <Label htmlFor="subject">Subject</Label>
               <Select
-                value={selectedSubject?.toString() || ''}
-                onValueChange={(value: string) => setSelectedSubject(value ? Number(value) : null)}
+                value={selectedSubject ? selectedSubject.toString() : 'all'}
+                onValueChange={(value: string) =>
+                  setSelectedSubject(value === 'all' ? null : Number(value))
+                }
               >
                 <SelectTrigger id="subject" className="w-[240px]">
                   <SelectValue placeholder="Select subject (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Subjects</SelectItem>
+                  <SelectItem value="all">All Subjects</SelectItem>
                   {subjectsData?.results?.map((subj) => (
                     <SelectItem key={subj.id} value={subj.id.toString()}>
                       {subj.name}
