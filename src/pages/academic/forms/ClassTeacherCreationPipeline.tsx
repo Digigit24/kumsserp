@@ -31,7 +31,6 @@ import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
-import { RadioGroup, RadioGroupItem } from '../../../components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Separator } from '../../../components/ui/separator';
 import { Switch } from '../../../components/ui/switch';
@@ -638,56 +637,50 @@ export const ClassTeacherCreationPipeline = ({ onSubmit, onCancel }: ClassTeache
                   {/* Teacher Mode Selection */}
                   <div className="space-y-3">
                     <Label>Teacher Account</Label>
-                    <Controller
-                      name="teacherMode"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="grid grid-cols-2 gap-4"
-                        >
-                          <div>
-                            <RadioGroupItem
-                              value="existing"
-                              id="teacher-existing"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="teacher-existing"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <Users className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">Existing Teacher</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Select from existing teachers
-                                </div>
-                              </div>
-                            </Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          teacherMode === 'existing'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="existing"
+                          {...register('teacherMode')}
+                          className="sr-only"
+                        />
+                        <Users className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">Existing Teacher</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Select from existing teachers
                           </div>
-                          <div>
-                            <RadioGroupItem
-                              value="create"
-                              id="teacher-create"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="teacher-create"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <User className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">New Teacher</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Create a new teacher account
-                                </div>
-                              </div>
-                            </Label>
+                        </div>
+                      </label>
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          teacherMode === 'create'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="create"
+                          {...register('teacherMode')}
+                          className="sr-only"
+                        />
+                        <User className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">New Teacher</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Create a new teacher account
                           </div>
-                        </RadioGroup>
-                      )}
-                    />
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   <Separator />
@@ -869,56 +862,50 @@ export const ClassTeacherCreationPipeline = ({ onSubmit, onCancel }: ClassTeache
                   {/* Class Mode Selection */}
                   <div className="space-y-3">
                     <Label>Class Option</Label>
-                    <Controller
-                      name="classMode"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="grid grid-cols-2 gap-4"
-                        >
-                          <div>
-                            <RadioGroupItem
-                              value="existing"
-                              id="class-existing"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="class-existing"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <BookOpen className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">Existing Class</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Select from existing classes
-                                </div>
-                              </div>
-                            </Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          classMode === 'existing'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="existing"
+                          {...register('classMode')}
+                          className="sr-only"
+                        />
+                        <BookOpen className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">Existing Class</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Select from existing classes
                           </div>
-                          <div>
-                            <RadioGroupItem
-                              value="create"
-                              id="class-create"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="class-create"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <GraduationCap className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">New Class</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Create a new class
-                                </div>
-                              </div>
-                            </Label>
+                        </div>
+                      </label>
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          classMode === 'create'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="create"
+                          {...register('classMode')}
+                          className="sr-only"
+                        />
+                        <GraduationCap className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">New Class</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Create a new class
                           </div>
-                        </RadioGroup>
-                      )}
-                    />
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   <Separator />
@@ -1069,56 +1056,50 @@ export const ClassTeacherCreationPipeline = ({ onSubmit, onCancel }: ClassTeache
                   {/* Section Mode Selection */}
                   <div className="space-y-3">
                     <Label>Section Option</Label>
-                    <Controller
-                      name="sectionMode"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="grid grid-cols-2 gap-4"
-                        >
-                          <div>
-                            <RadioGroupItem
-                              value="existing"
-                              id="section-existing"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="section-existing"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <Layers className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">Existing Section</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Select from existing sections
-                                </div>
-                              </div>
-                            </Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          sectionMode === 'existing'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="existing"
+                          {...register('sectionMode')}
+                          className="sr-only"
+                        />
+                        <Layers className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">Existing Section</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Select from existing sections
                           </div>
-                          <div>
-                            <RadioGroupItem
-                              value="create"
-                              id="section-create"
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor="section-create"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            >
-                              <Layers className="mb-3 h-6 w-6" />
-                              <div className="text-center">
-                                <div className="font-semibold">New Section</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Create a new section
-                                </div>
-                              </div>
-                            </Label>
+                        </div>
+                      </label>
+                      <label
+                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer transition-colors ${
+                          sectionMode === 'create'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted bg-popover hover:bg-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value="create"
+                          {...register('sectionMode')}
+                          className="sr-only"
+                        />
+                        <Layers className="mb-3 h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-semibold">New Section</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Create a new section
                           </div>
-                        </RadioGroup>
-                      )}
-                    />
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   <Separator />
