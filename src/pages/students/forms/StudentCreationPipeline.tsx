@@ -31,6 +31,7 @@ import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { useAuth } from '../../../hooks/useAuth';
 import { useClasses, usePrograms, useSections } from '../../../hooks/useAcademic';
+import { useUsers } from '../../../hooks/useAccounts';
 import { useAcademicYears } from '../../../hooks/useCore';
 import { userApi } from '../../../services/accounts.service';
 import { studentApi } from '../../../services/students.service';
@@ -45,6 +46,8 @@ type StepType = 1 | 2 | 3 | 4 | 5;
 
 type StudentCreationFormValues = {
   // Step 1: Account Details
+  accountMode: 'create' | 'existing'; // New: choose between creating new user or linking existing
+  existingUserId: string; // For linking existing user
   username: string;
   password: string;
   confirmPassword: string;
@@ -124,6 +127,8 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
   const { register, handleSubmit, formState: { errors }, control, watch, setValue, trigger, reset } = useForm<StudentCreationFormValues>({
     defaultValues: {
       // Account Details
+      accountMode: 'create',
+      existingUserId: '',
       username: '',
       password: '',
       confirmPassword: '',
@@ -169,10 +174,19 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
   const { data: sectionsData } = useSections({ page_size: 100, is_active: true });
   const { data: yearsData } = useAcademicYears({ page_size: 100 });
 
+  // Fetch existing student users for linking option
+  const { data: studentUsersData, isLoading: isUsersLoading } = useUsers({
+    user_type: 'student',
+    page_size: 1000
+  });
+
   const programs = programsData?.results || [];
   const classes = classesData?.results || [];
   const sections = sectionsData?.results || [];
   const years = yearsData?.results || [];
+  const studentUsers = studentUsersData?.results || [];
+
+  const accountMode = watch('accountMode');
 
   // Load draft on mount
   useEffect(() => {
@@ -204,29 +218,45 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
 
   // Step validation
   const validateStep1 = async () => {
-    const isValid = await trigger([
-      'username',
-      'password',
-      'confirmPassword',
-      'email',
-      'college',
-    ]);
+    const mode = watch('accountMode');
 
-    // Check password match
-    const password = watch('password');
-    const confirmPassword = watch('confirmPassword');
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
+    if (mode === 'existing') {
+      // For existing user, only validate user selection and college
+      const isValid = await trigger(['existingUserId', 'college']);
+
+      const existingUserId = watch('existingUserId');
+      if (!existingUserId) {
+        toast.error('Please select an existing user');
+        return false;
+      }
+
+      return isValid;
+    } else {
+      // For new user, validate all account fields
+      const isValid = await trigger([
+        'username',
+        'password',
+        'confirmPassword',
+        'email',
+        'college',
+      ]);
+
+      // Check password match
+      const password = watch('password');
+      const confirmPassword = watch('confirmPassword');
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return false;
+      }
+
+      // Check password strength
+      if (password.length < 8) {
+        toast.error('Password must be at least 8 characters');
+        return false;
+      }
+
+      return isValid;
     }
-
-    // Check password strength
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return false;
-    }
-
-    return isValid;
   };
 
   const validateStep2 = async () => {
@@ -289,34 +319,43 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
     try {
       setIsSubmitting(true);
 
-      // Step 1: Create User Account
-      const userData = {
-        username: data.username.toLowerCase().trim(),
-        password: data.password,
-        email: data.email,
-        first_name: data.first_name,
-        middle_name: data.middle_name,
-        last_name: data.last_name,
-        user_type: 'student',
-        college: data.college,
-        phone: data.phone,
-        gender: data.gender,
-        date_of_birth: data.date_of_birth,
-        is_active: true,
-      };
+      let userId: string;
 
-      toast.info('Creating user account...');
-      const createdUser = await userApi.create(userData);
+      if (data.accountMode === 'existing') {
+        // Use existing user
+        userId = data.existingUserId;
+        toast.info('Linking to existing user account...');
+      } else {
+        // Step 1: Create User Account
+        const userData = {
+          username: data.username.toLowerCase().trim(),
+          password: data.password,
+          email: data.email,
+          first_name: data.first_name,
+          middle_name: data.middle_name,
+          last_name: data.last_name,
+          user_type: 'student',
+          college: data.college,
+          phone: data.phone,
+          gender: data.gender,
+          date_of_birth: data.date_of_birth,
+          is_active: true,
+        };
 
-      if (!createdUser || !createdUser.id) {
-        throw new Error('Failed to create user account');
+        toast.info('Creating user account...');
+        const createdUser = await userApi.create(userData);
+
+        if (!createdUser || !createdUser.id) {
+          throw new Error('Failed to create user account');
+        }
+
+        userId = createdUser.id;
+        toast.success('User account created successfully');
       }
-
-      toast.success('User account created successfully');
 
       // Step 2: Create Student Record
       const studentData = {
-        user: createdUser.id,
+        user: userId,
         college: data.college,
         admission_number: data.admission_number,
         admission_date: data.admission_date,
@@ -456,94 +495,169 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
                 <CardHeader>
                   <CardTitle>Account Details</CardTitle>
                   <CardDescription>
-                    Create login credentials for the student
+                    {accountMode === 'create'
+                      ? 'Create login credentials for the student'
+                      : 'Link to an existing user account'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <Label htmlFor="username" required>
-                        Username
+                  {/* Account Mode Selection */}
+                  <div>
+                    <Label>Account Type</Label>
+                    <div className="flex gap-4 mt-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="create"
+                          {...register('accountMode')}
+                          className="w-4 h-4"
+                        />
+                        <span>Create New User Account</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="existing"
+                          {...register('accountMode')}
+                          className="w-4 h-4"
+                        />
+                        <span>Link Existing User</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Existing User Selection */}
+                  {accountMode === 'existing' && (
+                    <div>
+                      <Label htmlFor="existingUserId" required>
+                        Select Existing User
                       </Label>
-                      <Input
-                        id="username"
-                        {...register('username', {
-                          required: 'Username is required',
-                          minLength: { value: 3, message: 'Username must be at least 3 characters' },
-                          pattern: {
-                            value: /^[a-z0-9_]+$/,
-                            message: 'Username must be lowercase letters, numbers, and underscores only'
-                          }
-                        })}
-                        placeholder="student.username"
-                        className="lowercase"
-                      />
-                      {errors.username && (
-                        <p className="text-xs text-destructive mt-1">{errors.username.message}</p>
+                      <Select
+                        value={watch('existingUserId')}
+                        onValueChange={(value) => setValue('existingUserId', value, { shouldValidate: true })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a user" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {isUsersLoading ? (
+                            <SelectItem value="" disabled>Loading users...</SelectItem>
+                          ) : studentUsers.length === 0 ? (
+                            <SelectItem value="" disabled>No student users available</SelectItem>
+                          ) : (
+                            studentUsers.map((user: any) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.full_name || user.username} ({user.email})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {errors.existingUserId && (
+                        <p className="text-xs text-destructive mt-1">{errors.existingUserId.message}</p>
                       )}
                       <p className="text-xs text-muted-foreground mt-1">
-                        Lowercase letters, numbers, and underscores only
+                        Select a user who doesn't have a student record yet
                       </p>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="password" required>
-                        Password
-                      </Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        {...register('password', {
-                          required: 'Password is required',
-                          minLength: { value: 8, message: 'Password must be at least 8 characters' }
-                        })}
-                        placeholder="Enter password"
-                      />
-                      {errors.password && (
-                        <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
-                      )}
-                    </div>
+                  {/* New User Creation Fields */}
+                  {accountMode === 'create' && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2">
+                          <Label htmlFor="username" required>
+                            Username
+                          </Label>
+                          <Input
+                            id="username"
+                            {...register('username', {
+                              required: accountMode === 'create' ? 'Username is required' : false,
+                              minLength: { value: 3, message: 'Username must be at least 3 characters' },
+                              pattern: {
+                                value: /^[a-z0-9_]+$/,
+                                message: 'Username must be lowercase letters, numbers, and underscores only'
+                              }
+                            })}
+                            placeholder="student.username"
+                            className="lowercase"
+                          />
+                          {errors.username && (
+                            <p className="text-xs text-destructive mt-1">{errors.username.message}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Lowercase letters, numbers, and underscores only
+                          </p>
+                        </div>
+                      </div>
 
-                    <div>
-                      <Label htmlFor="confirmPassword" required>
-                        Confirm Password
-                      </Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        {...register('confirmPassword', {
-                          required: 'Please confirm password'
-                        })}
-                        placeholder="Re-enter password"
-                      />
-                      {errors.confirmPassword && (
-                        <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
-                      )}
-                    </div>
-                  </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="password" required>
+                            Password
+                          </Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            {...register('password', {
+                              required: accountMode === 'create' ? 'Password is required' : false,
+                              minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                            })}
+                            placeholder="Enter password"
+                          />
+                          {errors.password && (
+                            <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
+                          )}
+                        </div>
 
-                  <div>
-                    <Label htmlFor="email" required>
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      {...register('email', {
-                        required: 'Email is required',
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Invalid email address'
-                        }
-                      })}
-                      placeholder="student@example.com"
-                    />
-                    {errors.email && (
-                      <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
-                    )}
-                  </div>
+                        <div>
+                          <Label htmlFor="confirmPassword" required>
+                            Confirm Password
+                          </Label>
+                          <Input
+                            id="confirmPassword"
+                            type="password"
+                            {...register('confirmPassword', {
+                              required: accountMode === 'create' ? 'Please confirm password' : false
+                            })}
+                            placeholder="Re-enter password"
+                          />
+                          {errors.confirmPassword && (
+                            <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="email" required>
+                          Email Address
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          {...register('email', {
+                            required: accountMode === 'create' ? 'Email is required' : false,
+                            pattern: {
+                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                              message: 'Invalid email address'
+                            }
+                          })}
+                          placeholder="student@example.com"
+                        />
+                        {errors.email && (
+                          <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
+                        )}
+                      </div>
+
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          <strong>Important:</strong> The username and password will be used by the student to log into the system.
+                        </AlertDescription>
+                      </Alert>
+                    </>
+                  )}
 
                   <div>
                     <Controller
@@ -561,13 +675,6 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
                       )}
                     />
                   </div>
-
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>Important:</strong> The username and password will be used by the student to log into the system.
-                    </AlertDescription>
-                  </Alert>
                 </CardContent>
               </Card>
             )}
