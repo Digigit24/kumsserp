@@ -52,6 +52,7 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   addButtonLabel?: string;
   actions?: (item: T) => React.ReactNode;
+  customActions?: React.ReactNode;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -73,6 +74,7 @@ export function DataTable<T extends Record<string, any>>({
   searchPlaceholder = 'Search...',
   addButtonLabel = 'Add New',
   actions,
+  customActions,
 }: DataTableProps<T>) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -127,7 +129,7 @@ export function DataTable<T extends Record<string, any>>({
     }
   };
 
-  const showHeader = Boolean(title || description || onAdd || onRefresh);
+  const showHeader = Boolean(title || description || onAdd || onRefresh || customActions);
 
   return (
     <div className="space-y-4">
@@ -151,6 +153,7 @@ export function DataTable<T extends Record<string, any>>({
                 <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
             )}
+            {customActions}
             {onAdd && (
               <Button onClick={onAdd}>
                 <Plus className="h-4 w-4 mr-2" />
