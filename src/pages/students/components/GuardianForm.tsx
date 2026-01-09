@@ -22,7 +22,11 @@ interface GuardianFormProps {
 }
 
 type GuardianFormData = Omit<GuardianCreateInput, 'user' | 'photo' | 'annual_income'> & {
+  accountMode: 'none' | 'create' | 'existing'; // New: choose account type
   user: string;
+  username: string; // For new user creation
+  password: string;
+  confirmPassword: string;
   photo: string;
   annual_income: string;
 };
@@ -35,7 +39,11 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [formData, setFormData] = useState<GuardianFormData>({
+    accountMode: 'none',
     user: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
     first_name: '',
     last_name: '',
     middle_name: '',
@@ -56,11 +64,11 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
     fetchUsers();
   }, []);
 
-  // Fetch users
+  // Fetch users (parent/guardian types only)
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
-      const data = await userApi.list({ page_size: 500, is_active: true });
+      const data = await userApi.list({ user_type: 'parent', page_size: 500, is_active: true });
       setUsers(data.results);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -91,6 +99,35 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
+
+    // Account mode validation
+    if (formData.accountMode === 'create') {
+      if (!formData.username.trim()) {
+        newErrors.username = 'Username is required';
+      } else if (formData.username.length < 3) {
+        newErrors.username = 'Username must be at least 3 characters';
+      } else if (!/^[a-z0-9_]+$/.test(formData.username)) {
+        newErrors.username = 'Username must be lowercase letters, numbers, and underscores only';
+      }
+
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required for new user accounts';
+      }
+    } else if (formData.accountMode === 'existing') {
+      if (!formData.user) {
+        newErrors.user = 'Please select an existing user';
+      }
+    }
 
     if (!formData.first_name.trim()) {
       newErrors.first_name = 'First name is required';
@@ -145,10 +182,37 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
     setError(null);
 
     try {
-      // Clean up empty strings to null
+      let userId: string | null = null;
+
+      // Step 1: Handle user account creation/linking
+      if (formData.accountMode === 'create') {
+        // Create new user account
+        const userData = {
+          username: formData.username.toLowerCase().trim(),
+          password: formData.password,
+          email: formData.email,
+          first_name: formData.first_name,
+          middle_name: formData.middle_name || undefined,
+          last_name: formData.last_name,
+          user_type: 'parent',
+          phone: formData.phone,
+          is_active: true,
+        };
+
+        const createdUser = await userApi.create(userData);
+        if (!createdUser || !createdUser.id) {
+          throw new Error('Failed to create user account');
+        }
+        userId = createdUser.id;
+      } else if (formData.accountMode === 'existing') {
+        // Use existing user
+        userId = formData.user || null;
+      }
+
+      // Step 2: Create/update guardian record
       const cleanedData: GuardianCreateInput = {
         ...formData,
-        user: formData.user ? Number(formData.user) : null,
+        user: userId ? Number(userId) : null,
         middle_name: formData.middle_name || null,
         email: formData.email || null,
         alternate_phone: formData.alternate_phone || null,
@@ -167,7 +231,22 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
       onSuccess();
     } catch (err: any) {
       console.error('Form submission error:', err);
-      setError(err.message || 'Failed to save guardian');
+
+      // Enhanced error messages
+      let errorMessage = 'Failed to save guardian';
+      if (err.errors) {
+        if (err.errors.username) {
+          errorMessage = `Username error: ${err.errors.username[0]}`;
+        } else if (err.errors.email) {
+          errorMessage = `Email error: ${err.errors.email[0]}`;
+        } else {
+          errorMessage = err.message || errorMessage;
+        }
+      } else {
+        errorMessage = err.message || errorMessage;
+      }
+
+      setError(errorMessage);
 
       // Handle field-specific errors from backend
       if (err.errors) {
@@ -212,30 +291,146 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
             Basic Information
           </h3>
 
-          {/* User Selection */}
+          {/* Account Mode Selection */}
           <div>
-            <label htmlFor="user" className="block text-sm font-medium mb-2">
-              Link to User Account <span className="text-muted-foreground text-xs">(Optional)</span>
+            <label className="block text-sm font-medium mb-2">
+              User Account <span className="text-muted-foreground text-xs">(Optional - for portal access)</span>
             </label>
-            <Select
-              value={formData.user || undefined}
-              onValueChange={(v) => handleChange('user', v || '')}
-              disabled={isSubmitting || loadingUsers}
-            >
-              <SelectTrigger id="user">
-                <SelectValue placeholder={loadingUsers ? "Loading users..." : "Select user (optional)"} />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={String(user.id)}>
-                    {user.full_name || user.username} {user.email && `(${user.email})`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground mt-1">
-              Link this guardian to an existing user account for portal access
-            </p>
+            <div className="flex gap-4 mb-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="none"
+                  checked={formData.accountMode === 'none'}
+                  onChange={(e) => handleChange('accountMode', e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-4 h-4"
+                />
+                <span>No Account</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="create"
+                  checked={formData.accountMode === 'create'}
+                  onChange={(e) => handleChange('accountMode', e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-4 h-4"
+                />
+                <span>Create New Account</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="existing"
+                  checked={formData.accountMode === 'existing'}
+                  onChange={(e) => handleChange('accountMode', e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-4 h-4"
+                />
+                <span>Link Existing Account</span>
+              </label>
+            </div>
+
+            {/* Create New User Fields */}
+            {formData.accountMode === 'create' && (
+              <div className="space-y-4 p-4 border rounded-md bg-muted/30">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Create a new user account for guardian portal access
+                </p>
+
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium mb-2">
+                    Username <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => handleChange('username', e.target.value.toLowerCase())}
+                    placeholder="username"
+                    disabled={isSubmitting}
+                    className={errors.username ? 'border-destructive' : ''}
+                  />
+                  {errors.username && (
+                    <p className="text-sm text-destructive mt-1">{errors.username}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Lowercase letters, numbers, and underscores only
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium mb-2">
+                      Password <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => handleChange('password', e.target.value)}
+                      placeholder="Enter password"
+                      disabled={isSubmitting}
+                      className={errors.password ? 'border-destructive' : ''}
+                    />
+                    {errors.password && (
+                      <p className="text-sm text-destructive mt-1">{errors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+                      Confirm Password <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                      placeholder="Re-enter password"
+                      disabled={isSubmitting}
+                      className={errors.confirmPassword ? 'border-destructive' : ''}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Link Existing User */}
+            {formData.accountMode === 'existing' && (
+              <div className="p-4 border rounded-md bg-muted/30">
+                <Select
+                  value={formData.user || undefined}
+                  onValueChange={(v) => handleChange('user', v || '')}
+                  disabled={isSubmitting || loadingUsers}
+                >
+                  <SelectTrigger className={errors.user ? 'border-destructive' : ''}>
+                    <SelectValue placeholder={loadingUsers ? "Loading users..." : "Select existing user"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.length === 0 ? (
+                      <SelectItem value="" disabled>No parent users available</SelectItem>
+                    ) : (
+                      users.map((user) => (
+                        <SelectItem key={user.id} value={String(user.id)}>
+                          {user.full_name || user.username} {user.email && `(${user.email})`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {errors.user && (
+                  <p className="text-sm text-destructive mt-2">{errors.user}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Select a user who doesn't have a guardian record yet
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Photo URL */}
@@ -374,7 +569,7 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
+              Email {formData.accountMode === 'create' && <span className="text-destructive">*</span>}
             </label>
             <Input
               id="email"
@@ -387,6 +582,11 @@ export const GuardianForm = ({ mode, guardian, onSuccess, onCancel }: GuardianFo
             />
             {errors.email && (
               <p className="text-sm text-destructive mt-1">{errors.email}</p>
+            )}
+            {formData.accountMode === 'create' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Email is required for user account creation
+              </p>
             )}
           </div>
         </div>
