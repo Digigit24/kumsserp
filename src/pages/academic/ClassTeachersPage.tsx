@@ -3,14 +3,16 @@
  */
 
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useClassTeachers, useDeleteClassTeacher } from '../../hooks/useAcademic';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { ClassTeacherForm } from './components/ClassTeacherForm';
+import { ClassTeacherCreationPipeline } from './forms/ClassTeacherCreationPipeline';
 import type { ClassTeacher, ClassTeacherFilters } from '../../types/academic.types';
 
 export default function ClassTeachersPage() {
@@ -21,6 +23,7 @@ export default function ClassTeachersPage() {
     const [selectedClassTeacher, setSelectedClassTeacher] = useState<ClassTeacher | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [usePipeline, setUsePipeline] = useState(false); // Toggle between form and pipeline
 
     const deleteMutation = useDeleteClassTeacher();
 
@@ -49,6 +52,14 @@ export default function ClassTeachersPage() {
     const handleAdd = () => {
         setSelectedClassTeacher(null);
         setSidebarMode('create');
+        setUsePipeline(false); // Default to standard form
+        setIsSidebarOpen(true);
+    };
+
+    const handleAddWithPipeline = () => {
+        setSelectedClassTeacher(null);
+        setSidebarMode('create');
+        setUsePipeline(true); // Use pipeline wizard
         setIsSidebarOpen(true);
     };
 
@@ -82,13 +93,30 @@ export default function ClassTeachersPage() {
                 onFiltersChange={setFilters}
                 searchPlaceholder="Search class teachers..."
                 addButtonLabel="Assign Class Teacher"
+                customActions={
+                    <Button
+                        onClick={handleAddWithPipeline}
+                        variant="outline"
+                        className="gap-2"
+                    >
+                        <Wand2 className="h-4 w-4" />
+                        Quick Assign Wizard
+                    </Button>
+                }
             />
 
             <DetailSidebar
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
-                title={sidebarMode === 'create' ? 'Assign Class Teacher' : 'Edit Class Teacher Assignment'}
+                title={
+                    sidebarMode === 'create'
+                        ? usePipeline
+                            ? 'Quick Assign Wizard'
+                            : 'Assign Class Teacher'
+                        : 'Edit Class Teacher Assignment'
+                }
                 mode={sidebarMode}
+                width={usePipeline ? '5xl' : 'lg'} // Larger sidebar for pipeline
             >
                 {sidebarMode === 'edit' && selectedClassTeacher && (
                     <div className="flex justify-end mb-4">
@@ -101,7 +129,25 @@ export default function ClassTeachersPage() {
                         </button>
                     </div>
                 )}
-                <ClassTeacherForm mode={sidebarMode} classTeacherId={selectedClassTeacher?.id} onSuccess={() => { setIsSidebarOpen(false); refetch(); }} onCancel={() => setIsSidebarOpen(false)} />
+                {sidebarMode === 'create' && usePipeline ? (
+                    <ClassTeacherCreationPipeline
+                        onSubmit={() => {
+                            setIsSidebarOpen(false);
+                            refetch();
+                        }}
+                        onCancel={() => setIsSidebarOpen(false)}
+                    />
+                ) : (
+                    <ClassTeacherForm
+                        mode={sidebarMode}
+                        classTeacherId={selectedClassTeacher?.id}
+                        onSuccess={() => {
+                            setIsSidebarOpen(false);
+                            refetch();
+                        }}
+                        onCancel={() => setIsSidebarOpen(false)}
+                    />
+                )}
             </DetailSidebar>
 
             <ConfirmDialog
