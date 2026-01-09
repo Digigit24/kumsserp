@@ -69,7 +69,7 @@ export const TransfersWorkflowPage = () => {
   });
 
   const { data: approvedIndentsData, refetch: refetchIndents } = useStoreIndents({
-    status: 'approved'
+    status: 'super_admin_approved'
   });
   const dispatchMutation = useDispatchMaterialIssue();
   const confirmReceiptMutation = useConfirmReceipt();
@@ -158,7 +158,7 @@ export const TransfersWorkflowPage = () => {
         id: min.id,
         status: min.status,
         title: min.min_number,
-        subtitle: `Issued: ${new Date(min.issue_date).toLocaleDateString()}`,
+        subtitle: `Issued: ${new Date(min.issue_date).toLocaleDateString()}${min.indent_number ? ` • Indent #${min.indent_number}` : ''}`,
         badges: [
           {
             label: min.receiving_college_name || `College #${min.receiving_college}`,
@@ -171,6 +171,11 @@ export const TransfersWorkflowPage = () => {
             label: `${min.items?.length || 0} items`,
             color: 'text-blue-500',
           },
+          ...(min.indent_number ? [{
+            icon: FileText,
+            label: `Indent #${min.indent_number}`,
+            color: 'text-muted-foreground',
+          }] : []),
           {
             icon: FileText,
             label: min.central_store_name || `Store #${min.central_store}`,

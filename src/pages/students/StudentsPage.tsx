@@ -35,11 +35,14 @@ export const StudentsPage = () => {
     });
 
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
-    const { data, isLoading, error, refetch } = useStudents({
+    const normalizedFilters: StudentFilters = {
         ...filters,
+        college: filters.college ? Number(filters.college) : undefined,
         current_class: selectedClass || undefined,
         current_section: selectedSection || undefined,
-    });
+    };
+
+    const { data, isLoading, error, refetch } = useStudents(normalizedFilters);
     const deleteMutation = useDeleteStudent();
 
     const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
@@ -89,6 +92,12 @@ export const StudentsPage = () => {
                     </div>
                 </div>
             ),
+        },
+        {
+            key: 'college_name',
+            label: 'College',
+            sortable: true,
+            render: (student) => student.college_name || `College #${student.college}`,
         },
         {
             key: 'program_name',
