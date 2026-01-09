@@ -32,7 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useAuth } from '../../../hooks/useAuth';
 import { useClasses, usePrograms, useSections } from '../../../hooks/useAcademic';
 import { useAcademicYears } from '../../../hooks/useCore';
-import { accountsApi } from '../../../services/accounts.service';
+import { userApi } from '../../../services/accounts.service';
 import { studentApi } from '../../../services/students.service';
 import { getCurrentUserCollege, isSuperAdmin } from '../../../utils/auth.utils';
 
@@ -306,7 +306,7 @@ export const StudentCreationPipeline = ({ onSubmit, onCancel }: StudentCreationP
       };
 
       toast.info('Creating user account...');
-      const createdUser = await accountsApi.create(userData);
+      const createdUser = await userApi.create(userData);
 
       if (!createdUser || !createdUser.id) {
         throw new Error('Failed to create user account');
