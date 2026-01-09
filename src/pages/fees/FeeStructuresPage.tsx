@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { Wand2 } from 'lucide-react';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
@@ -10,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { useFeeStructures, useCreateFeeStructure, useUpdateFeeStructure, useDeleteFeeStructure } from '../../hooks/useFees';
 import type { FeeStructure, FeeStructureCreateInput } from '../../types/fees.types';
 import { FeeStructureForm } from './forms';
+import { FeeStructureCreationPipeline } from './forms/FeeStructureCreationPipeline';
 import { toast } from 'sonner';
 
 const FeeStructuresPage = () => {
@@ -17,6 +19,7 @@ const FeeStructuresPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
   const [selectedStructure, setSelectedStructure] = useState<FeeStructure | null>(null);
+  const [usePipeline, setUsePipeline] = useState(false); // Toggle between form and pipeline
 
   const { data, isLoading, error, refetch } = useFeeStructures(filters);
   const createFeeStructure = useCreateFeeStructure();
@@ -76,6 +79,14 @@ const FeeStructuresPage = () => {
   const handleAddNew = () => {
     setSelectedStructure(null);
     setSidebarMode('create');
+    setUsePipeline(false); // Default to standard form
+    setIsSidebarOpen(true);
+  };
+
+  const handleAddWithPipeline = () => {
+    setSelectedStructure(null);
+    setSidebarMode('create');
+    setUsePipeline(true); // Use pipeline wizard
     setIsSidebarOpen(true);
   };
 
@@ -145,13 +156,30 @@ const FeeStructuresPage = () => {
         filterConfig={filterConfig}
         searchPlaceholder="Search fee structures..."
         addButtonLabel="Add Fee Structure"
+        customActions={
+          <Button
+            onClick={handleAddWithPipeline}
+            variant="outline"
+            className="gap-2"
+          >
+            <Wand2 className="h-4 w-4" />
+            Quick Create Wizard
+          </Button>
+        }
       />
 
       <DetailSidebar
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        title={sidebarMode === 'create' ? 'Create Fee Structure' : 'Fee Structure Details'}
+        title={
+          sidebarMode === 'create'
+            ? usePipeline
+              ? 'Quick Create Wizard'
+              : 'Create Fee Structure'
+            : 'Fee Structure Details'
+        }
         mode={sidebarMode}
+        width={usePipeline ? '5xl' : 'lg'} // Larger sidebar for pipeline
       >
         {sidebarMode === 'view' && selectedStructure ? (
           <div className="space-y-4">
@@ -204,6 +232,14 @@ const FeeStructuresPage = () => {
               <Button onClick={handleDelete} variant="destructive" className="flex-1">Delete</Button>
             </div>
           </div>
+        ) : sidebarMode === 'create' && usePipeline ? (
+          <FeeStructureCreationPipeline
+            onSubmit={() => {
+              setIsSidebarOpen(false);
+              refetch();
+            }}
+            onCancel={handleCloseSidebar}
+          />
         ) : (
           <FeeStructureForm
             feeStructure={sidebarMode === 'edit' ? selectedStructure : null}
