@@ -25,11 +25,28 @@ const defaultColors: ThemeColors = {
   secondary: '210 40% 96.1%',
 };
 
+// 🔧 SYNC WITH SETTINGS PROVIDER - Read from the same storage
+const SETTINGS_STORAGE_KEY = 'app_settings_v1';
+
+const getThemeFromSettings = (): Theme => {
+  try {
+    const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (settingsJson) {
+      const settings = JSON.parse(settingsJson);
+      if (settings.theme === 'dark' || settings.theme === 'light') {
+        return settings.theme;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to parse settings from localStorage:', error);
+  }
+  // Fallback to legacy storage or default
+  const legacyTheme = localStorage.getItem('theme') as Theme;
+  return legacyTheme || 'light';
+};
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme') as Theme;
-    return saved || 'light';
-  });
+  const [theme, setThemeState] = useState<Theme>(() => getThemeFromSettings());
 
   const [font, setFontState] = useState<Font>(() => {
     const saved = localStorage.getItem('font') as Font;
@@ -41,11 +58,44 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : defaultColors;
   });
 
+  // 🔧 Listen for changes from SettingsProvider (storage events)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SETTINGS_STORAGE_KEY && e.newValue) {
+        try {
+          const settings = JSON.parse(e.newValue);
+          if (settings.theme && (settings.theme === 'dark' || settings.theme === 'light')) {
+            setThemeState(settings.theme);
+          }
+        } catch (error) {
+          console.warn('Failed to parse settings from storage event:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
+
+    // 🔧 Update both storage locations for backward compatibility
     localStorage.setItem('theme', theme);
+
+    // Also update SettingsProvider storage
+    try {
+      const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (settingsJson) {
+        const settings = JSON.parse(settingsJson);
+        settings.theme = theme;
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      }
+    } catch (error) {
+      console.warn('Failed to update settings storage:', error);
+    }
   }, [theme]);
 
   useEffect(() => {
