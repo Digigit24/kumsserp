@@ -11,6 +11,7 @@ import {
     CreditCard,
     DoorClosed,
     FileText,
+    FolderTree,
     GraduationCap,
     Home,
     Library,
@@ -1006,6 +1007,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     icon: Settings,
     roles: ["super_admin", "college_admin"],
     items: [
+      {
+        name: "Organization Hierarchy",
+        href: "/core/organization-hierarchy",
+        icon: FolderTree,
+        roles: ["super_admin", "college_admin"],
+      },
       {
         name: "Permissions",
         href: "/system/permissions",
