@@ -194,16 +194,13 @@ export const OrganizationHierarchyPage = () => {
               </Button>
             </div>
           ) : (
-            <div className="w-full overflow-x-auto pb-4">
-              <div
-                style={{
-                  transform: `scale(${zoomLevel / 100})`,
-                  transformOrigin: "top left",
-                  transition: "transform 0.2s ease-in-out",
-                }}
-              >
-                <OrganizationTree nodes={tree} />
-              </div>
+            <div
+              className="w-full overflow-x-auto overflow-y-auto pb-4"
+              style={{
+                zoom: `${zoomLevel}%`,
+              }}
+            >
+              <OrganizationTree nodes={tree} />
             </div>
           )}
         </CardContent>
