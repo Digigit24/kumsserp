@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
 import {
   SettingsContextType,
   SettingsState,
@@ -40,6 +40,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [settings, dispatch] = useReducer(reducer, DEFAULT_SETTINGS);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // 👉 APPLY DOM EFFECTS
   useApplySettings(settings);
@@ -53,13 +54,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch {
       // corrupted storage → ignore
+    } finally {
+      setIsInitialized(true);
     }
   }, []);
 
-  // 👉 SAVE TO STORAGE
+  // 👉 SAVE TO STORAGE (only after initialization)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }, [settings]);
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    }
+  }, [settings, isInitialized]);
 
   const updateSetting = (key: keyof SettingsState, value: any) => {
     dispatch({ type: "UPDATE", key, value });
