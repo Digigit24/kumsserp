@@ -13,11 +13,8 @@ import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
 import { useHierarchicalContext } from '../../contexts/HierarchicalContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useAuth } from '../../hooks/useAuth';
-import { useColleges } from '../../hooks/useCore';
 import { useDeleteStudent, useStudents } from '../../hooks/useStudents';
 import type { StudentFilters, StudentListItem } from '../../types/students.types';
-import { isSuperAdmin } from '../../utils/auth.utils';
 import { StudentForm } from './components/StudentForm';
 import { StudentCreationPipeline } from './forms/StudentCreationPipeline';
 
@@ -38,7 +35,6 @@ export const StudentsPage = () => {
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
     const normalizedFilters: StudentFilters = {
         ...filters,
-        college: filters.college ? Number(filters.college) : undefined,
         current_class: selectedClass || undefined,
         current_section: selectedSection || undefined,
     };
@@ -149,21 +145,7 @@ export const StudentsPage = () => {
     ];
 
     // Define filter configuration
-    // Fetch colleges for filter
-    const { user } = useAuth();
-    const { data: collegesData } = useColleges({ page_size: 100, is_active: true });
-
-    // Define filter configuration
     const filterConfig: FilterConfig[] = [
-        ...(isSuperAdmin(user as any) ? [{
-            name: 'college',
-            label: 'College',
-            type: 'select' as const,
-            options: [
-                { value: '', label: 'All Colleges' },
-                ...(collegesData?.results.map(c => ({ value: c.id.toString(), label: c.name })) || [])
-            ],
-        }] : []),
         {
             name: 'is_active',
             label: 'Active Status',
