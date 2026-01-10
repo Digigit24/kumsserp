@@ -30,7 +30,9 @@ export const OrganizationHierarchyPage = () => {
     queryKey: ["organization-tree"],
     queryFn: async () => {
       const response = await organizationNodeApi.getTree();
-      return response.tree;
+      // API returns an array of root nodes; fall back to response.tree if present.
+      if (Array.isArray(response)) return response;
+      return response?.tree || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes (matches backend cache)
     refetchOnWindowFocus: false,

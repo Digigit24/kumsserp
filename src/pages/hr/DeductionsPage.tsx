@@ -2,13 +2,16 @@
  * Deductions Page - Manage HR deductions
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { useDeductions, useCreateDeduction, useUpdateDeduction, useDeleteDeduction } from '../../hooks/useHR';
 import { DeductionForm } from './forms/DeductionForm';
 import { toast } from 'sonner';
+import { MinusCircle, Palette, ShieldCheck, Sparkles } from 'lucide-react';
 
 const DeductionsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -20,6 +23,19 @@ const DeductionsPage = () => {
   const createDeduction = useCreateDeduction();
   const updateDeduction = useUpdateDeduction();
   const deleteDeduction = useDeleteDeduction();
+
+  const rows = useMemo(() => data?.results || [], [data]);
+  const metrics = useMemo(() => {
+    const total = rows.length;
+    const active = rows.filter((r: any) => r.is_active).length;
+    const types: Record<string, number> = {};
+    rows.forEach((r: any) => {
+      const key = (r.deduction_type || 'other').toLowerCase();
+      types[key] = (types[key] || 0) + 1;
+    });
+    const topType = Object.entries(types).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+    return { total, active, types, topType };
+  }, [rows]);
 
   const columns: Column<any>[] = [
     {
@@ -110,21 +126,63 @@ const DeductionsPage = () => {
   };
 
   return (
-    <div>
-      <DataTable
-        title="Deductions"
-        description="Manage HR deductions"
-        columns={columns}
-        data={data || null}
-        isLoading={isLoading}
-        error={error?.message || null}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onRowClick={handleRowClick}
-        onRefresh={refetch}
-        onAdd={handleAddNew}
-        addButtonLabel="Add Deduction"
-      />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-widest text-primary/70">Deductions</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            Smart Deductions <Sparkles className="h-5 w-5 text-primary" />
+          </h1>
+          <p className="text-muted-foreground">Keep policies tidy with quick visibility into rules.</p>
+        </div>
+        <Button size="lg" onClick={handleAddNew}>
+          <MinusCircle className="h-4 w-4 mr-2" />
+          New Deduction
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Total Policies</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.total}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-background border-emerald-500/20">
+          <CardHeader className="pb-2 flex items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.active}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-background border-amber-500/20">
+          <CardHeader className="pb-2 flex items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Top Type</CardTitle>
+            <Palette className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent className="text-lg font-semibold capitalize">{metrics.topType}</CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-primary/10 shadow-sm">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Deduction Library</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <DataTable
+            columns={columns}
+            data={data || null}
+            isLoading={isLoading}
+            error={error?.message || null}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onRowClick={handleRowClick}
+            onRefresh={refetch}
+            onAdd={handleAddNew}
+            addButtonLabel="Add Deduction"
+          />
+        </CardContent>
+      </Card>
 
       <DetailSidebar
         isOpen={isSidebarOpen}

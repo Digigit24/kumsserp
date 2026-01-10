@@ -1,192 +1,190 @@
-import { OrganizationNodeTree } from "../../../types/core.types";
+import { useMemo, useState } from "react";
 import {
-  ChevronRight,
-  ChevronDown,
   Building2,
   Users,
   Briefcase,
   Target,
   FolderTree,
+  Minus,
+  Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { OrganizationNodeTree } from "../../../types/core.types";
 import { cn } from "../../../lib/utils";
 import { Badge } from "../../../components/ui/badge";
 
+type ColorScheme = {
+  border: string;
+  bg: string;
+  text: string;
+  badge: string;
+};
+
+const colorByType: Record<string, ColorScheme> = {
+  ceo: {
+    border: "border-gray-400",
+    bg: "bg-gray-50",
+    text: "text-gray-700",
+    badge: "bg-gray-200 text-gray-800",
+  },
+  college: {
+    border: "border-blue-300",
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    badge: "bg-blue-100 text-blue-700",
+  },
+  department: {
+    border: "border-indigo-300",
+    bg: "bg-indigo-50",
+    text: "text-indigo-700",
+    badge: "bg-indigo-100 text-indigo-700",
+  },
+  unit: {
+    border: "border-purple-300",
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    badge: "bg-purple-100 text-purple-700",
+  },
+  team: {
+    border: "border-emerald-300",
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    badge: "bg-emerald-100 text-emerald-700",
+  },
+  position: {
+    border: "border-amber-300",
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    badge: "bg-amber-100 text-amber-700",
+  },
+  default: {
+    border: "border-slate-300",
+    bg: "bg-slate-50",
+    text: "text-slate-700",
+    badge: "bg-slate-100 text-slate-700",
+  },
+};
+
+const iconByType: Record<string, JSX.Element> = {
+  ceo: <Building2 className="w-4 h-4" />,
+  college: <Building2 className="w-4 h-4" />,
+  department: <Building2 className="w-4 h-4" />,
+  unit: <Briefcase className="w-4 h-4" />,
+  team: <Users className="w-4 h-4" />,
+  position: <Target className="w-4 h-4" />,
+  default: <FolderTree className="w-4 h-4" />,
+};
+
 interface OrganizationTreeProps {
   nodes: OrganizationNodeTree[];
-  level?: number;
 }
 
-export const OrganizationTree = ({
-  nodes,
-  level = 0,
-}: OrganizationTreeProps) => {
+export const OrganizationTree = ({ nodes }: OrganizationTreeProps) => {
   if (!nodes || nodes.length === 0) return null;
-
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-2",
-        level > 0 && "pl-6 border-l border-gray-200 ml-3"
-      )}
-    >
-      {nodes.map((node) => (
-        <OrganizationTreeNode key={node.id} node={node} level={level} />
-      ))}
+    <div className="overflow-x-auto pb-6">
+      <div className="flex items-start justify-center gap-8 min-w-full whitespace-nowrap">
+        {nodes.map((node) => (
+          <OrgNode key={node.id} node={node} isRoot />
+        ))}
+      </div>
     </div>
   );
 };
 
-const OrganizationTreeNode = ({
+const OrgNode = ({
   node,
-  level,
+  isRoot = false,
 }: {
   node: OrganizationNodeTree;
-  level: number;
+  isRoot?: boolean;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children && node.children.length > 0;
+  const scheme = colorByType[node.node_type || ""] || colorByType.default;
+  const icon = iconByType[node.node_type || ""] || iconByType.default;
 
-  // Get icon based on node type
-  const getNodeIcon = () => {
-    switch (node.node_type) {
-      case "department":
-        return <Building2 className="w-4 h-4" />;
-      case "unit":
-        return <Briefcase className="w-4 h-4" />;
-      case "team":
-        return <Users className="w-4 h-4" />;
-      case "position":
-        return <Target className="w-4 h-4" />;
-      default:
-        return <FolderTree className="w-4 h-4" />;
-    }
-  };
-
-  // Get color scheme based on node type
-  const getColorScheme = () => {
-    switch (node.node_type) {
-      case "department":
-        return {
-          border: "border-l-blue-500",
-          bg: "bg-blue-50",
-          text: "text-blue-600",
-          badge: "bg-blue-100 text-blue-700",
-        };
-      case "unit":
-        return {
-          border: "border-l-purple-500",
-          bg: "bg-purple-50",
-          text: "text-purple-600",
-          badge: "bg-purple-100 text-purple-700",
-        };
-      case "team":
-        return {
-          border: "border-l-green-500",
-          bg: "bg-green-50",
-          text: "text-green-600",
-          badge: "bg-green-100 text-green-700",
-        };
-      case "position":
-        return {
-          border: "border-l-orange-500",
-          bg: "bg-orange-50",
-          text: "text-orange-600",
-          badge: "bg-orange-100 text-orange-700",
-        };
-      default:
-        return {
-          border: "border-l-gray-500",
-          bg: "bg-gray-50",
-          text: "text-gray-600",
-          badge: "bg-gray-100 text-gray-700",
-        };
-    }
-  };
-
-  const colorScheme = getColorScheme();
+  const children = useMemo(() => node.children || [], [node.children]);
 
   return (
-    <div className="relative group animate-in fade-in slide-in-from-top-1 duration-200">
-      <div
-        className={cn(
-          "flex items-center gap-3 p-3 rounded-lg border bg-white transition-all",
-          "hover:shadow-md hover:border-blue-200",
-          "border-l-4",
-          colorScheme.border
-        )}
-      >
-        {/* Expand toggle */}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className={cn(
-            "p-1 rounded hover:bg-gray-100 text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors",
-            !hasChildren && "invisible"
-          )}
-          aria-label={isExpanded ? "Collapse" : "Expand"}
-        >
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-
-        {/* Icon */}
+    <div className="flex flex-col items-center min-w-[180px]">
+      <div className="relative flex flex-col items-center">
         <div
           className={cn(
-            "p-2 rounded-full flex items-center justify-center",
-            colorScheme.bg,
-            colorScheme.text
+            "rounded-md border bg-white px-4 py-3 shadow-sm",
+            "min-w-[180px] text-center transition hover:shadow-md",
+            scheme.border,
+            "border",
+            "flex flex-col gap-1"
           )}
         >
-          {getNodeIcon()}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-semibold text-sm text-gray-900 truncate">
-              {node.name}
-            </h4>
-            <Badge variant="secondary" className={cn("text-[10px]", colorScheme.badge)}>
-              {node.node_type_display}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-[10px] text-gray-600">
-              {node.code}
-            </span>
-            <span className="text-xs text-gray-400">Level {node.level}</span>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className={cn("p-2 rounded-full", scheme.bg, scheme.text)}>
+                {icon}
+              </span>
+              <span className="font-semibold text-sm text-foreground">
+                {node.name}
+              </span>
+            </div>
             {hasChildren && (
-              <span className="text-xs text-gray-400">
-                • {node.children.length}{" "}
-                {node.children.length === 1 ? "child" : "children"}
+              <button
+                className="ml-2 rounded hover:bg-muted p-1 transition"
+                onClick={() => setExpanded((v) => !v)}
+                aria-label={expanded ? "Collapse" : "Expand"}
+              >
+                {expanded ? (
+                  <Minus className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <Badge className={cn("text-[10px]", scheme.badge)}>
+              {node.node_type_display || node.node_type || "Node"}
+            </Badge>
+            {node.is_active !== undefined && (
+              <span
+                className={cn(
+                  "flex items-center gap-1",
+                  node.is_active ? "text-emerald-600" : "text-slate-400"
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    node.is_active ? "bg-emerald-500" : "bg-slate-300"
+                  )}
+                />
+                {node.is_active ? "Active" : "Inactive"}
               </span>
             )}
           </div>
-
           {node.description && (
-            <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               {node.description}
             </p>
           )}
         </div>
-
-        {/* Active status indicator */}
-        {node.is_active && (
-          <div className="h-2 w-2 rounded-full bg-green-500" title="Active" />
-        )}
-        {!node.is_active && (
-          <div className="h-2 w-2 rounded-full bg-gray-300" title="Inactive" />
+        {hasChildren && expanded && (
+          <div className="absolute left-1/2 -bottom-5 h-5 w-px bg-slate-300" />
         )}
       </div>
 
-      {/* Children */}
-      {isExpanded && hasChildren && (
-        <div className="mt-2">
-          <OrganizationTree nodes={node.children} level={level + 1} />
+      {hasChildren && expanded && (
+        <div className="flex flex-col items-center">
+          <div className="relative flex w-full justify-center">
+            <div className="absolute left-0 right-0 top-2 h-px bg-slate-300" />
+            <div className="flex items-start justify-center gap-8 whitespace-nowrap pt-4">
+              {children.map((child) => (
+                <div key={child.id} className="relative flex flex-col items-center">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-px bg-slate-300" />
+                  <OrgNode node={child} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,18 +1,18 @@
 /**
- * Holidays Page - Manage holidays and special dates
+ * Holidays Page - Calendar-first management (create/update/delete)
  */
 
 import { useMemo, useState } from 'react';
-import { Trash2, CalendarClock, Gift, Flag, GraduationCap } from 'lucide-react';
+import { Trash2, CalendarClock, Gift, Flag, GraduationCap, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
-import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { HolidayForm } from './components/HolidayForm';
 import { holidayApi } from '../../services/core.service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDeleteHoliday } from '../../hooks/useCore';
+import { CollegeField } from '../../components/common/CollegeField';
+import { useAuth } from '../../hooks/useAuth';
+import { getCurrentUserCollege } from '@/utils/auth.utils';
 import {
   CalendarBody,
   CalendarDate,
@@ -25,23 +25,31 @@ import {
   CalendarYearPicker,
 } from '@/components/ui/calendar';
 import { Card } from '../../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 const HolidaysPage = () => {
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<any>({ page: 1, page_size: 20 });
+  const { user } = useAuth();
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [sidebarMode, setSidebarMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [formOpen, setFormOpen] = useState(false);
+  const [prefillDate, setPrefillDate] = useState<Date | null>(null);
+  const [collegeFilter, setCollegeFilter] = useState<number | null>(getCurrentUserCollege(user as any));
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['holidays', filters],
-    queryFn: () => holidayApi.list(filters),
+    queryKey: ['holidays', collegeFilter],
+    queryFn: () => holidayApi.list({ page_size: 500, college: collegeFilter || undefined }),
   });
 
   const { data: selected } = useQuery({
     queryKey: ['holiday', selectedId],
-    queryFn: () => selectedId ? holidayApi.get(selectedId) : null,
+    queryFn: () => (selectedId ? holidayApi.get(selectedId) : null),
     enabled: !!selectedId,
   });
 
@@ -50,7 +58,7 @@ const HolidaysPage = () => {
 
   const stats = useMemo(() => {
     const byType: Record<string, number> = {};
-    holidays.forEach((h) => {
+    holidays.forEach((h: any) => {
       byType[h.holiday_type] = (byType[h.holiday_type] || 0) + 1;
     });
     return byType;
@@ -72,68 +80,45 @@ const HolidaysPage = () => {
       status: holidayStatuses[h.holiday_type] || { id: 'other', name: 'Holiday', color: '#6b7280' },
     })) || [];
 
-  const columns: Column<any>[] = [
-    {
-      key: 'name',
-      label: 'Holiday Name',
-      sortable: true,
-      render: (item) => <span className="font-medium">{item.name}</span>,
-    },
-    {
-      key: 'date',
-      label: 'Date',
-      sortable: true,
-      render: (item) => <span className="text-sm">{new Date(item.date).toLocaleDateString()}</span>,
-    },
-    {
-      key: 'holiday_type',
-      label: 'Type',
-      render: (item) => {
-        const typeColors: Record<string, string> = {
-          national: 'default',
-          festival: 'success',
-          college: 'outline',
-          exam: 'destructive',
-        };
-        return <Badge variant={typeColors[item.holiday_type] as any}>{item.holiday_type_display}</Badge>;
-      },
-    },
-  ];
-
-  const filterConfig: FilterConfig[] = [
-    {
-      name: 'holiday_type',
-      label: 'Holiday Type',
-      type: 'select',
-      options: [
-        { value: '', label: 'All' },
-        { value: 'national', label: 'National Holiday' },
-        { value: 'festival', label: 'Festival' },
-        { value: 'college', label: 'College Holiday' },
-        { value: 'exam', label: 'Exam Holiday' },
-      ],
-    },
-  ];
-
   const handleSubmit = async (formData: any) => {
-    if (sidebarMode === 'create') {
+    if (formMode === 'create') {
       await holidayApi.create(formData);
     } else if (selected) {
       await holidayApi.update(selected.id, formData);
     }
+    queryClient.invalidateQueries({ queryKey: ['holidays'] });
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-
+  const handleDelete = async (id: number) => {
     try {
-      await deleteMutation.mutate(deleteId);
+      await deleteMutation.mutate(id);
       toast.success('Holiday deleted successfully');
-      setDeleteId(null);
       refetch();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete holiday');
+      setFormOpen(false);
+      setSelectedId(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete holiday');
     }
+  };
+
+  const openCreate = (date?: Date) => {
+    setSelectedId(null);
+    setFormMode('create');
+    setPrefillDate(date || null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (holidayId: number) => {
+    setSelectedId(holidayId);
+    setFormMode('edit');
+    setFormOpen(true);
+  };
+
+  const toInputDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -142,22 +127,38 @@ const HolidaysPage = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">Holiday Calendar</h2>
-            <p className="text-sm text-muted-foreground">Quickly see upcoming holidays</p>
+            <p className="text-sm text-muted-foreground">Click a date to create, or a holiday to edit</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {Object.entries(stats).map(([type, count]) => {
               const status = holidayStatuses[type] || { icon: CalendarClock, color: '#6b7280' };
               const Icon = status.icon;
               return (
-                <Badge key={type} className="flex items-center gap-1" style={{ backgroundColor: status.color + '20', color: status.color }}>
+                <Badge
+                  key={type}
+                  className="flex items-center gap-1"
+                  style={{ backgroundColor: status.color + '20', color: status.color }}
+                >
                   <Icon className="h-4 w-4" />
                   {type} {count}
                 </Badge>
               );
             })}
           </div>
+          <div className="ml-auto flex items-center gap-3">
+            <CollegeField
+              value={collegeFilter}
+              onChange={(val) => setCollegeFilter(val ? Number(val) : null)}
+              placeholder="Filter by college"
+              className="min-w-[200px]"
+            />
+            <Button onClick={() => openCreate()} size="sm" className="gap-2">
+              <Plus className="h-4 w-4" /> Add Holiday
+            </Button>
+          </div>
         </div>
-        <div className="mt-4 border rounded-lg">
+
+        <div className="mt-4 border rounded-lg overflow-hidden">
           <CalendarProvider>
             <CalendarDate className="border-b">
               <CalendarDatePicker>
@@ -167,12 +168,17 @@ const HolidaysPage = () => {
               <CalendarDatePagination />
             </CalendarDate>
             <CalendarHeader className="border-b" />
-            <CalendarBody features={calendarFeatures}>
+            <CalendarBody
+              features={calendarFeatures}
+              onDayClick={(date) => openCreate(date)}
+              onFeatureClick={(feature) => openEdit(Number(feature.id))}
+            >
               {({ feature }) => (
                 <CalendarItem
                   key={feature.id}
                   feature={feature}
-                  className="text-[11px]"
+                  className="text-sm font-semibold hover:underline cursor-pointer px-2 py-1 rounded-md"
+                  style={{ backgroundColor: feature.status.color + '30', color: feature.status.color }}
                 />
               )}
             </CalendarBody>
@@ -180,115 +186,39 @@ const HolidaysPage = () => {
         </div>
       </Card>
 
-      <DataTable
-        title="Holidays"
-        description="Manage holidays and special dates for your institution"
-        data={data}
-        columns={columns}
-        isLoading={isLoading}
-        error={error instanceof Error ? error.message : error ? String(error) : null}
-        onRefresh={refetch}
-        onAdd={() => { setSelectedId(null); setSidebarMode('create'); setIsSidebarOpen(true); }}
-        onRowClick={(item) => { setSelectedId(item.id); setSidebarMode('view'); setIsSidebarOpen(true); }}
-        filters={filters}
-        onFiltersChange={setFilters}
-        filterConfig={filterConfig}
-        searchPlaceholder="Search holidays..."
-        addButtonLabel="Add Holiday"
-      />
-
-      <DetailSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => { setIsSidebarOpen(false); setSelectedId(null); }}
-        title={sidebarMode === 'create' ? 'Add New Holiday' : sidebarMode === 'edit' ? 'Edit Holiday' : selected?.name || 'Holiday Details'}
-        mode={sidebarMode}
-        width="lg"
-      >
-        {sidebarMode === 'create' && (
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{formMode === 'create' ? 'Add Holiday' : 'Edit Holiday'}</DialogTitle>
+          </DialogHeader>
           <HolidayForm
-            mode="create"
-            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['holidays'] }); setIsSidebarOpen(false); }}
-            onCancel={() => setIsSidebarOpen(false)}
+            mode={formMode}
+            holiday={formMode === 'edit' ? selected : undefined}
+            initialValues={prefillDate ? { date: toInputDate(prefillDate) } : undefined}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['holidays'] });
+              setFormOpen(false);
+              setSelectedId(null);
+            }}
+            onCancel={() => {
+              setFormOpen(false);
+              setSelectedId(null);
+            }}
             onSubmit={handleSubmit}
           />
-        )}
-
-        {sidebarMode === 'edit' && selected && (
-          <HolidayForm
-            mode="edit"
-            holiday={selected}
-            onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['holidays'] }); queryClient.invalidateQueries({ queryKey: ['holiday', selectedId] }); setIsSidebarOpen(false); }}
-            onCancel={() => setIsSidebarOpen(false)}
-            onSubmit={handleSubmit}
-          />
-        )}
-
-        {sidebarMode === 'view' && selected && (
-          <div className="space-y-6">
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setSidebarMode('edit')} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                Edit
-              </button>
-              <button onClick={() => setDeleteId(selected.id)} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 flex items-center gap-2">
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
+          {formMode === 'edit' && selected && (
+            <div className="flex justify-end pt-2">
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(selected.id)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
             </div>
-
-            <div className="space-y-4">
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3">Holiday Information</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Holiday Name</label>
-                    <p className="font-medium text-lg">{selected.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Date</label>
-                    <p className="font-medium">{new Date(selected.date).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Type</label>
-                    <div className="mt-1">
-                      <Badge>{selected.holiday_type_display}</Badge>
-                    </div>
-                  </div>
-                  {selected.description && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">Description</label>
-                      <p className="text-sm">{selected.description}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3">Audit Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Created At</label>
-                    <p>{new Date(selected.created_at).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Updated At</label>
-                    <p>{new Date(selected.updated_at).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </DetailSidebar>
-
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        open={deleteId !== null}
-        onClose={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete Holiday"
-        description="Are you sure you want to delete this holiday? This action cannot be undone."
-        variant="destructive"
-      />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -22,6 +22,14 @@ import { useAuth } from '../../../hooks/useAuth';
 interface HolidayFormProps {
   mode: 'create' | 'edit';
   holiday?: any;
+  initialValues?: Partial<{
+    college: number | null;
+    name: string;
+    date: string;
+    holiday_type: string;
+    description: string;
+    is_active: boolean;
+  }>;
   onSuccess: () => void;
   onCancel: () => void;
   onSubmit: (data: any) => Promise<void>;
@@ -30,6 +38,7 @@ interface HolidayFormProps {
 export const HolidayForm = ({
   mode,
   holiday,
+  initialValues,
   onSuccess,
   onCancel,
   onSubmit,
@@ -71,8 +80,14 @@ export const HolidayForm = ({
         description: holiday.description || '',
         is_active: holiday.is_active ?? true,
       });
+    } else if (mode === 'create' && initialValues) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialValues,
+        college: initialValues.college ?? prev.college,
+      }));
     }
-  }, [mode, holiday]);
+  }, [mode, holiday, initialValues]);
 
   /* ---------------- VALIDATION ---------------- */
   const validateForm = () => {

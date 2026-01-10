@@ -165,15 +165,17 @@ type OutOfBoundsDayProps = {
 };
 
 const OutOfBoundsDay = ({ day }: OutOfBoundsDayProps) => (
-  <div className="relative h-full w-full bg-secondary p-1 text-muted-foreground text-xs">{day}</div>
+  <div className="relative h-full w-full bg-muted/30 p-1 text-muted-foreground text-xs">{day}</div>
 );
 
 export type CalendarBodyProps = {
   features: Feature[];
   children: (props: { feature: Feature }) => ReactNode;
+  onDayClick?: (date: Date) => void;
+  onFeatureClick?: (feature: Feature) => void;
 };
 
-export const CalendarBody = ({ features, children }: CalendarBodyProps) => {
+export const CalendarBody = ({ features, children, onDayClick, onFeatureClick }: CalendarBodyProps) => {
   const { month, year } = useCalendar();
   const { startDay } = useContext(CalendarContext);
   const daysInMonth = getDaysInMonth(new Date(year, month, 1));
@@ -195,14 +197,36 @@ export const CalendarBody = ({ features, children }: CalendarBodyProps) => {
       isSameDay(new Date(feature.endAt), new Date(year, month, day))
     );
 
+    const firstColor = featuresForDay[0]?.status?.color;
+    const cellStyle = firstColor
+      ? {
+          backgroundColor: `${firstColor}26`,
+        }
+      : undefined;
+
     days.push(
       <div
         key={day}
-        className="relative flex h-full w-full flex-col gap-1 p-1 text-muted-foreground text-xs"
+        className={cn(
+          'relative flex h-full w-full flex-col gap-1 p-1 text-muted-foreground text-xs',
+          onDayClick && 'cursor-pointer hover:bg-accent/40'
+        )}
+        onClick={() => onDayClick?.(new Date(year, month, day))}
+        style={cellStyle}
       >
         {day}
         <div>
-          {featuresForDay.slice(0, 3).map((feature) => children({ feature }))}
+          {featuresForDay.slice(0, 3).map((feature) => (
+            <div
+              key={feature.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                onFeatureClick?.(feature);
+              }}
+            >
+              {children({ feature })}
+            </div>
+          ))}
         </div>
         {featuresForDay.length > 3 && (
           <span className="block text-muted-foreground text-xs">
@@ -227,12 +251,12 @@ export const CalendarBody = ({ features, children }: CalendarBodyProps) => {
   }
 
   return (
-    <div className="grid flex-grow grid-cols-7">
+    <div className="grid flex-grow grid-cols-7 bg-background">
       {days.map((day, index) => (
         <div
           key={index}
           className={cn(
-            'relative aspect-square overflow-hidden border-t border-r',
+            'relative aspect-square overflow-hidden border-t border-r bg-muted/5 hover:bg-muted/10 transition-colors',
             index % 7 === 6 && 'border-r-0'
           )}
         >
@@ -338,8 +362,8 @@ export const CalendarDatePagination = ({ className }: { className?: string }) =>
   );
 };
 
-export const CalendarDate = ({ children }: { children: ReactNode }) => (
-  <div className="flex items-center justify-between p-3">{children}</div>
+export const CalendarDate = ({ children, className }: { children: ReactNode; className?: string }) => (
+  <div className={cn('flex items-center justify-between p-3', className)}>{children}</div>
 );
 
 export const CalendarHeader = ({ className }: { className?: string }) => {
@@ -348,7 +372,7 @@ export const CalendarHeader = ({ className }: { className?: string }) => {
   return (
     <div className={cn('grid flex-grow grid-cols-7', className)}>
       {daysForLocale(locale, startDay).map((day) => (
-        <div key={day} className="p-3 text-right text-muted-foreground text-xs">
+        <div key={day} className="p-3 text-right text-muted-foreground text-sm font-medium">
           {day}
         </div>
       ))}
@@ -356,9 +380,17 @@ export const CalendarHeader = ({ className }: { className?: string }) => {
   );
 };
 
-export const CalendarItem = ({ feature, className }: { feature: Feature; className?: string }) => (
-  <div className={cn('flex items-center gap-2', className)} key={feature.id}>
-    <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: feature.status.color }} />
+export const CalendarItem = ({
+  feature,
+  className,
+  style,
+}: {
+  feature: Feature;
+  className?: string;
+  style?: React.CSSProperties;
+}) => (
+  <div className={cn('flex items-center gap-2', className)} style={style} key={feature.id}>
+    <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: feature.status.color }} />
     <span className="truncate">{feature.name}</span>
   </div>
 );
@@ -415,10 +447,6 @@ export function Calendar(props: DatePickerProps) {
         day_disabled: 'text-muted-foreground opacity-50',
         day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
         day_hidden: 'invisible',
-      }}
-      components={{
-        IconLeft: () => <ChevronLeftIcon className="h-4 w-4" />,
-        IconRight: () => <ChevronRightIcon className="h-4 w-4" />,
       }}
       {...props}
     />

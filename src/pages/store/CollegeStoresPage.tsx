@@ -137,7 +137,6 @@ export const CollegeStoresPage: React.FC = () => {
                 onDelete={(item) => handleDelete(item.id)}
                 filters={filters}
                 onFiltersChange={(newFilters) => setFilters(newFilters as any)}
-                title="College Stores"
                 error={null}
                 onRefresh={() => {
                     queryClient.invalidateQueries({ queryKey: ['college-stores'] });

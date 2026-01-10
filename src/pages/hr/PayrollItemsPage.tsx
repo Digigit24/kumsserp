@@ -2,13 +2,16 @@
  * Payroll Items Page - Manage payroll items
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { usePayrollItems, useCreatePayrollItem, useUpdatePayrollItem, useDeletePayrollItem } from '../../hooks/useHR';
 import { PayrollItemForm } from './forms/PayrollItemForm';
 import { toast } from 'sonner';
+import { Layers, Sparkles, ToggleRight, Wallet } from 'lucide-react';
 
 const PayrollItemsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -20,6 +23,16 @@ const PayrollItemsPage = () => {
   const create = useCreatePayrollItem();
   const update = useUpdatePayrollItem();
   const del = useDeletePayrollItem();
+
+  const rows = useMemo(() => data?.results || [], [data]);
+  const metrics = useMemo(() => {
+    const total = rows.length;
+    const active = rows.filter((r: any) => r.is_active).length;
+    const allowance = rows.filter((r: any) => (r.component_type || '').toLowerCase() === 'allowance').length;
+    const deductions = rows.filter((r: any) => (r.component_type || '').toLowerCase() === 'deduction').length;
+    const sum = rows.reduce((acc: number, r: any) => acc + (Number(r.amount) || 0), 0);
+    return { total, active, allowance, deductions, sum };
+  }, [rows]);
 
   const columns: Column<any>[] = [
     { key: 'payroll', label: 'Payroll ID', render: (item) => <span className="font-semibold text-primary">{item.payroll}</span>, sortable: true },
@@ -64,9 +77,75 @@ const PayrollItemsPage = () => {
   };
 
   return (
-    <div>
-      <DataTable title="Payroll Items" description="Manage payroll items" columns={columns} data={data || null} isLoading={isLoading} error={error?.message || null}
-        filters={filters} onFiltersChange={setFilters} onRowClick={handleRowClick} onRefresh={refetch} onAdd={handleAddNew} addButtonLabel="Add Payroll Item" />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-widest text-primary/70">Payroll Items</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            Components & Adjustments <Sparkles className="h-5 w-5 text-primary" />
+          </h1>
+          <p className="text-muted-foreground">Allowances and deductions organized in one view.</p>
+        </div>
+        <Button size="lg" onClick={handleAddNew}>
+          <Layers className="h-4 w-4 mr-2" />
+          New Item
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-5">
+        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Total Items</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.total}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-background border-emerald-500/20">
+          <CardHeader className="pb-2 flex items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
+            <ToggleRight className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.active}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-background border-indigo-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Allowances</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.allowance}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-background border-amber-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Deductions</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.deductions}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-slate-500/10 via-slate-500/5 to-background border-slate-500/20">
+          <CardHeader className="pb-2 flex items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Total Amount</CardTitle>
+            <Wallet className="h-4 w-4 text-slate-600 dark:text-slate-200" />
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">ƒ,1{metrics.sum.toLocaleString()}</CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-primary/10 shadow-sm">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Item Library</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <DataTable
+            columns={columns}
+            data={data || null}
+            isLoading={isLoading}
+            error={error?.message || null}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onRowClick={handleRowClick}
+            onRefresh={refetch}
+            onAdd={handleAddNew}
+            addButtonLabel="Add Payroll Item"
+          />
+        </CardContent>
+      </Card>
 
       <DetailSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}
         title={sidebarMode === 'create' ? 'Create Payroll Item' : sidebarMode === 'edit' ? 'Edit Payroll Item' : 'Payroll Item Details'}

@@ -2,13 +2,16 @@
  * Payrolls Page - Manage payrolls
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { usePayrolls, useCreatePayroll, useUpdatePayroll, useDeletePayroll } from '../../hooks/useHR';
 import { PayrollForm } from './forms/PayrollForm';
 import { toast } from 'sonner';
+import { Wallet, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 
 const PayrollsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -20,6 +23,15 @@ const PayrollsPage = () => {
   const create = useCreatePayroll();
   const update = useUpdatePayroll();
   const del = useDeletePayroll();
+
+  const rows = useMemo(() => data?.results || [], [data]);
+  const metrics = useMemo(() => {
+    const total = rows.length;
+    const paid = rows.filter((r: any) => r.status === 'paid').length;
+    const pending = rows.filter((r: any) => r.status === 'pending').length;
+    const net = rows.reduce((sum: number, r: any) => sum + (Number(r.net_salary) || 0), 0);
+    return { total, paid, pending, net };
+  }, [rows]);
 
   const columns: Column<any>[] = [
     { key: 'teacher_name', label: 'Teacher', render: (item) => <span className="font-semibold text-primary">{item.teacher_name || 'N/A'}</span>, sortable: true },
@@ -65,9 +77,69 @@ const PayrollsPage = () => {
   };
 
   return (
-    <div>
-      <DataTable title="Payrolls" description="Manage payrolls" columns={columns} data={data || null} isLoading={isLoading} error={error?.message || null}
-        filters={filters} onFiltersChange={setFilters} onRowClick={handleRowClick} onRefresh={refetch} onAdd={handleAddNew} addButtonLabel="Add Payroll" />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-widest text-primary/70">Payrolls</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            Pay Cycle Overview <Sparkles className="h-5 w-5 text-primary" />
+          </h1>
+          <p className="text-muted-foreground">Stay on top of monthly payouts and statuses.</p>
+        </div>
+        <Button size="lg" onClick={handleAddNew}>
+          <Wallet className="h-4 w-4 mr-2" />
+          New Payroll
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Total Payrolls</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.total}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-background border-emerald-500/20">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Paid</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.paid}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-background border-amber-500/20">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{metrics.pending}</CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-background border-indigo-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Net Payout (sum)</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">ƒ,1{metrics.net.toLocaleString()}</CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-primary/10 shadow-sm">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Payroll List</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <DataTable
+            columns={columns}
+            data={data || null}
+            isLoading={isLoading}
+            error={error?.message || null}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onRowClick={handleRowClick}
+            onRefresh={refetch}
+            onAdd={handleAddNew}
+            addButtonLabel="Add Payroll"
+          />
+        </CardContent>
+      </Card>
 
       <DetailSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}
         title={sidebarMode === 'create' ? 'Create Payroll' : sidebarMode === 'edit' ? 'Edit Payroll' : 'Payroll Details'}
