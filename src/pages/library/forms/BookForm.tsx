@@ -16,10 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select';
-import { Book, BookCreateInput } from '../../../types/library.types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../../components/ui/dialog';
+import { Book, BookCreateInput, BookCategoryCreateInput } from '../../../types/library.types';
 import { useBookCategories } from '../../../hooks/useLibrary';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Plus } from 'lucide-react';
+import { bookCategoriesApi } from '../../../services/library.service';
+import { getCurrentUser } from '../../../services/auth.service';
+import { useCollegeContext } from '../../../contexts/HierarchicalContext';
 
 interface BookFormProps {
   book: Book | null;
@@ -29,8 +39,21 @@ interface BookFormProps {
 
 export const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
   // Fetch book categories
-  const { data: categoriesData, isLoading: categoriesLoading } = useBookCategories({ page_size: 100 });
+  const { data: categoriesData, isLoading: categoriesLoading, refetch: refetchCategories } = useBookCategories({ page_size: 100 });
   const categories = categoriesData?.results || [];
+  const { selectedCollege } = useCollegeContext();
+
+  // State for category creation dialog
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [newCategoryData, setNewCategoryData] = useState<BookCategoryCreateInput>({
+    name: '',
+    code: '',
+    description: '',
+    is_active: true,
+    college: 0,
+  });
 
   const [formData, setFormData] = useState<Partial<BookCreateInput>>({
     title: '',
@@ -105,6 +128,77 @@ export const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
     if (submitData.cover_image === '') submitData.cover_image = null;
 
     onSubmit(submitData);
+  };
+
+  const handleOpenCategoryDialog = () => {
+    // Get college ID
+    const storedUser = getCurrentUser();
+    let collegeId = 0;
+
+    if (selectedCollege) {
+      collegeId = selectedCollege;
+    } else if (storedUser?.college) {
+      collegeId = storedUser.college;
+    } else if (storedUser?.user_roles && storedUser.user_roles.length > 0) {
+      const primaryRole = storedUser.user_roles.find(r => r.is_primary) || storedUser.user_roles[0];
+      collegeId = primaryRole.college_id;
+    } else {
+      collegeId = 1;
+    }
+
+    setNewCategoryData({
+      name: '',
+      code: '',
+      description: '',
+      is_active: true,
+      college: collegeId,
+    });
+    setCategoryError(null);
+    setShowCategoryDialog(true);
+  };
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate required fields
+    if (!newCategoryData.name.trim() || !newCategoryData.code.trim()) {
+      setCategoryError('Name and Code are required');
+      return;
+    }
+
+    if (!newCategoryData.college || newCategoryData.college === 0) {
+      setCategoryError('College ID is missing. Please refresh the page.');
+      return;
+    }
+
+    setIsCreatingCategory(true);
+    setCategoryError(null);
+
+    try {
+      const result = await bookCategoriesApi.create(newCategoryData);
+
+      // Refresh categories list
+      await refetchCategories();
+
+      // Auto-select the newly created category
+      setFormData({ ...formData, category: result.id });
+
+      // Close dialog
+      setShowCategoryDialog(false);
+
+      // Reset form
+      setNewCategoryData({
+        name: '',
+        code: '',
+        description: '',
+        is_active: true,
+        college: 0,
+      });
+    } catch (err: any) {
+      setCategoryError(err.message || 'Failed to create category');
+    } finally {
+      setIsCreatingCategory(false);
+    }
   };
 
   return (
@@ -234,29 +328,52 @@ export const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             ) : categories.length === 0 ? (
-              <Alert variant="destructive" className="p-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="ml-2">
-                  No categories available. Please create a category first.
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-2">
+                <Alert className="p-3">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="ml-2">
+                    No categories available. Create one to continue.
+                  </AlertDescription>
+                </Alert>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleOpenCategoryDialog}
+                  className="w-full h-10"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Category
+                </Button>
+              </div>
             ) : (
-              <Select
-                value={formData.category?.toString()}
-                onValueChange={(value) => setFormData({ ...formData, category: parseInt(value) })}
-                required
-              >
-                <SelectTrigger id="category" className="h-10">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Select
+                  value={formData.category?.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, category: parseInt(value) })}
+                  required
+                >
+                  <SelectTrigger id="category" className="h-10">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOpenCategoryDialog}
+                  className="w-full text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add New Category
+                </Button>
+              </div>
             )}
           </div>
           <div className="space-y-2">
@@ -392,6 +509,82 @@ export const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
           Cancel
         </Button>
       </div>
+
+      {/* Category Creation Dialog */}
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+            <DialogDescription>
+              Create a new book category. Only required fields are shown.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateCategory} className="space-y-4">
+            {categoryError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{categoryError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="cat-name" className="text-sm font-medium">
+                Category Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="cat-name"
+                value={newCategoryData.name}
+                onChange={(e) => setNewCategoryData({ ...newCategoryData, name: e.target.value })}
+                placeholder="e.g., Fiction, Science, History"
+                disabled={isCreatingCategory}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cat-code" className="text-sm font-medium">
+                Category Code <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="cat-code"
+                value={newCategoryData.code}
+                onChange={(e) => setNewCategoryData({ ...newCategoryData, code: e.target.value.toUpperCase() })}
+                placeholder="e.g., FICT, SCI, HIST"
+                disabled={isCreatingCategory}
+                maxLength={20}
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCategoryDialog(false)}
+                disabled={isCreatingCategory}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreatingCategory}
+                className="flex-1"
+              >
+                {isCreatingCategory ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Category'
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
