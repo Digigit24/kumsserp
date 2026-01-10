@@ -2,8 +2,8 @@
  * Holidays Page - Manage holidays and special dates
  */
 
-import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Trash2, CalendarClock, Gift, Flag, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { DataTable, Column, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
@@ -13,6 +13,18 @@ import { HolidayForm } from './components/HolidayForm';
 import { holidayApi } from '../../services/core.service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDeleteHoliday } from '../../hooks/useCore';
+import {
+  CalendarBody,
+  CalendarDate,
+  CalendarDatePagination,
+  CalendarDatePicker,
+  CalendarHeader,
+  CalendarItem,
+  CalendarMonthPicker,
+  CalendarProvider,
+  CalendarYearPicker,
+} from '@/components/ui/calendar';
+import { Card } from '../../components/ui/card';
 
 const HolidaysPage = () => {
   const queryClient = useQueryClient();
@@ -34,6 +46,31 @@ const HolidaysPage = () => {
   });
 
   const deleteMutation = useDeleteHoliday();
+  const holidays = data?.results || [];
+
+  const stats = useMemo(() => {
+    const byType: Record<string, number> = {};
+    holidays.forEach((h) => {
+      byType[h.holiday_type] = (byType[h.holiday_type] || 0) + 1;
+    });
+    return byType;
+  }, [holidays]);
+
+  const holidayStatuses: Record<string, { id: string; name: string; color: string; icon: any }> = {
+    national: { id: 'national', name: 'National', color: '#ef4444', icon: Flag },
+    festival: { id: 'festival', name: 'Festival', color: '#f59e0b', icon: Gift },
+    college: { id: 'college', name: 'College', color: '#3b82f6', icon: GraduationCap },
+    exam: { id: 'exam', name: 'Exam', color: '#22c55e', icon: CalendarClock },
+  };
+
+  const calendarFeatures =
+    holidays.map((h: any) => ({
+      id: String(h.id),
+      name: h.name,
+      startAt: new Date(h.date),
+      endAt: new Date(h.date),
+      status: holidayStatuses[h.holiday_type] || { id: 'other', name: 'Holiday', color: '#6b7280' },
+    })) || [];
 
   const columns: Column<any>[] = [
     {
@@ -100,7 +137,49 @@ const HolidaysPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
+      <Card className="p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Holiday Calendar</h2>
+            <p className="text-sm text-muted-foreground">Quickly see upcoming holidays</p>
+          </div>
+          <div className="flex gap-2">
+            {Object.entries(stats).map(([type, count]) => {
+              const status = holidayStatuses[type] || { icon: CalendarClock, color: '#6b7280' };
+              const Icon = status.icon;
+              return (
+                <Badge key={type} className="flex items-center gap-1" style={{ backgroundColor: status.color + '20', color: status.color }}>
+                  <Icon className="h-4 w-4" />
+                  {type} {count}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+        <div className="mt-4 border rounded-lg">
+          <CalendarProvider>
+            <CalendarDate className="border-b">
+              <CalendarDatePicker>
+                <CalendarMonthPicker />
+                <CalendarYearPicker start={2020} end={2035} />
+              </CalendarDatePicker>
+              <CalendarDatePagination />
+            </CalendarDate>
+            <CalendarHeader className="border-b" />
+            <CalendarBody features={calendarFeatures}>
+              {({ feature }) => (
+                <CalendarItem
+                  key={feature.id}
+                  feature={feature}
+                  className="text-[11px]"
+                />
+              )}
+            </CalendarBody>
+          </CalendarProvider>
+        </div>
+      </Card>
+
       <DataTable
         title="Holidays"
         description="Manage holidays and special dates for your institution"

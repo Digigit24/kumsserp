@@ -18,11 +18,12 @@ import type { ClassTimeCreateInput } from '../../../types/academic.types';
 interface ClassTimeFormProps {
     mode: 'view' | 'create' | 'edit';
     classTimeId?: number;
+    prefill?: Partial<ClassTimeCreateInput>;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassTimeFormProps) {
+export function ClassTimeForm({ mode, classTimeId, prefill, onSuccess, onCancel }: ClassTimeFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -43,8 +44,13 @@ export function ClassTimeForm({ mode, classTimeId, onSuccess, onCancel }: ClassT
     useEffect(() => {
         if ((mode === 'edit' || mode === 'view') && classTimeId) {
             fetchClassTime();
+        } else if (mode === 'create' && prefill) {
+            setFormData((prev) => ({
+                ...prev,
+                ...prefill,
+            }));
         }
-    }, [mode, classTimeId]);
+    }, [mode, classTimeId, prefill]);
 
     const fetchClassTime = async () => {
         if (!classTimeId) return;

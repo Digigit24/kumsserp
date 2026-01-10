@@ -2,7 +2,8 @@
  * Fee Collections Page
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Column, DataTable, FilterConfig } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
@@ -23,6 +24,14 @@ const FeeCollectionsPage = () => {
   const createFeeCollection = useCreateFeeCollection();
   const updateFeeCollection = useUpdateFeeCollection();
   const deleteFeeCollection = useDeleteFeeCollection();
+
+  const stats = useMemo(() => {
+    const items = data?.results || [];
+    const totalAmount = items.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    const completed = items.filter((c) => c.status === 'completed').length;
+    const pending = items.filter((c) => c.status === 'pending').length;
+    return { totalAmount, completed, pending, count: items.length };
+  }, [data]);
 
   const columns: Column<any>[] = [
     { key: 'student_name', label: 'Student Name', sortable: false },
@@ -156,7 +165,33 @@ const FeeCollectionsPage = () => {
   };
 
   return (
-    <div className="">
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-4">
+        {[
+          { label: 'Total Collected', value: stats.totalAmount, prefix: '₹', accent: 'bg-green-500/15 text-green-700' },
+          { label: 'Collections', value: stats.count, accent: 'bg-blue-500/15 text-blue-700' },
+          { label: 'Completed', value: stats.completed, accent: 'bg-emerald-500/15 text-emerald-700' },
+          { label: 'Pending', value: stats.pending, accent: 'bg-amber-500/15 text-amber-700' },
+        ].map((s, idx) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            className="rounded-lg border bg-card p-4 shadow-sm"
+          >
+            <p className="text-sm text-muted-foreground">{s.label}</p>
+            <p className="mt-2 text-2xl font-bold">
+              {s.prefix || ''}{' '}
+              {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
+            </p>
+            <div className={`mt-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${s.accent}`}>
+              Live
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
       <DataTable
         title="Fee Collections"
         description="View and manage fee collections"
