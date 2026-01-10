@@ -6,7 +6,6 @@ import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { useSalaryStructures, useCreateSalaryStructure, useUpdateSalaryStructure, useDeleteSalaryStructure } from '../../hooks/useHR';
 import { SalaryStructureForm } from './forms/SalaryStructureForm';
@@ -41,8 +40,8 @@ const SalaryStructuresPage = () => {
   const columns: Column<any>[] = [
     { key: 'teacher_name', label: 'Teacher', render: (item) => <span className="font-semibold text-primary">{item.teacher_name || 'N/A'}</span>, sortable: true },
     { key: 'effective_from', label: 'Effective From', render: (item) => new Date(item.effective_from).toLocaleDateString(), sortable: true },
-    { key: 'basic_salary', label: 'Basic Salary', render: (item) => `₹${item.basic_salary}` },
-    { key: 'gross_salary', label: 'Gross Salary', render: (item) => `₹${item.gross_salary}` },
+    { key: 'basic_salary', label: 'Basic Salary', render: (item) => `Rs. ${Number(item.basic_salary || 0).toLocaleString()}` },
+    { key: 'gross_salary', label: 'Gross Salary', render: (item) => `Rs. ${Number(item.gross_salary || 0).toLocaleString()}` },
     { key: 'is_current', label: 'Current', render: (item) => <Badge variant={item.is_current ? 'default' : 'secondary'}>{item.is_current ? 'Yes' : 'No'}</Badge> },
     { key: 'is_active', label: 'Status', render: (item) => <Badge variant={item.is_active ? 'default' : 'secondary'}>{item.is_active ? 'Active' : 'Inactive'}</Badge> },
   ];
@@ -83,18 +82,12 @@ const SalaryStructuresPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-primary/70">Salary Structures</p>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            Compensation Blueprints <Sparkles className="h-5 w-5 text-primary" />
-          </h1>
-          <p className="text-muted-foreground">Manage salary templates and effective periods.</p>
-        </div>
-        <Button size="lg" onClick={handleAddNew}>
-          <Layers className="h-4 w-4 mr-2" />
-          New Structure
-        </Button>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm uppercase tracking-widest text-primary/70">Salary Structures</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          Compensation Blueprints <Sparkles className="h-5 w-5 text-primary" />
+        </h1>
+        <p className="text-muted-foreground">Manage salary templates and effective periods.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -122,7 +115,7 @@ const SalaryStructuresPage = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Avg Gross</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">ƒ,1{metrics.avgGross.toLocaleString()}</CardContent>
+          <CardContent className="text-2xl font-semibold">Rs. {metrics.avgGross.toLocaleString()}</CardContent>
         </Card>
       </div>
 
@@ -157,11 +150,11 @@ const SalaryStructuresPage = () => {
             <div><label className="text-sm font-medium text-muted-foreground">Teacher</label><p className="text-base font-semibold">{selected.teacher_name || 'N/A'}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Effective From</label><p className="text-base">{new Date(selected.effective_from).toLocaleDateString()}</p></div>
             {selected.effective_to && <div><label className="text-sm font-medium text-muted-foreground">Effective To</label><p className="text-base">{new Date(selected.effective_to).toLocaleDateString()}</p></div>}
-            <div><label className="text-sm font-medium text-muted-foreground">Basic Salary</label><p className="text-base">₹{selected.basic_salary}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">HRA</label><p className="text-base">₹{selected.hra}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">DA</label><p className="text-base">₹{selected.da}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Other Allowances</label><p className="text-base">₹{selected.other_allowances}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Gross Salary</label><p className="text-base">₹{selected.gross_salary}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Basic Salary</label><p className="text-base">Rs. {Number(selected.basic_salary || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">HRA</label><p className="text-base">Rs. {Number(selected.hra || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">DA</label><p className="text-base">Rs. {Number(selected.da || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Other Allowances</label><p className="text-base">Rs. {Number(selected.other_allowances || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Gross Salary</label><p className="text-base">Rs. {Number(selected.gross_salary || 0).toLocaleString()}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Current</label><Badge variant={selected.is_current ? 'default' : 'secondary'}>{selected.is_current ? 'Yes' : 'No'}</Badge></div>
             <div><label className="text-sm font-medium text-muted-foreground">Status</label><Badge variant={selected.is_active ? 'default' : 'secondary'}>{selected.is_active ? 'Active' : 'Inactive'}</Badge></div>
           </div>
@@ -172,3 +165,4 @@ const SalaryStructuresPage = () => {
 };
 
 export default SalaryStructuresPage;
+

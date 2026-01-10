@@ -3,11 +3,7 @@
  * All API calls for Organization Hierarchy entities
  */
 
-import {
-  API_ENDPOINTS,
-  buildApiUrl,
-  getDefaultHeaders,
-} from "../config/api.config";
+import { buildApiUrl, getDefaultHeaders } from "../config/api.config";
 import type {
   OrganizationNode,
   OrganizationNodeTree,
@@ -106,9 +102,9 @@ export const organizationNodeApi = {
    * Cached for 5 minutes on backend
    */
   getTree: async (): Promise<{ tree: OrganizationNodeTree[] }> => {
-    return fetchApi<{ tree: OrganizationNodeTree[] }>(
-      buildApiUrl(API_ENDPOINTS.organizationHierarchy.nodes.tree)
-    );
+    // API_ENDPOINTS does not currently contain organization hierarchy entries; use explicit path.
+    const endpoint = "/api/v1/core/organization/nodes/tree/";
+    return fetchApi<{ tree: OrganizationNodeTree[] }>(buildApiUrl(endpoint));
   },
 
   /**

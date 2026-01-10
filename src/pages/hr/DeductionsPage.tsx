@@ -6,7 +6,6 @@ import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { useDeductions, useCreateDeduction, useUpdateDeduction, useDeleteDeduction } from '../../hooks/useHR';
 import { DeductionForm } from './forms/DeductionForm';
@@ -60,7 +59,7 @@ const DeductionsPage = () => {
     {
       key: 'amount',
       label: 'Amount',
-      render: (item) => `₹${item.amount}`,
+      render: (item) => `Rs. ${Number(item.amount || 0).toLocaleString()}`,
     },
     {
       key: 'percentage',
@@ -127,18 +126,12 @@ const DeductionsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-primary/70">Deductions</p>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            Smart Deductions <Sparkles className="h-5 w-5 text-primary" />
-          </h1>
-          <p className="text-muted-foreground">Keep policies tidy with quick visibility into rules.</p>
-        </div>
-        <Button size="lg" onClick={handleAddNew}>
-          <MinusCircle className="h-4 w-4 mr-2" />
-          New Deduction
-        </Button>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm uppercase tracking-widest text-primary/70">Deductions</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          Smart Deductions <Sparkles className="h-5 w-5 text-primary" />
+        </h1>
+        <p className="text-muted-foreground">Keep policies tidy with quick visibility into rules.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -217,7 +210,7 @@ const DeductionsPage = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Amount</label>
-              <p className="text-base">₹{selectedDeduction.amount}</p>
+              <p className="text-base">Rs. {Number(selectedDeduction.amount || 0).toLocaleString()}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Percentage</label>
@@ -237,3 +230,4 @@ const DeductionsPage = () => {
 };
 
 export default DeductionsPage;
+

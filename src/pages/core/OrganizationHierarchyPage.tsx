@@ -34,8 +34,11 @@ export const OrganizationHierarchyPage = () => {
       if (Array.isArray(response)) return response;
       return response?.tree || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes (matches backend cache)
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const tree = treeData || [];
@@ -52,7 +55,7 @@ export const OrganizationHierarchyPage = () => {
   const totalNodes = countNodes(tree);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <div>
@@ -137,7 +140,7 @@ export const OrganizationHierarchyPage = () => {
               </Button>
             </div>
           ) : (
-            <div className="max-w-5xl">
+            <div className="w-full overflow-hidden">
               <OrganizationTree nodes={tree} />
             </div>
           )}

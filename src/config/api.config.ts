@@ -1122,53 +1122,6 @@ export const API_ENDPOINTS = {
     generateGatePass: (id: number) =>
       `/api/v1/store/material-issues/${id}/generate_pdf/`,
   },
-
-  // Core Module - Organization Hierarchy
-  organizationHierarchy: {
-    // Nodes
-    nodes: {
-      list: "/api/v1/core/organization/nodes/",
-      create: "/api/v1/core/organization/nodes/",
-      detail: (id: number) => `/api/v1/core/organization/nodes/${id}/`,
-      update: (id: number) => `/api/v1/core/organization/nodes/${id}/`,
-      patch: (id: number) => `/api/v1/core/organization/nodes/${id}/`,
-      delete: (id: number) => `/api/v1/core/organization/nodes/${id}/`,
-      tree: "/api/v1/core/organization/nodes/tree/",
-    },
-    // Roles
-    roles: {
-      list: "/api/v1/core/organization/roles/",
-      create: "/api/v1/core/organization/roles/",
-      detail: (id: number) => `/api/v1/core/organization/roles/${id}/`,
-      update: (id: number) => `/api/v1/core/organization/roles/${id}/`,
-      patch: (id: number) => `/api/v1/core/organization/roles/${id}/`,
-      delete: (id: number) => `/api/v1/core/organization/roles/${id}/`,
-      updatePermissions: (id: number) =>
-        `/api/v1/core/organization/roles/${id}/update_permissions/`,
-    },
-    // Permissions
-    permissions: {
-      list: "/api/v1/core/organization/hierarchy-permissions/",
-      byCategory: "/api/v1/core/organization/hierarchy-permissions/by_category/",
-    },
-    // User Roles
-    userRoles: {
-      assign: "/api/v1/core/organization/user-roles/assign/",
-      revoke: "/api/v1/core/organization/user-roles/revoke/",
-    },
-    // Teams
-    teams: {
-      list: "/api/v1/core/organization/teams/",
-      create: "/api/v1/core/organization/teams/",
-      detail: (id: number) => `/api/v1/core/organization/teams/${id}/`,
-      update: (id: number) => `/api/v1/core/organization/teams/${id}/`,
-      patch: (id: number) => `/api/v1/core/organization/teams/${id}/`,
-      delete: (id: number) => `/api/v1/core/organization/teams/${id}/`,
-      members: (id: number) => `/api/v1/core/organization/teams/${id}/members/`,
-      addMember: (id: number) =>
-        `/api/v1/core/organization/teams/${id}/add_member/`,
-    },
-  },
 };
 
 /**

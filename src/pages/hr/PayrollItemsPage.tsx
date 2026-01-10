@@ -6,7 +6,6 @@ import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { usePayrollItems, useCreatePayrollItem, useUpdatePayrollItem, useDeletePayrollItem } from '../../hooks/useHR';
 import { PayrollItemForm } from './forms/PayrollItemForm';
@@ -38,7 +37,7 @@ const PayrollItemsPage = () => {
     { key: 'payroll', label: 'Payroll ID', render: (item) => <span className="font-semibold text-primary">{item.payroll}</span>, sortable: true },
     { key: 'component_name', label: 'Component Name', render: (item) => item.component_name, sortable: true },
     { key: 'component_type', label: 'Type', render: (item) => item.component_type },
-    { key: 'amount', label: 'Amount', render: (item) => `₹${item.amount}` },
+    { key: 'amount', label: 'Amount', render: (item) => `Rs. ${Number(item.amount || 0).toLocaleString()}` },
     { key: 'is_active', label: 'Status', render: (item) => <Badge variant={item.is_active ? 'default' : 'secondary'}>{item.is_active ? 'Active' : 'Inactive'}</Badge> },
   ];
 
@@ -78,18 +77,12 @@ const PayrollItemsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-primary/70">Payroll Items</p>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            Components & Adjustments <Sparkles className="h-5 w-5 text-primary" />
-          </h1>
-          <p className="text-muted-foreground">Allowances and deductions organized in one view.</p>
-        </div>
-        <Button size="lg" onClick={handleAddNew}>
-          <Layers className="h-4 w-4 mr-2" />
-          New Item
-        </Button>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm uppercase tracking-widest text-primary/70">Payroll Items</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          Components &amp; Adjustments <Sparkles className="h-5 w-5 text-primary" />
+        </h1>
+        <p className="text-muted-foreground">Allowances and deductions organized in one view.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-5">
@@ -123,7 +116,7 @@ const PayrollItemsPage = () => {
             <CardTitle className="text-sm text-muted-foreground">Total Amount</CardTitle>
             <Wallet className="h-4 w-4 text-slate-600 dark:text-slate-200" />
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">ƒ,1{metrics.sum.toLocaleString()}</CardContent>
+          <CardContent className="text-2xl font-semibold">Rs. {metrics.sum.toLocaleString()}</CardContent>
         </Card>
       </div>
 
@@ -158,7 +151,7 @@ const PayrollItemsPage = () => {
             <div><label className="text-sm font-medium text-muted-foreground">Payroll ID</label><p className="text-base font-semibold">{selected.payroll}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Component Name</label><p className="text-base">{selected.component_name}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Component Type</label><p className="text-base">{selected.component_type}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Amount</label><p className="text-base">₹{selected.amount}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Amount</label><p className="text-base">Rs. {Number(selected.amount || 0).toLocaleString()}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Status</label><Badge variant={selected.is_active ? 'default' : 'secondary'}>{selected.is_active ? 'Active' : 'Inactive'}</Badge></div>
           </div>
         )}
@@ -168,3 +161,4 @@ const PayrollItemsPage = () => {
 };
 
 export default PayrollItemsPage;
+

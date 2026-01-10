@@ -6,12 +6,11 @@ import { useMemo, useState } from 'react';
 import { Column, DataTable } from '../../components/common/DataTable';
 import { DetailSidebar } from '../../components/common/DetailSidebar';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { usePayrolls, useCreatePayroll, useUpdatePayroll, useDeletePayroll } from '../../hooks/useHR';
 import { PayrollForm } from './forms/PayrollForm';
 import { toast } from 'sonner';
-import { Wallet, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { CheckCircle2, Clock, Sparkles } from 'lucide-react';
 
 const PayrollsPage = () => {
   const [filters, setFilters] = useState<Record<string, any>>({ page: 1, page_size: 10 });
@@ -37,8 +36,8 @@ const PayrollsPage = () => {
     { key: 'teacher_name', label: 'Teacher', render: (item) => <span className="font-semibold text-primary">{item.teacher_name || 'N/A'}</span>, sortable: true },
     { key: 'month', label: 'Month', render: (item) => item.month, sortable: true },
     { key: 'year', label: 'Year', render: (item) => item.year, sortable: true },
-    { key: 'gross_salary', label: 'Gross Salary', render: (item) => `₹${item.gross_salary}` },
-    { key: 'net_salary', label: 'Net Salary', render: (item) => `₹${item.net_salary}` },
+    { key: 'gross_salary', label: 'Gross Salary', render: (item) => `Rs. ${Number(item.gross_salary || 0).toLocaleString()}` },
+    { key: 'net_salary', label: 'Net Salary', render: (item) => `Rs. ${Number(item.net_salary || 0).toLocaleString()}` },
     { key: 'status', label: 'Status', render: (item) => <Badge variant={item.status === 'paid' ? 'default' : item.status === 'pending' ? 'secondary' : 'destructive'}>{item.status}</Badge> },
   ];
 
@@ -78,18 +77,12 @@ const PayrollsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-primary/70">Payrolls</p>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            Pay Cycle Overview <Sparkles className="h-5 w-5 text-primary" />
-          </h1>
-          <p className="text-muted-foreground">Stay on top of monthly payouts and statuses.</p>
-        </div>
-        <Button size="lg" onClick={handleAddNew}>
-          <Wallet className="h-4 w-4 mr-2" />
-          New Payroll
-        </Button>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm uppercase tracking-widest text-primary/70">Payrolls</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          Pay Cycle Overview <Sparkles className="h-5 w-5 text-primary" />
+        </h1>
+        <p className="text-muted-foreground">Stay on top of monthly payouts and statuses.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -117,7 +110,7 @@ const PayrollsPage = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Net Payout (sum)</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">ƒ,1{metrics.net.toLocaleString()}</CardContent>
+          <CardContent className="text-2xl font-semibold">Rs. {metrics.net.toLocaleString()}</CardContent>
         </Card>
       </div>
 
@@ -152,10 +145,10 @@ const PayrollsPage = () => {
             <div><label className="text-sm font-medium text-muted-foreground">Teacher</label><p className="text-base font-semibold">{selected.teacher_name || 'N/A'}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Month</label><p className="text-base">{selected.month}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Year</label><p className="text-base">{selected.year}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Gross Salary</label><p className="text-base">₹{selected.gross_salary}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Total Allowances</label><p className="text-base">₹{selected.total_allowances}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Total Deductions</label><p className="text-base">₹{selected.total_deductions}</p></div>
-            <div><label className="text-sm font-medium text-muted-foreground">Net Salary</label><p className="text-base">₹{selected.net_salary}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Gross Salary</label><p className="text-base">Rs. {Number(selected.gross_salary || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Total Allowances</label><p className="text-base">Rs. {Number(selected.total_allowances || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Total Deductions</label><p className="text-base">Rs. {Number(selected.total_deductions || 0).toLocaleString()}</p></div>
+            <div><label className="text-sm font-medium text-muted-foreground">Net Salary</label><p className="text-base">Rs. {Number(selected.net_salary || 0).toLocaleString()}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Payment Date</label><p className="text-base">{new Date(selected.payment_date).toLocaleDateString()}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Payment Method</label><p className="text-base">{selected.payment_method}</p></div>
             <div><label className="text-sm font-medium text-muted-foreground">Status</label><Badge variant={selected.status === 'paid' ? 'default' : selected.status === 'pending' ? 'secondary' : 'destructive'}>{selected.status}</Badge></div>
@@ -168,3 +161,4 @@ const PayrollsPage = () => {
 };
 
 export default PayrollsPage;
+
