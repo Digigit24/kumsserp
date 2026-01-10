@@ -20,7 +20,7 @@ import { StudentCreationPipeline } from './forms/StudentCreationPipeline';
 
 export const StudentsPage = () => {
     const navigate = useNavigate();
-    const { selectedClass, selectedSection } = useHierarchicalContext();
+    const { selectedCollege, selectedClass, selectedSection } = useHierarchicalContext();
     const { permissions } = usePermissions();
 
     // Debug: Log permissions for students
@@ -35,6 +35,7 @@ export const StudentsPage = () => {
     const [filters, setFilters] = useState<StudentFilters>({ page: 1, page_size: 20 });
     const normalizedFilters: StudentFilters = {
         ...filters,
+        college: selectedCollege || undefined, // Use global college from header selector
         current_class: selectedClass || undefined,
         current_section: selectedSection || undefined,
     };
@@ -54,7 +55,7 @@ export const StudentsPage = () => {
             ...prev,
             page: 1, // Reset to first page
         }));
-    }, [selectedClass, selectedSection]);
+    }, [selectedCollege, selectedClass, selectedSection]);
 
     const getInitials = (name: string) => {
         return name
