@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { organizationNodeApi } from "../../services/organization.service";
 import { OrganizationTree } from "./components/OrganizationTree";
 import { Button } from "../../components/ui/button";
@@ -8,6 +9,9 @@ import {
   Building2,
   AlertCircle,
   Loader2,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import {
@@ -20,6 +24,8 @@ import {
 import { cn } from "../../lib/utils";
 
 export const OrganizationHierarchyPage = () => {
+  const [zoomLevel, setZoomLevel] = useState(100);
+
   const {
     data: treeData,
     isLoading,
@@ -44,6 +50,18 @@ export const OrganizationHierarchyPage = () => {
   const tree = treeData || [];
   const loading = isLoading || isRefetching;
 
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + 10, 200));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - 10, 50));
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel(100);
+  };
+
   // Count total nodes recursively
   const countNodes = (nodes: any[]): number => {
     if (!nodes || nodes.length === 0) return 0;
@@ -66,22 +84,58 @@ export const OrganizationHierarchyPage = () => {
             Visualize and manage your organization's hierarchical structure
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={loading}
-          >
-            <RefreshCw
-              className={cn("w-4 h-4 mr-2", loading && "animate-spin")}
-            />
-            Refresh
-          </Button>
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Node
-          </Button>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={loading}
+            >
+              <RefreshCw
+                className={cn("w-4 h-4 mr-2", loading && "animate-spin")}
+              />
+              Refresh
+            </Button>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Node
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground font-medium">
+              {zoomLevel}%
+            </span>
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 50}
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetZoom}
+                disabled={zoomLevel === 100}
+                title="Reset Zoom"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 200}
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -141,7 +195,15 @@ export const OrganizationHierarchyPage = () => {
             </div>
           ) : (
             <div className="w-full overflow-x-auto pb-4">
-              <OrganizationTree nodes={tree} />
+              <div
+                style={{
+                  transform: `scale(${zoomLevel / 100})`,
+                  transformOrigin: "top left",
+                  transition: "transform 0.2s ease-in-out",
+                }}
+              >
+                <OrganizationTree nodes={tree} />
+              </div>
             </div>
           )}
         </CardContent>
