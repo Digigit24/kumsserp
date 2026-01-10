@@ -60,6 +60,17 @@ export const CollegeProvider: React.FC<CollegeProviderProps> = ({
   const [colleges, setColleges] = useState<CollegeOption[]>([]);
   const [isLoadingColleges, setIsLoadingColleges] = useState(false);
 
+  // Sync selected college to localStorage for API interceptor
+  useEffect(() => {
+    if (selectedCollege) {
+      localStorage.setItem('kumss_college_id', String(selectedCollege));
+      console.log('[CollegeContext] Synced college to localStorage:', selectedCollege);
+    } else {
+      localStorage.removeItem('kumss_college_id');
+      console.log('[CollegeContext] Removed college from localStorage');
+    }
+  }, [selectedCollege]);
+
   const setSelectedCollege = (collegeId: number | null) => {
     setSelectedCollegeState(collegeId);
 

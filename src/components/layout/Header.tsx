@@ -9,11 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { useApprovalNotifications, useApprovalNotificationUnreadCount, useMarkNotificationAsRead } from "@/hooks/useApprovals";
+import { useCollegeContext } from "@/contexts/HierarchicalContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { useContextColleges } from "@/hooks/useContextSelectors";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { LogOut, Menu, User, Bell, ArrowRight, CheckCheck, FileText, Clock } from "lucide-react";
+import { LogOut, Menu, User, Bell, ArrowRight, CheckCheck, FileText, Clock, Building2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,6 +66,13 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // College context for global college selector
+  const { selectedCollege, setSelectedCollege, colleges, isLoadingColleges } = useCollegeContext();
+  const { permissions } = usePermissions();
+
+  // Fetch colleges (hook updates context automatically)
+  useContextColleges();
+
   // Fetch approval notifications
   const { data: approvalNotificationsData } = useApprovalNotifications({ page_size: 50 });
   const { data: approvalUnreadCountData } = useApprovalNotificationUnreadCount();
@@ -63,6 +80,11 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
   const notifications = approvalNotificationsData?.results || [];
   const unreadCount = approvalUnreadCountData?.unread_count || 0;
+
+  const handleCollegeChange = (value: string) => {
+    const collegeId = value ? Number(value) : null;
+    setSelectedCollege(collegeId);
+  };
 
   const handleNotificationClick = async (notification: ApprovalNotification) => {
     // Mark notification as read via API
@@ -95,6 +117,31 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               Dashboard
             </h1>
           </div>
+
+          {/* Middle - Global College Selector */}
+          {permissions?.canChooseCollege && (
+            <div className="flex-1 max-w-xs mx-4 hidden md:block">
+              <Select
+                value={selectedCollege ? String(selectedCollege) : undefined}
+                onValueChange={handleCollegeChange}
+                disabled={isLoadingColleges}
+              >
+                <SelectTrigger className="w-full">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder={isLoadingColleges ? 'Loading colleges...' : 'Select College'} />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {colleges.map((college) => (
+                    <SelectItem key={college.id} value={String(college.id)}>
+                      {college.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Right */}
           <div className="flex items-center gap-2">
