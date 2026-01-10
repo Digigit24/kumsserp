@@ -1,0 +1,94 @@
+import { useForm } from 'react-hook-form';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { Textarea } from '../../../components/ui/textarea';
+import { Checkbox } from '../../../components/ui/checkbox';
+
+interface FeeFormProps {
+  item: any | null;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+}
+
+export const FeeForm = ({ item, onSubmit, onCancel }: FeeFormProps) => {
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm({
+    defaultValues: item || {
+      allocation: '',
+      month: '',
+      year: '',
+      amount: '',
+      due_date: '',
+      is_paid: false,
+      paid_date: '',
+      remarks: '',
+      is_active: true,
+    },
+  });
+
+  const isPaid = watch('is_paid');
+  const isActive = watch('is_active');
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="allocation">Allocation ID *</Label>
+        <Input id="allocation" type="number" {...register('allocation', { required: 'Allocation ID is required' })} placeholder="Enter allocation ID" />
+        {errors.allocation && <p className="text-sm text-destructive">{errors.allocation.message as string}</p>}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="month">Month *</Label>
+          <Input id="month" type="number" {...register('month', { required: 'Month is required', min: 1, max: 12 })} placeholder="1-12" />
+          {errors.month && <p className="text-sm text-destructive">{errors.month.message as string}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="year">Year *</Label>
+          <Input id="year" type="number" {...register('year', { required: 'Year is required' })} placeholder="e.g., 2026" />
+          {errors.year && <p className="text-sm text-destructive">{errors.year.message as string}</p>}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount *</Label>
+        <Input id="amount" type="number" step="0.01" {...register('amount', { required: 'Amount is required' })} placeholder="Enter amount" />
+        {errors.amount && <p className="text-sm text-destructive">{errors.amount.message as string}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="due_date">Due Date *</Label>
+        <Input id="due_date" type="date" {...register('due_date', { required: 'Due date is required' })} />
+        {errors.due_date && <p className="text-sm text-destructive">{errors.due_date.message as string}</p>}
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox id="is_paid" checked={isPaid} onCheckedChange={(checked) => setValue('is_paid', checked)} />
+        <Label htmlFor="is_paid" className="cursor-pointer">Paid</Label>
+      </div>
+
+      {isPaid && (
+        <div className="space-y-2">
+          <Label htmlFor="paid_date">Paid Date</Label>
+          <Input id="paid_date" type="date" {...register('paid_date')} />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="remarks">Remarks</Label>
+        <Textarea id="remarks" {...register('remarks')} placeholder="Enter any remarks" rows={3} />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox id="is_active" checked={isActive} onCheckedChange={(checked) => setValue('is_active', checked)} />
+        <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving...' : item ? 'Update' : 'Create'}</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">Cancel</Button>
+      </div>
+    </form>
+  );
+};

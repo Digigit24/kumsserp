@@ -150,6 +150,11 @@ const BookIssuesPage = lazy(() => import("../pages/library/BookIssuesPage"));
 const BookReturnsPage = lazy(() => import("../pages/library/BookReturnsPage"));
 const MyBooksPage = lazy(() => import("../pages/library/MyBooksPage"));
 
+// Hostel Module
+const AllocationsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.AllocationsPage })));
+const BedsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.BedsPage })));
+const FeesPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.FeesPage })));
+
 // HR Module
 const DeductionsPage = lazy(() => import("../pages/hr/DeductionsPage"));
 const LeaveTypesPage = lazy(() => import("../pages/hr/LeaveTypesPage"));
@@ -363,6 +368,11 @@ export default function AppRoutes() {
                     <Route path="library/returns" element={<LazyRoute component={BookReturnsPage} />} />
                     <Route path="library/my-books" element={<LazyRoute component={MyBooksPage} />} />
                     <Route path="library/student" element={<LazyRoute component={StudentLibraryPage} />} />
+
+                    {/* Hostel Module */}
+                    <Route path="hostel/allocations" element={<LazyRoute component={AllocationsPage} />} />
+                    <Route path="hostel/beds" element={<LazyRoute component={BedsPage} />} />
+                    <Route path="hostel/fees" element={<LazyRoute component={FeesPage} />} />
 
                     {/* HR Module */}
                     <Route path="hr/deductions" element={<LazyRoute component={DeductionsPage} />} />

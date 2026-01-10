@@ -669,6 +669,33 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
 
+  // ================= HOSTEL (ADMIN + STAFF) =================
+  {
+    group: "Hostel",
+    icon: Building2,
+    roles: ["super_admin", "college_admin", "staff"],
+    items: [
+      {
+        name: "Allocations",
+        href: "/hostel/allocations",
+        icon: Users,
+        roles: ["super_admin", "college_admin", "staff"],
+      },
+      {
+        name: "Beds",
+        href: "/hostel/beds",
+        icon: Package,
+        roles: ["super_admin", "college_admin", "staff"],
+      },
+      {
+        name: "Fees",
+        href: "/hostel/fees",
+        icon: CreditCard,
+        roles: ["super_admin", "college_admin", "staff"],
+      },
+    ],
+  },
+
   // ================= HR (ADMIN + HR) =================
   {
     group: "HR",
