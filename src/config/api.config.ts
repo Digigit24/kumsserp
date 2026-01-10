@@ -776,12 +776,12 @@ export const API_ENDPOINTS = {
 
   // Library Module - Book Categories
   bookCategories: {
-    list: "/api/v1/library/book-categories/",
-    create: "/api/v1/library/book-categories/",
-    detail: (id: number) => `/api/v1/library/book-categories/${id}/`,
-    update: (id: number) => `/api/v1/library/book-categories/${id}/`,
-    patch: (id: number) => `/api/v1/library/book-categories/${id}/`,
-    delete: (id: number) => `/api/v1/library/book-categories/${id}/`,
+    list: "/api/v1/library/categories/",
+    create: "/api/v1/library/categories/",
+    detail: (id: number) => `/api/v1/library/categories/${id}/`,
+    update: (id: number) => `/api/v1/library/categories/${id}/`,
+    patch: (id: number) => `/api/v1/library/categories/${id}/`,
+    delete: (id: number) => `/api/v1/library/categories/${id}/`,
   },
 
   // Library Module - Members
