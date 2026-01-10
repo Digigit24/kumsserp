@@ -83,7 +83,7 @@ export const OrganizationTree = ({ nodes }: OrganizationTreeProps) => {
   return (
     <div className="w-full overflow-x-auto pb-6">
       <div className="flex justify-start w-full">
-        <div className="flex items-start justify-start gap-8 px-24 min-w-[2200px] whitespace-nowrap">
+        <div className="flex items-start justify-start gap-8 px-4 min-w-fit whitespace-nowrap">
           {nodes.map((node) => (
             <OrgNode key={node.id} node={node} isRoot />
           ))}
