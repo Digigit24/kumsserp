@@ -81,11 +81,13 @@ interface OrganizationTreeProps {
 export const OrganizationTree = ({ nodes }: OrganizationTreeProps) => {
   if (!nodes || nodes.length === 0) return null;
   return (
-    <div className="overflow-x-auto pb-6">
-      <div className="flex items-start justify-center gap-8 min-w-full whitespace-nowrap">
-        {nodes.map((node) => (
-          <OrgNode key={node.id} node={node} isRoot />
-        ))}
+    <div className="w-full overflow-x-auto pb-6">
+      <div className="flex justify-start w-full">
+        <div className="flex items-start justify-start gap-8 px-24 min-w-[2200px] whitespace-nowrap">
+          {nodes.map((node) => (
+            <OrgNode key={node.id} node={node} isRoot />
+          ))}
+        </div>
       </div>
     </div>
   );

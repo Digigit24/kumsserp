@@ -55,9 +55,9 @@ export const OrganizationHierarchyPage = () => {
   const totalNodes = countNodes(tree);
 
   return (
-    <div className="p-6 space-y-6 w-full">
+    <div className="w-full space-y-4">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+      <div className="flex flex-col gap-2 px-4 md:px-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">
             Organization Hierarchy
@@ -98,7 +98,7 @@ export const OrganizationHierarchyPage = () => {
       )}
 
       {/* Main Content Card */}
-      <Card>
+      <Card className="w-full rounded-none border-0 shadow-none">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
@@ -119,7 +119,7 @@ export const OrganizationHierarchyPage = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 md:px-4">
           {loading && tree.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-gray-400 gap-3">
               <Loader2 className="w-8 h-8 animate-spin" />
@@ -140,37 +140,12 @@ export const OrganizationHierarchyPage = () => {
               </Button>
             </div>
           ) : (
-            <div className="w-full overflow-hidden">
+            <div className="w-full overflow-x-auto pb-4">
               <OrganizationTree nodes={tree} />
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Info Section */}
-      {tree.length > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg text-blue-600 flex-shrink-0">
-                <AlertCircle className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm text-blue-900 mb-1">
-                  About Organization Hierarchy
-                </h4>
-                <p className="text-sm text-blue-700 leading-relaxed">
-                  The organization hierarchy defines the structure of your
-                  institution with departments, units, teams, and positions.
-                  Each node can have roles, permissions, and team members
-                  assigned. The tree structure is cached for 5 minutes to
-                  improve performance.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
