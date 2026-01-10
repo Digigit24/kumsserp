@@ -5,10 +5,185 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  hostelsApi,
+  roomTypesApi,
   hostelAllocationsApi,
   hostelBedsApi,
   hostelFeesApi,
 } from '../services/hostel.service';
+
+// ============================================================================
+// HOSTELS
+// ============================================================================
+
+/**
+ * Fetch hostels with optional filters
+ */
+export const useHostels = (filters?: any) => {
+  return useQuery({
+    queryKey: ['hostels', filters],
+    queryFn: () => hostelsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new hostel
+ */
+export const useCreateHostel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+      const collegeId = localStorage.getItem('kumss_college_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      if (collegeId && !data.college) {
+        submitData.college = parseInt(collegeId);
+      }
+
+      return hostelsApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hostels'] });
+    },
+  });
+};
+
+/**
+ * Update a hostel
+ */
+export const useUpdateHostel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return hostelsApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hostels'] });
+    },
+  });
+};
+
+/**
+ * Delete a hostel
+ */
+export const useDeleteHostel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => hostelsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hostels'] });
+    },
+  });
+};
+
+// ============================================================================
+// ROOM TYPES
+// ============================================================================
+
+/**
+ * Fetch room types with optional filters
+ */
+export const useRoomTypes = (filters?: any) => {
+  return useQuery({
+    queryKey: ['room-types', filters],
+    queryFn: () => roomTypesApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new room type
+ */
+export const useCreateRoomType = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      return roomTypesApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['room-types'] });
+    },
+  });
+};
+
+/**
+ * Update a room type
+ */
+export const useUpdateRoomType = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return roomTypesApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['room-types'] });
+    },
+  });
+};
+
+/**
+ * Delete a room type
+ */
+export const useDeleteRoomType = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => roomTypesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['room-types'] });
+    },
+  });
+};
 
 // ============================================================================
 // HOSTEL ALLOCATIONS

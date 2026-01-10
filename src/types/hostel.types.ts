@@ -15,6 +15,86 @@ export interface AuditFields {
 }
 
 // ============================================================================
+// HOSTEL TYPES
+// ============================================================================
+
+export interface Hostel extends AuditFields {
+  id: number;
+  is_active: boolean;
+  name: string;
+  hostel_type: string;
+  address: string;
+  capacity: number;
+  contact_number: string;
+  college: number;
+  college_name?: string;
+  warden: number;
+  warden_name?: string;
+}
+
+export interface HostelCreateInput {
+  is_active?: boolean;
+  name: string;
+  hostel_type: string;
+  address: string;
+  capacity: number;
+  contact_number: string;
+  college: number;
+  warden: number;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface HostelUpdateInput extends Partial<HostelCreateInput> {}
+
+export interface HostelFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  hostel_type?: string;
+  college?: number;
+  is_active?: boolean;
+  ordering?: string;
+}
+
+// ============================================================================
+// ROOM TYPE TYPES
+// ============================================================================
+
+export interface RoomType extends AuditFields {
+  id: number;
+  is_active: boolean;
+  name: string;
+  capacity: number;
+  features: string;
+  monthly_fee: string;
+  hostel: number;
+  hostel_name?: string;
+}
+
+export interface RoomTypeCreateInput {
+  is_active?: boolean;
+  name: string;
+  capacity: number;
+  features: string;
+  monthly_fee: string;
+  hostel: number;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface RoomTypeUpdateInput extends Partial<RoomTypeCreateInput> {}
+
+export interface RoomTypeFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  hostel?: number;
+  is_active?: boolean;
+  ordering?: string;
+}
+
+// ============================================================================
 // HOSTEL ALLOCATION TYPES
 // ============================================================================
 

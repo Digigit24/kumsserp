@@ -4,6 +4,8 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { SearchableSelect } from '../../../components/ui/searchable-select';
+import { useHostelAllocations } from '../../../hooks/useHostel';
 
 interface FeeFormProps {
   item: any | null;
@@ -28,12 +30,28 @@ export const FeeForm = ({ item, onSubmit, onCancel }: FeeFormProps) => {
 
   const isPaid = watch('is_paid');
   const isActive = watch('is_active');
+  const allocation = watch('allocation');
+
+  // Fetch allocations
+  const { data: allocationsData } = useHostelAllocations({ page_size: 1000 });
+
+  const allocationOptions = allocationsData?.results?.map((a: any) => ({
+    value: a.id,
+    label: `${a.student_name || `Student #${a.student}`} - ${a.room_number || `Room #${a.room}`}`,
+    subtitle: `${a.hostel_name || `Hostel #${a.hostel}`} | ${a.bed_number || `Bed #${a.bed}`}`,
+  })) || [];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="allocation">Allocation ID *</Label>
-        <Input id="allocation" type="number" {...register('allocation', { required: 'Allocation ID is required' })} placeholder="Enter allocation ID" />
+        <Label>Allocation *</Label>
+        <SearchableSelect
+          options={allocationOptions}
+          value={allocation}
+          onChange={(value) => setValue('allocation', value)}
+          placeholder="Select allocation..."
+          searchPlaceholder="Search allocations..."
+        />
         {errors.allocation && <p className="text-sm text-destructive">{errors.allocation.message as string}</p>}
       </div>
 

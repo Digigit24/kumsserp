@@ -3,6 +3,9 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { SearchableSelect } from '../../../components/ui/searchable-select';
+import { useQuery } from '@tanstack/react-query';
+import { buildApiUrl, getDefaultHeaders } from '../../../config/api.config';
 
 interface BedFormProps {
   item: any | null;
@@ -21,6 +24,29 @@ export const BedForm = ({ item, onSubmit, onCancel }: BedFormProps) => {
   });
 
   const isActive = watch('is_active');
+  const room = watch('room');
+
+  // Fetch rooms
+  const { data: roomsData } = useQuery({
+    queryKey: ['rooms'],
+    queryFn: async () => {
+      const token = localStorage.getItem('kumss_auth_token');
+      const response = await fetch(buildApiUrl('/api/v1/hostel/rooms/?page_size=1000'), {
+        headers: {
+          ...getDefaultHeaders(),
+          Authorization: `Token ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch rooms');
+      return response.json();
+    },
+  });
+
+  const roomOptions = roomsData?.results?.map((r: any) => ({
+    value: r.id,
+    label: r.room_number || `Room #${r.id}`,
+    subtitle: r.room_type_name,
+  })) || [];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -31,8 +57,14 @@ export const BedForm = ({ item, onSubmit, onCancel }: BedFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="room">Room ID *</Label>
-        <Input id="room" type="number" {...register('room', { required: 'Room ID is required' })} placeholder="Enter room ID" />
+        <Label>Room *</Label>
+        <SearchableSelect
+          options={roomOptions}
+          value={room}
+          onChange={(value) => setValue('room', value)}
+          placeholder="Select room..."
+          searchPlaceholder="Search rooms..."
+        />
         {errors.room && <p className="text-sm text-destructive">{errors.room.message as string}</p>}
       </div>
 
