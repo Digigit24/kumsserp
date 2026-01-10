@@ -95,6 +95,48 @@ export interface RoomTypeFilters {
 }
 
 // ============================================================================
+// ROOM TYPES
+// ============================================================================
+
+export interface Room extends AuditFields {
+  id: number;
+  is_active: boolean;
+  room_number: string;
+  floor: string;
+  capacity: number;
+  occupied_beds: number;
+  hostel: number;
+  hostel_name?: string;
+  room_type: number;
+  room_type_name?: string;
+}
+
+export interface RoomCreateInput {
+  is_active?: boolean;
+  room_number: string;
+  floor: string;
+  capacity: number;
+  occupied_beds?: number;
+  hostel: number;
+  room_type: number;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface RoomUpdateInput extends Partial<RoomCreateInput> {}
+
+export interface RoomFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  hostel?: number;
+  room_type?: number;
+  floor?: string;
+  is_active?: boolean;
+  ordering?: string;
+}
+
+// ============================================================================
 // HOSTEL ALLOCATION TYPES
 // ============================================================================
 

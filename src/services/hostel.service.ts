@@ -14,6 +14,10 @@ import type {
   RoomTypeCreateInput,
   RoomTypeUpdateInput,
   RoomTypeFilters,
+  Room,
+  RoomCreateInput,
+  RoomUpdateInput,
+  RoomFilters,
   HostelAllocation,
   HostelAllocationCreateInput,
   HostelAllocationUpdateInput,
@@ -174,6 +178,50 @@ export const roomTypesApi = {
 
   delete: async (id: number): Promise<void> => {
     return fetchApi<void>(buildApiUrl(`/api/v1/hostel/room-types/${id}/`), {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ============================================================================
+// ROOMS API
+// ============================================================================
+
+export const roomsApi = {
+  list: async (filters?: RoomFilters): Promise<PaginatedResponse<Room>> => {
+    const queryString = buildQueryString(filters || {});
+    return fetchApi<PaginatedResponse<Room>>(
+      buildApiUrl(`/api/v1/hostel/rooms/${queryString}`)
+    );
+  },
+
+  get: async (id: number): Promise<Room> => {
+    return fetchApi<Room>(buildApiUrl(`/api/v1/hostel/rooms/${id}/`));
+  },
+
+  create: async (data: RoomCreateInput): Promise<Room> => {
+    return fetchApi<Room>(buildApiUrl('/api/v1/hostel/rooms/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: RoomUpdateInput): Promise<Room> => {
+    return fetchApi<Room>(buildApiUrl(`/api/v1/hostel/rooms/${id}/`), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  patch: async (id: number, data: Partial<RoomUpdateInput>): Promise<Room> => {
+    return fetchApi<Room>(buildApiUrl(`/api/v1/hostel/rooms/${id}/`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(buildApiUrl(`/api/v1/hostel/rooms/${id}/`), {
       method: 'DELETE',
     });
   },

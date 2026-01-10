@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   hostelsApi,
   roomTypesApi,
+  roomsApi,
   hostelAllocationsApi,
   hostelBedsApi,
   hostelFeesApi,
@@ -181,6 +182,91 @@ export const useDeleteRoomType = () => {
     mutationFn: (id: number) => roomTypesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['room-types'] });
+    },
+  });
+};
+
+// ============================================================================
+// ROOMS
+// ============================================================================
+
+/**
+ * Fetch rooms with optional filters
+ */
+export const useRooms = (filters?: any) => {
+  return useQuery({
+    queryKey: ['rooms', filters],
+    queryFn: () => roomsApi.list(filters),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new room
+ */
+export const useCreateRoom = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+        occupied_beds: data.occupied_beds ?? 0,
+      };
+
+      if (userId) {
+        submitData.created_by = userId;
+        submitData.updated_by = userId;
+      }
+
+      return roomsApi.create(submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+    },
+  });
+};
+
+/**
+ * Update a room
+ */
+export const useUpdateRoom = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userId = localStorage.getItem('kumss_user_id');
+
+      const submitData: any = {
+        ...data,
+        is_active: data.is_active ?? true,
+      };
+
+      if (userId) {
+        submitData.updated_by = userId;
+      }
+
+      return roomsApi.update(id, submitData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+    },
+  });
+};
+
+/**
+ * Delete a room
+ */
+export const useDeleteRoom = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => roomsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
     },
   });
 };

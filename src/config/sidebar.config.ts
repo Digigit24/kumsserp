@@ -688,6 +688,12 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: ["super_admin", "college_admin", "staff"],
       },
       {
+        name: "Rooms",
+        href: "/hostel/rooms",
+        icon: DoorClosed,
+        roles: ["super_admin", "college_admin", "staff"],
+      },
+      {
         name: "Allocations",
         href: "/hostel/allocations",
         icon: Users,

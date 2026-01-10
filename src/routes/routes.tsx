@@ -153,6 +153,7 @@ const MyBooksPage = lazy(() => import("../pages/library/MyBooksPage"));
 // Hostel Module
 const HostelsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.HostelsPage })));
 const RoomTypesPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.RoomTypesPage })));
+const RoomsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.RoomsPage })));
 const AllocationsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.AllocationsPage })));
 const BedsPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.BedsPage })));
 const FeesPage = lazy(() => import("../pages/hostel").then(m => ({ default: m.FeesPage })));
@@ -374,6 +375,7 @@ export default function AppRoutes() {
                     {/* Hostel Module */}
                     <Route path="hostel/hostels" element={<LazyRoute component={HostelsPage} />} />
                     <Route path="hostel/room-types" element={<LazyRoute component={RoomTypesPage} />} />
+                    <Route path="hostel/rooms" element={<LazyRoute component={RoomsPage} />} />
                     <Route path="hostel/allocations" element={<LazyRoute component={AllocationsPage} />} />
                     <Route path="hostel/beds" element={<LazyRoute component={BedsPage} />} />
                     <Route path="hostel/fees" element={<LazyRoute component={FeesPage} />} />
