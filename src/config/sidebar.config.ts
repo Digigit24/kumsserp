@@ -9,6 +9,7 @@ import {
     CheckSquare,
     ClipboardList,
     CreditCard,
+    DoorClosed,
     FileText,
     GraduationCap,
     Home,
