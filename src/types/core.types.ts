@@ -480,3 +480,199 @@ export interface BulkActivateInput {
   ids: number[];
   is_active: boolean;
 }
+
+// ============================================================================
+// ORGANIZATION HIERARCHY TYPES
+// ============================================================================
+
+export type NodeType = 'department' | 'unit' | 'team' | 'position' | 'other';
+
+export interface OrganizationNode extends BaseEntity {
+  college: number;
+  college_name: string;
+  name: string;
+  code: string;
+  node_type: NodeType;
+  node_type_display: string;
+  description: string | null;
+  parent: number | null;
+  parent_name: string | null;
+  level: number;
+  path: string;
+  order: number;
+  metadata: Record<string, any> | null;
+  children?: OrganizationNodeTree[];
+}
+
+export interface OrganizationNodeTree extends OrganizationNode {
+  children: OrganizationNodeTree[];
+}
+
+export interface OrganizationNodeCreateInput {
+  college: number;
+  name: string;
+  code: string;
+  node_type: NodeType;
+  description?: string | null;
+  parent?: number | null;
+  order?: number;
+  metadata?: Record<string, any> | null;
+  is_active?: boolean;
+}
+
+export interface OrganizationNodeUpdateInput extends Partial<OrganizationNodeCreateInput> {}
+
+// Dynamic Role Types
+export interface DynamicRole extends BaseEntity {
+  college: number;
+  college_name: string;
+  node: number;
+  node_name: string;
+  name: string;
+  code: string;
+  description: string | null;
+  level: number;
+  permissions: number[]; // Array of permission IDs
+  permission_details?: HierarchyPermission[];
+}
+
+export interface DynamicRoleCreateInput {
+  college: number;
+  node: number;
+  name: string;
+  code: string;
+  description?: string | null;
+  is_active?: boolean;
+}
+
+export interface DynamicRoleUpdateInput extends Partial<DynamicRoleCreateInput> {}
+
+export interface RolePermissionsUpdateInput {
+  add: number[];
+  remove: number[];
+}
+
+// Hierarchy Permission Types
+export type PermissionCategory = 'org_structure' | 'user_management' | 'team_management' | 'role_management' | 'other';
+
+export interface HierarchyPermission {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  category: PermissionCategory;
+  category_display: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PermissionsByCategory {
+  category: PermissionCategory;
+  category_display: string;
+  permissions: HierarchyPermission[];
+}
+
+// User Role Assignment Types
+export interface HierarchyUserRole extends BaseEntity {
+  user: number;
+  user_name: string;
+  user_email: string;
+  role: number;
+  role_name: string;
+  node: number;
+  node_name: string;
+  assigned_by: number;
+  assigned_by_name: string;
+}
+
+export interface UserRoleAssignInput {
+  user: number;
+  role: number;
+  node: number;
+}
+
+export interface UserRoleRevokeInput {
+  user: number;
+  role: number;
+  node: number;
+}
+
+// Team Types
+export type TeamType = 'principal' | 'hod' | 'teacher' | 'custom';
+
+export interface Team extends BaseEntity {
+  college: number;
+  college_name: string;
+  node: number;
+  node_name: string;
+  name: string;
+  code: string;
+  team_type: TeamType;
+  team_type_display: string;
+  description: string | null;
+  auto_created: boolean;
+  members_count?: number;
+}
+
+export interface TeamCreateInput {
+  college: number;
+  node: number;
+  name: string;
+  code: string;
+  team_type: TeamType;
+  description?: string | null;
+  is_active?: boolean;
+}
+
+export interface TeamUpdateInput extends Partial<TeamCreateInput> {}
+
+// Team Member Types
+export interface HierarchyTeamMember extends BaseEntity {
+  team: number;
+  team_name: string;
+  user: number;
+  user_name: string;
+  user_email: string;
+  role: string | null;
+  added_by: number;
+  added_by_name: string;
+}
+
+export interface TeamMemberAddInput {
+  user: number;
+  role?: string | null;
+}
+
+// Filter Types for Organization Hierarchy
+export interface OrganizationNodeFilters {
+  page?: number;
+  page_size?: number;
+  college?: number;
+  parent?: number;
+  node_type?: NodeType;
+  is_active?: boolean;
+  search?: string;
+  ordering?: string;
+}
+
+export interface DynamicRoleFilters {
+  page?: number;
+  page_size?: number;
+  college?: number;
+  node?: number;
+  is_active?: boolean;
+  search?: string;
+  ordering?: string;
+}
+
+export interface TeamFilters {
+  page?: number;
+  page_size?: number;
+  college?: number;
+  node?: number;
+  team_type?: TeamType;
+  is_active?: boolean;
+  search?: string;
+  ordering?: string;
+}

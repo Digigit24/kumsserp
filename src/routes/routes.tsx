@@ -39,6 +39,7 @@ const WeekendsPage = lazy(() => import("../pages/core/WeekendsPage"));
 const SystemSettingsPage = lazy(() => import("../pages/core/SystemSettingsPage"));
 const NotificationSettingsPage = lazy(() => import("../pages/core/NotificationSettingsPage"));
 const ActivityLogsPage = lazy(() => import("../pages/core/ActivityLogsPage"));
+const OrganizationHierarchyPage = lazy(() => import("../pages/core/OrganizationHierarchyPage").then(m => ({ default: m.OrganizationHierarchyPage })));
 
 // Accounts Module
 const UsersPage = lazy(() => import("../pages/accounts/UsersPage"));
@@ -259,6 +260,7 @@ export default function AppRoutes() {
                     <Route path="core/notification-settings" element={<LazyRoute component={NotificationSettingsPage} />} />
                     <Route path="core/activity-logs" element={<LazyRoute component={ActivityLogsPage} />} />
                     <Route path="core/permissions" element={<LazyRoute component={PermissionsPage} />} />
+                    <Route path="core/organization-hierarchy" element={<LazyRoute component={OrganizationHierarchyPage} />} />
 
                     {/* Accounts Module */}
                     <Route path="accounts/users" element={<LazyRoute component={UsersPage} />} />
