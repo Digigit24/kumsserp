@@ -170,18 +170,18 @@ const OrgNode = ({
           )}
         </div>
         {hasChildren && expanded && (
-          <div className="absolute left-1/2 -bottom-5 h-5 w-px bg-slate-300 dark:bg-slate-600" />
+          <div className="absolute left-1/2 -bottom-8 h-8 w-px bg-slate-300 dark:bg-slate-600" />
         )}
       </div>
 
       {hasChildren && expanded && (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center mt-8">
           <div className="relative flex w-full justify-center">
-            <div className="absolute left-0 right-0 top-2 h-px bg-slate-300 dark:bg-slate-600" />
-            <div className="flex items-start justify-center gap-8 whitespace-nowrap pt-4">
+            <div className="absolute left-0 right-0 top-0 h-px bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-start justify-center gap-8 whitespace-nowrap pt-8">
               {children.map((child) => (
                 <div key={child.id} className="relative flex flex-col items-center">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-px bg-slate-300 dark:bg-slate-600" />
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 h-8 w-px bg-slate-300 dark:bg-slate-600" />
                   <OrgNode node={child} />
                 </div>
               ))}
