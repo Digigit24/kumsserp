@@ -21,46 +21,46 @@ type ColorScheme = {
 
 const colorByType: Record<string, ColorScheme> = {
   ceo: {
-    border: "border-gray-400",
-    bg: "bg-gray-50",
-    text: "text-gray-700",
-    badge: "bg-gray-200 text-gray-800",
+    border: "border-gray-400 dark:border-gray-600",
+    bg: "bg-gray-50 dark:bg-gray-800",
+    text: "text-gray-700 dark:text-gray-300",
+    badge: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
   },
   college: {
-    border: "border-blue-300",
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    badge: "bg-blue-100 text-blue-700",
+    border: "border-blue-300 dark:border-blue-700",
+    bg: "bg-blue-50 dark:bg-blue-950",
+    text: "text-blue-700 dark:text-blue-300",
+    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
   },
   department: {
-    border: "border-indigo-300",
-    bg: "bg-indigo-50",
-    text: "text-indigo-700",
-    badge: "bg-indigo-100 text-indigo-700",
+    border: "border-indigo-300 dark:border-indigo-700",
+    bg: "bg-indigo-50 dark:bg-indigo-950",
+    text: "text-indigo-700 dark:text-indigo-300",
+    badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200",
   },
   unit: {
-    border: "border-purple-300",
-    bg: "bg-purple-50",
-    text: "text-purple-700",
-    badge: "bg-purple-100 text-purple-700",
+    border: "border-purple-300 dark:border-purple-700",
+    bg: "bg-purple-50 dark:bg-purple-950",
+    text: "text-purple-700 dark:text-purple-300",
+    badge: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200",
   },
   team: {
-    border: "border-emerald-300",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    badge: "bg-emerald-100 text-emerald-700",
+    border: "border-emerald-300 dark:border-emerald-700",
+    bg: "bg-emerald-50 dark:bg-emerald-950",
+    text: "text-emerald-700 dark:text-emerald-300",
+    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
   },
   position: {
-    border: "border-amber-300",
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    badge: "bg-amber-100 text-amber-700",
+    border: "border-amber-300 dark:border-amber-700",
+    bg: "bg-amber-50 dark:bg-amber-950",
+    text: "text-amber-700 dark:text-amber-300",
+    badge: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200",
   },
   default: {
-    border: "border-slate-300",
-    bg: "bg-slate-50",
-    text: "text-slate-700",
-    badge: "bg-slate-100 text-slate-700",
+    border: "border-slate-300 dark:border-slate-600",
+    bg: "bg-slate-50 dark:bg-slate-800",
+    text: "text-slate-700 dark:text-slate-300",
+    badge: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
   },
 };
 
@@ -112,8 +112,8 @@ const OrgNode = ({
       <div className="relative flex flex-col items-center">
         <div
           className={cn(
-            "rounded-md border bg-white px-4 py-3 shadow-sm",
-            "min-w-[180px] text-center transition hover:shadow-md",
+            "rounded-md border bg-white dark:bg-gray-900 px-4 py-3 shadow-sm dark:shadow-gray-950",
+            "min-w-[180px] text-center transition hover:shadow-md dark:hover:shadow-gray-950",
             scheme.border,
             "border",
             "flex flex-col gap-1"
@@ -130,7 +130,7 @@ const OrgNode = ({
             </div>
             {hasChildren && (
               <button
-                className="ml-2 rounded hover:bg-muted p-1 transition"
+                className="ml-2 rounded hover:bg-muted dark:hover:bg-gray-800 p-1 transition"
                 onClick={() => setExpanded((v) => !v)}
                 aria-label={expanded ? "Collapse" : "Expand"}
               >
@@ -170,18 +170,18 @@ const OrgNode = ({
           )}
         </div>
         {hasChildren && expanded && (
-          <div className="absolute left-1/2 -bottom-5 h-5 w-px bg-slate-300" />
+          <div className="absolute left-1/2 -bottom-5 h-5 w-px bg-slate-300 dark:bg-slate-600" />
         )}
       </div>
 
       {hasChildren && expanded && (
         <div className="flex flex-col items-center">
           <div className="relative flex w-full justify-center">
-            <div className="absolute left-0 right-0 top-2 h-px bg-slate-300" />
+            <div className="absolute left-0 right-0 top-2 h-px bg-slate-300 dark:bg-slate-600" />
             <div className="flex items-start justify-center gap-8 whitespace-nowrap pt-4">
               {children.map((child) => (
                 <div key={child.id} className="relative flex flex-col items-center">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-px bg-slate-300" />
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-px bg-slate-300 dark:bg-slate-600" />
                   <OrgNode node={child} />
                 </div>
               ))}

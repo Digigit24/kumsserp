@@ -59,7 +59,7 @@ export const OrganizationHierarchyPage = () => {
       {/* Header */}
       <div className="flex flex-col gap-2 px-4 md:px-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Organization Hierarchy
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -101,7 +101,7 @@ export const OrganizationHierarchyPage = () => {
       <Card className="w-full rounded-none border-0 shadow-none">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg text-blue-600 dark:text-blue-300">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
@@ -121,15 +121,15 @@ export const OrganizationHierarchyPage = () => {
         </CardHeader>
         <CardContent className="px-2 md:px-4">
           {loading && tree.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-gray-400 gap-3">
+            <div className="flex flex-col items-center justify-center p-12 text-gray-400 dark:text-gray-500 gap-3">
               <Loader2 className="w-8 h-8 animate-spin" />
               <p className="text-sm">Loading organization structure...</p>
             </div>
           ) : tree.length === 0 && !error ? (
-            <div className="flex flex-col items-center justify-center p-12 text-gray-400 gap-3">
+            <div className="flex flex-col items-center justify-center p-12 text-gray-400 dark:text-gray-500 gap-3">
               <Building2 className="w-12 h-12 stroke-1" />
               <div className="text-center">
-                <p className="font-medium text-gray-600">No nodes yet</p>
+                <p className="font-medium text-gray-600 dark:text-gray-400">No nodes yet</p>
                 <p className="text-sm mt-1">
                   Get started by creating your first organization node
                 </p>
